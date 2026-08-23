@@ -13,9 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
-        /* ============================================================
-           جميع الأنماط كما هي (نفس الكود السابق)
-           ============================================================ */
+        /* ========== الأنماط (نفسها مع التحسينات) ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
             --bg-primary: #f0f4f8; --bg-secondary: #ffffff; --bg-card: #ffffff;
@@ -231,7 +229,7 @@
             <span id="adminStatusBadge" class="status status-success" style="font-size:12px;">✅ أدمن</span>
         </h2>
 
-        <!-- بطاقة التشخيص -->
+        <!-- تشخيص -->
         <div class="card" style="border:2px solid var(--info);">
             <div class="card-header">
                 <div class="card-title"><i class="fas fa-stethoscope text-info"></i> تشخيص الطلبات</div>
@@ -261,7 +259,7 @@
             </div>
         </div>
 
-        <!-- تأكيد إيداع تلقائي -->
+        <!-- تأكيد إيداع تلقائي (DZD فقط) -->
         <div class="card" style="border:2px solid var(--info);">
             <div class="card-header">
                 <div class="card-title"><i class="fas fa-bolt text-info"></i> تأكيد إيداع تلقائي</div>
@@ -284,7 +282,7 @@
         </div>
     </div>
 
-    <!-- رسالة غير مصرح -->
+    <!-- غير مصرح -->
     <div id="unauthorizedMessage" style="display:none;">
         <i class="fas fa-lock"></i>
         <h2>غير مصرح</h2>
@@ -315,7 +313,6 @@
     // ============================================================
     let isAdmin = false;
     let userId = null;
-    let unsubscribeUsers = null;
 
     // ============================================================
     // 3. دوال مساعدة
@@ -363,7 +360,7 @@
     // 4. جلب طلبات السحب من داخل وثائق المستخدمين
     // ============================================================
     async function fetchAllWithdrawals() {
-        showToast('⏳ جلب جميع الطلبات من المستخدمين...');
+        showToast('⏳ جلب جميع الطلبات...');
         try {
             const usersSnap = await db.collection('users').get();
             const allWithdrawals = [];
@@ -385,9 +382,9 @@
             });
 
             if (allWithdrawals.length === 0) {
-                showToast('⚠️ لا توجد طلبات سحب على الإطلاق', true);
+                showToast('⚠️ لا توجد طلبات سحب', true);
             } else {
-                showToast(`✅ تم جلب ${allWithdrawals.length} طلب من ${usersSnap.size} مستخدم`);
+                showToast(`✅ تم جلب ${allWithdrawals.length} طلب`);
             }
             renderWithdrawalsList(allWithdrawals, 'جميع الطلبات');
             updateDiagnostic(allWithdrawals, usersSnap.size);
@@ -407,10 +404,10 @@
     }
 
     async function fetchPendingWithdrawals() {
-        showToast('⏳ جلب الطلبات المعلقة...');
+        showToast('⏳ جلب المعلقة...');
         try {
             const usersSnap = await db.collection('users').get();
-            const pendingWithdrawals = [];
+            const pending = [];
 
             usersSnap.forEach(userDoc => {
                 const uid = userDoc.id;
@@ -420,7 +417,7 @@
 
                 withdrawals.forEach(w => {
                     if (w.status === 'pending') {
-                        pendingWithdrawals.push({
+                        pending.push({
                             ...w,
                             uid: uid,
                             userDisplayName: displayName,
@@ -430,10 +427,10 @@
                 });
             });
 
-            renderWithdrawalsList(pendingWithdrawals, 'المعلقة');
-            document.getElementById('pendingWithdrawalsCount').textContent = pendingWithdrawals.length;
-            showToast(`✅ ${pendingWithdrawals.length} طلب معلق`);
-            updateDiagnostic(pendingWithdrawals, usersSnap.size);
+            renderWithdrawalsList(pending, 'المعلقة');
+            document.getElementById('pendingWithdrawalsCount').textContent = pending.length;
+            showToast(`✅ ${pending.length} طلب معلق`);
+            updateDiagnostic(pending, usersSnap.size);
         } catch (err) {
             console.error('❌ فشل الجلب:', err);
             showToast('❌ فشل الجلب: ' + err.message, true);
@@ -456,7 +453,6 @@
             return;
         }
 
-        // ترتيب تنازلي حسب createdAt
         list.sort((a, b) => {
             const ta = a.createdAt?.toMillis?.() || 0;
             const tb = b.createdAt?.toMillis?.() || 0;
@@ -503,7 +499,7 @@
     }
 
     // ============================================================
-    // 6. تشخيص سريع
+    // 6. تشخيص
     // ============================================================
     function updateDiagnostic(withdrawalsList, totalUsers) {
         const diagEl = document.getElementById('diagnosticInfo');
@@ -514,14 +510,14 @@
         msg += `👥 عدد المستخدمين: ${totalUsers}\n`;
         msg += `📋 إجمالي طلبات السحب: ${total}\n`;
         msg += `⏳ المعلقة (pending): ${pending}\n`;
-        msg += `📁 موقع البيانات: users/*/withdrawals (مصفوفة داخل كل مستخدم)`;
+        msg += `📁 موقع البيانات: users/*/withdrawals (مصفوفة)`;
 
         diagEl.textContent = msg;
         diagEl.className = 'diagnostic-box success';
     }
 
     // ============================================================
-    // 7. تأكيد / رفض السحب (تعديل داخل مصفوفة المستخدم)
+    // 7. تأكيد / رفض السحب (تعديل المصفوفة)
     // ============================================================
     async function approveWithdrawal(userDocId, withdrawalId, uid) {
         if (!confirm(`تأكيد سحب للمستخدم ${uid || userDocId}؟`)) return;
@@ -538,7 +534,6 @@
             const userData = userDoc.data();
             const withdrawals = userData.withdrawals || [];
 
-            // تحديث حالة الطلب داخل المصفوفة
             const updatedWithdrawals = withdrawals.map(w => {
                 if (w.withdrawalId === withdrawalId) {
                     return { ...w, status: 'completed', completedAt: new Date() };
@@ -549,7 +544,7 @@
             await userRef.update({ withdrawals: updatedWithdrawals });
 
             showToast('✅ تم تأكيد السحب');
-            fetchPendingWithdrawals(); // تحديث القائمة
+            fetchPendingWithdrawals();
         } catch (e) {
             console.error(e);
             showToast('❌ خطأ: ' + e.message, true);
@@ -572,7 +567,6 @@
             const withdrawals = userData.withdrawals || [];
             const wallets = userData.wallets || {};
 
-            // تحديث حالة الطلب وإعادة المبلغ
             const updatedWithdrawals = withdrawals.map(w => {
                 if (w.withdrawalId === withdrawalId) {
                     return { ...w, status: 'rejected', rejectedAt: new Date() };
@@ -580,7 +574,6 @@
                 return w;
             });
 
-            // إعادة المبلغ إلى محفظة DZD
             const newDzd = (wallets.dzd || 0) + amount;
 
             await userRef.update({
@@ -597,7 +590,7 @@
     }
 
     // ============================================================
-    // 8. تأكيد إيداع تلقائي (يبقى كما هو)
+    // 8. تأكيد إيداع تلقائي (DZD فقط)
     // ============================================================
     async function autoConfirmDeposit() {
         const txId = document.getElementById('autoTxId').value.trim();
@@ -608,7 +601,6 @@
         if (!confirm(`تأكيد تلقائي لإيداع ${amount} DZD برقم العملية ${txId}؟`)) return;
 
         try {
-            // البحث عن طلب إيداع معلق في مجموعة deposits المستقلة (إذا كانت موجودة)
             const snap = await db.collection('deposits')
                 .where('transactionId', '==', txId)
                 .where('amount', '==', amount)
@@ -626,7 +618,6 @@
             const data = doc.data();
             const depositId = data.depositId || '';
 
-            // تأكيد الإيداع (نفس الدالة القديمة)
             await approveDeposit(doc.id, data.uid, data.amount, data.currency, depositId);
 
             document.getElementById('autoTxId').value = '';
@@ -650,7 +641,6 @@
             const userDoc = await userRef.get();
             if (!userDoc.exists) throw new Error('المستخدم غير موجود');
 
-            // تحديث رصيد DZD
             const wallets = userDoc.data().wallets || {};
             await userRef.update({
                 'wallets.dzd': (wallets.dzd || 0) + amount
@@ -706,7 +696,6 @@
                 document.getElementById('unauthorizedMessage').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
 
-                // جلب البيانات فوراً
                 await fetchAllWithdrawals();
                 await fetchPendingWithdrawals();
             } else {
@@ -723,7 +712,7 @@
     }
 
     // ============================================================
-    // 10. تحديث شامل
+    // 10. تحديث
     // ============================================================
     function refreshAll() {
         showToast('⏳ تحديث...');
@@ -772,8 +761,9 @@
         }
     });
 
-    console.log('🚀 لوحة الإدارة (نسخة متوافقة مع هيكل users/*/withdrawals)');
-    console.log('✅ البيانات موجودة في مصفوفة withdrawals داخل كل مستخدم');
+    console.log('🚀 لوحة الإدارة (نسخة نهائية تعمل)');
+    console.log('✅ البيانات مقروءة من users/*/withdrawals');
+    console.log('✅ العملة الوحيدة: DZD');
 </script>
 </body>
 </html>
