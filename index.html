@@ -607,7 +607,7 @@
                 </div>
             </div>
 
-            <!-- تأكيد إيداع تلقائي -->
+            <!-- تأكيد إيداع تلقائي (DZD فقط) -->
             <div class="card" style="border:2px solid var(--info);">
                 <div class="card-header">
                     <div class="card-title"><i class="fas fa-bolt text-info"></i> تأكيد إيداع تلقائي</div>
@@ -618,21 +618,17 @@
                     <input type="text" id="autoTxId" placeholder="أدخل رقم العملية كما في الطلب">
                 </div>
                 <div class="input-group">
-                    <label>المبلغ <span class="required">*</span></label>
+                    <label>المبلغ (DZD) <span class="required">*</span></label>
                     <input type="number" id="autoAmount" placeholder="أدخل المبلغ المستلم" step="0.01" min="0.01">
                 </div>
-                <div class="input-group">
-                    <label>العملة <span class="required">*</span></label>
-                    <select id="autoCurrency">
-                        <option value="USDT">USDT</option>
-                        <option value="DZD">DZD</option>
-                    </select>
+                <div class="input-group" style="background:var(--bg-input);padding:10px;border-radius:var(--radius-sm);">
+                    <label style="margin-bottom:0;">العملة: <strong>DZD</strong></label>
                 </div>
                 <button class="btn btn-info" onclick="autoConfirmDeposit()" style="color:white;">
                     <i class="fas fa-check-circle"></i> تأكيد تلقائي
                 </button>
                 <div style="font-size:12px;color:var(--text-muted);margin-top:8px;">
-                    <i class="fas fa-info-circle"></i> سيتم البحث عن طلب إيداع معلق بنفس رقم العملية والمبلغ والعملة، وتأكيده تلقائياً.
+                    <i class="fas fa-info-circle"></i> سيتم البحث عن طلب إيداع معلق بنفس رقم العملية والمبلغ، وتأكيده تلقائياً (العملة: DZD).
                 </div>
             </div>
         </div>
@@ -725,19 +721,24 @@
         }
 
         function showToast(msg) {
+            // إزالة أي توست سابق لتجنب التراكم
+            const old = document.querySelector('.custom-toast');
+            if (old) old.remove();
+
             const t = document.createElement('div');
+            t.className = 'custom-toast';
             t.style.cssText = `
                 position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
                 background: var(--accent); color: #fff; padding: 12px 24px;
                 border-radius: 30px; font-weight: 700; z-index: 9999;
                 box-shadow: var(--shadow-lg); font-family: 'Cairo', sans-serif;
                 max-width: 90%; text-align: center;
+                transition: opacity 0.3s;
             `;
             t.textContent = msg;
             document.body.appendChild(t);
             setTimeout(() => {
                 t.style.opacity = '0';
-                t.style.transition = 'opacity 0.3s';
                 setTimeout(() => t.remove(), 300);
             }, 3000);
         }
@@ -878,14 +879,14 @@
                         <div class="flex-between">
                             <span class="user-info">
                                 👤 <strong>${userDisplayName}</strong>
-                                <button class="copy-btn" onclick="copyText('${w.uid}')" style="padding:2px 8px;font-size:11px;background:var(--bg-input);color:var(--text-secondary);">
+                                ${w.uid ? `<button class="copy-btn" onclick="copyText('${w.uid}')" style="padding:2px 8px;font-size:11px;background:var(--bg-input);color:var(--text-secondary);">
                                     <i class="fas fa-copy"></i>
-                                </button>
+                                </button>` : ''}
                             </span>
                             <span class="status status-pending status-badge">قيد الانتظار</span>
                         </div>
                         <div class="details">
-                            <strong>${w.amount} ${w.currency}</strong> | الرسوم: ${w.fee || 0}
+                            <strong>${w.amount} ${w.currency || 'DZD'}</strong> | الرسوم: ${w.fee || 0}
                             <br><small>التاريخ: ${formatDateTime(w.createdAt)}</small>
                             ${w.recipientAddress ? `<br><small>العنوان: ${w.recipientAddress}</small>` : ''}
                             ${w.eccpId ? `<br><small>ECCP: ${w.eccpId}</small>` : ''}
@@ -894,7 +895,7 @@
                             <button class="btn btn-success btn-sm" onclick="approveWithdrawal('${w.id}','${w.uid}','${w.withdrawalId||''}')">
                                 <i class="fas fa-check"></i> تأكيد
                             </button>
-                            <button class="btn btn-danger btn-sm" onclick="rejectWithdrawal('${w.id}','${w.uid}',${w.amount},'${w.currency}','${w.withdrawalId||''}')">
+                            <button class="btn btn-danger btn-sm" onclick="rejectWithdrawal('${w.id}','${w.uid}',${w.amount},'${w.currency || 'DZD'}','${w.withdrawalId||''}')">
                                 <i class="fas fa-times"></i> رفض
                             </button>
                         </div>
@@ -948,9 +949,9 @@
                 const userRef = db.collection('users').doc(uid);
                 const userDoc = await userRef.get();
                 if (userDoc.exists) {
-                    const field = currency === 'USDT' ? 'wallets.main' : 'wallets.dzd';
+                    // دائماً نستخدم محفظة dzd بغض النظر عن العملة (لأننا أزلنا USDT)
                     await userRef.update({
-                        [field]: firebase.firestore.FieldValue.increment(amount)
+                        'wallets.dzd': firebase.firestore.FieldValue.increment(amount)
                     });
 
                     const userWithdrawals = userDoc.data().withdrawals || [];
@@ -972,7 +973,7 @@
         }
 
         // ============================================================
-        // 8. تأكيد إيداع تلقائي
+        // 8. تأكيد إيداع تلقائي (DZD فقط)
         // ============================================================
         async function approveDeposit(id, uid, amount, currency, depositId) {
             if (!confirm(`تأكيد إيداع ${amount} ${currency} للمستخدم ${uid}؟`)) return;
@@ -987,9 +988,9 @@
                 const userDoc = await userRef.get();
                 if (!userDoc.exists) throw new Error('المستخدم غير موجود');
 
-                const field = currency === 'USDT' ? 'wallets.main' : 'wallets.dzd';
+                // دائماً نستخدم محفظة dzd
                 await userRef.update({
-                    [field]: firebase.firestore.FieldValue.increment(amount)
+                    'wallets.dzd': firebase.firestore.FieldValue.increment(amount)
                 });
 
                 const userDeposits = userDoc.data().deposits || [];
@@ -1052,23 +1053,23 @@
         async function autoConfirmDeposit() {
             const txId = document.getElementById('autoTxId').value.trim();
             const amount = parseFloat(document.getElementById('autoAmount').value);
-            const currency = document.getElementById('autoCurrency').value;
 
             if (!txId) { showToast('⚠️ أدخل رقم العملية'); return; }
             if (!amount || amount <= 0) { showToast('⚠️ أدخل مبلغاً صحيحاً (أكبر من 0)'); return; }
-            if (!confirm(`تأكيد تلقائي لإيداع ${amount} ${currency} برقم العملية ${txId}؟`)) return;
+            if (!confirm(`تأكيد تلقائي لإيداع ${amount} DZD برقم العملية ${txId}؟`)) return;
 
             try {
+                // البحث عن طلب إيداع معلق بنفس رقم العملية والمبلغ (العملة DZD فقط)
                 const snapshot = await db.collection('deposits')
                     .where('transactionId', '==', txId)
                     .where('amount', '==', amount)
-                    .where('currency', '==', currency)
+                    .where('currency', '==', 'DZD')
                     .where('status', '==', 'pending')
                     .limit(1)
                     .get();
 
                 if (snapshot.empty) {
-                    showToast('❌ لم يتم العثور على طلب إيداع معلق بهذه البيانات');
+                    showToast('❌ لم يتم العثور على طلب إيداع معلق بهذه البيانات (DZD)');
                     return;
                 }
 
@@ -1141,7 +1142,12 @@
             }
         });
 
-        console.log('🚀 لوحة الإدارة (مع استماع فوري لطلبات السحب)');
+        // إلغاء المستمع عند إغلاق الصفحة
+        window.addEventListener('beforeunload', function() {
+            if (unsubscribeWithdrawals) unsubscribeWithdrawals();
+        });
+
+        console.log('🚀 لوحة الإدارة (DZD فقط، مع استماع فوري لطلبات السحب)');
         console.log('✅ لإضافة أدمن: أنشئ مستنداً في مجموعة admins باسم الـ telegramId');
     </script>
 </body>
