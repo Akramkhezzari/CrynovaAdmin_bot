@@ -20,9 +20,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
-        /* ============================================================
-           جميع الأنماط من الكود الأصلي (بدون تغيير)
-           ============================================================ */
+        /* جميع الأنماط كما هي (نفس الكود السابق) */
         * {
             margin: 0;
             padding: 0;
@@ -472,6 +470,16 @@
             display: block;
             margin-bottom: 10px;
         }
+        .admin-error {
+            text-align: center;
+            padding: 30px 0;
+            color: var(--danger);
+        }
+        .admin-error i {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 10px;
+        }
 
         /* UTILITY */
         .text-center {
@@ -584,6 +592,9 @@
                 <button onclick="toggleTheme()" class="theme-toggle" id="themeToggle">
                     <i class="fas fa-moon"></i>
                 </button>
+                <button onclick="refreshWithdrawals()" title="تحديث يدوي">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
             </div>
         </header>
 
@@ -601,8 +612,8 @@
                 </div>
                 <div id="adminWithdrawalsList">
                     <div class="admin-empty">
-                        <i class="fas fa-check-circle text-success"></i>
-                        <div>لا توجد طلبات سحب معلقة</div>
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <div>جاري تحميل الطلبات...</div>
                     </div>
                 </div>
             </div>
@@ -721,7 +732,6 @@
         }
 
         function showToast(msg) {
-            // إزالة أي توست سابق لتجنب التراكم
             const old = document.querySelector('.custom-toast');
             if (old) old.remove();
 
@@ -791,7 +801,7 @@
                     });
 
                     await loadExchangeRate();
-                    // بدء الاستماع الفوري لطلبات السحب
+                    // بدء الاستماع الفوري لطلبات السحب (بدون orderBy لتجنب مشكلة الفهارس)
                     listenToWithdrawals();
                     document.getElementById('unauthorizedMessage').style.display = 'none';
                     document.getElementById('adminPanel').style.display = 'block';
@@ -800,7 +810,7 @@
                     document.getElementById('adminPanel').style.display = 'none';
                 }
             } catch (e) {
-                console.error(e);
+                console.error('❌ خطأ في المصادقة:', e);
                 document.getElementById('unauthorizedMessage').style.display = 'block';
                 document.getElementById('adminPanel').style.display = 'none';
             }
@@ -814,48 +824,102 @@
         }
 
         // ============================================================
-        // 5. الاستماع الفوري لطلبات السحب (الإضافة الجديدة)
+        // 5. الاستماع الفوري لطلبات السحب (بدون orderBy)
         // ============================================================
         function listenToWithdrawals() {
             if (unsubscribeWithdrawals) {
                 unsubscribeWithdrawals();
             }
 
-            // استمع فقط للطلبات المعلقة
+            console.log('🔄 بدء الاستماع لطلبات السحب المعلقة...');
+
+            // استمع فقط للطلبات المعلقة، بدون ترتيب لتجنب مشكلة الفهارس
             unsubscribeWithdrawals = db.collection('withdrawals')
                 .where('status', '==', 'pending')
-                .orderBy('createdAt', 'desc')
                 .onSnapshot((snapshot) => {
+                    console.log('📥 تم استلام تحديث من المستمع، عدد الطلبات:', snapshot.size);
                     const list = [];
                     snapshot.forEach(doc => {
                         list.push({ id: doc.id, ...doc.data() });
                     });
+                    // ترتيب يدوي حسب createdAt تنازلياً (إذا كان موجوداً)
+                    list.sort((a, b) => {
+                        const timeA = a.createdAt?.toMillis?.() || 0;
+                        const timeB = b.createdAt?.toMillis?.() || 0;
+                        return timeB - timeA;
+                    });
                     renderAdminWithdrawals(list);
                 }, (error) => {
                     console.error('❌ خطأ في الاستماع لطلبات السحب:', error);
-                    // في حالة الخطأ، نحاول التحميل العادي
+                    // عرض رسالة خطأ في الواجهة
+                    const container = document.getElementById('adminWithdrawalsList');
+                    container.innerHTML = `
+                        <div class="admin-error">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <div>حدث خطأ في جلب الطلبات: ${error.message}</div>
+                            <button class="btn btn-primary btn-sm mt-16" onclick="refreshWithdrawals()" style="width:auto;margin:10px auto;">
+                                <i class="fas fa-sync-alt"></i> إعادة المحاولة
+                            </button>
+                        </div>
+                    `;
+                    // محاولة الجلب بدون مستمع (طريقة احتياطية)
                     loadAdminWithdrawalsFallback();
                 });
         }
 
-        // دوال احتياطية في حال فشل المستمع (للتأكد من عملها)
+        // دالة لتحديث يدوي
+        function refreshWithdrawals() {
+            showToast('⏳ جاري تحديث الطلبات...');
+            // إلغاء المستمع الحالي وإعادة تشغيله
+            if (unsubscribeWithdrawals) {
+                unsubscribeWithdrawals();
+                unsubscribeWithdrawals = null;
+            }
+            listenToWithdrawals();
+            // أيضاً نحاول جلب البيانات مباشرة
+            loadAdminWithdrawalsFallback();
+        }
+
+        // ============================================================
+        // 6. جلب الطلبات يدوياً (بدون مستمع)
+        // ============================================================
         async function loadAdminWithdrawalsFallback() {
             try {
-                const snap = await db.collection('withdrawals')
+                console.log('🔄 محاولة جلب الطلبات يدوياً (بدون orderBy)...');
+                // استعلام بدون orderBy
+                const snapshot = await db.collection('withdrawals')
                     .where('status', '==', 'pending')
-                    .orderBy('createdAt', 'desc')
                     .get();
+
+                console.log('📥 تم جلب ${snapshot.size} طلب');
                 const list = [];
-                snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+                snapshot.forEach(doc => {
+                    list.push({ id: doc.id, ...doc.data() });
+                });
+                // ترتيب يدوي
+                list.sort((a, b) => {
+                    const timeA = a.createdAt?.toMillis?.() || 0;
+                    const timeB = b.createdAt?.toMillis?.() || 0;
+                    return timeB - timeA;
+                });
                 renderAdminWithdrawals(list);
             } catch (e) {
-                console.error(e);
-                renderAdminWithdrawals([]);
+                console.error('❌ فشل الجلب اليدوي:', e);
+                const container = document.getElementById('adminWithdrawalsList');
+                container.innerHTML = `
+                    <div class="admin-error">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div>تعذر جلب الطلبات: ${e.message}</div>
+                        <button class="btn btn-primary btn-sm mt-16" onclick="refreshWithdrawals()" style="width:auto;margin:10px auto;">
+                            <i class="fas fa-sync-alt"></i> إعادة المحاولة
+                        </button>
+                    </div>
+                `;
             }
         }
 
         // ============================================================
-        // 6. عرض طلبات السحب
+        // 7. عرض طلبات السحب
         // ============================================================
         function renderAdminWithdrawals(list) {
             const container = document.getElementById('adminWithdrawalsList');
@@ -905,7 +969,7 @@
         }
 
         // ============================================================
-        // 7. تأكيد / رفض السحب
+        // 8. تأكيد / رفض السحب (نفس الكود السابق)
         // ============================================================
         async function approveWithdrawal(id, uid, withdrawalId) {
             if (!confirm(`تأكيد سحب للمستخدم ${uid}؟`)) return;
@@ -930,7 +994,6 @@
                 }
 
                 showToast('✅ تم تأكيد السحب');
-                // لا حاجة لإعادة التحميل، المستمع سيقوم بالتحديث تلقائياً
             } catch (e) {
                 console.error(e);
                 showToast('❌ حدث خطأ: ' + e.message);
@@ -949,7 +1012,6 @@
                 const userRef = db.collection('users').doc(uid);
                 const userDoc = await userRef.get();
                 if (userDoc.exists) {
-                    // دائماً نستخدم محفظة dzd بغض النظر عن العملة (لأننا أزلنا USDT)
                     await userRef.update({
                         'wallets.dzd': firebase.firestore.FieldValue.increment(amount)
                     });
@@ -965,7 +1027,6 @@
                 }
 
                 showToast(`❌ تم رفض السحب وإعادة ${amount} ${currency}`);
-                // المستمع سيقوم بتحديث القائمة تلقائياً
             } catch (e) {
                 console.error(e);
                 showToast('❌ حدث خطأ: ' + e.message);
@@ -973,7 +1034,7 @@
         }
 
         // ============================================================
-        // 8. تأكيد إيداع تلقائي (DZD فقط)
+        // 9. تأكيد إيداع تلقائي (DZD فقط) - نفس الكود السابق
         // ============================================================
         async function approveDeposit(id, uid, amount, currency, depositId) {
             if (!confirm(`تأكيد إيداع ${amount} ${currency} للمستخدم ${uid}؟`)) return;
@@ -988,7 +1049,6 @@
                 const userDoc = await userRef.get();
                 if (!userDoc.exists) throw new Error('المستخدم غير موجود');
 
-                // دائماً نستخدم محفظة dzd
                 await userRef.update({
                     'wallets.dzd': firebase.firestore.FieldValue.increment(amount)
                 });
@@ -1021,35 +1081,6 @@
             }
         }
 
-        async function rejectDeposit(id, uid, depositId) {
-            if (!confirm(`رفض طلب الإيداع للمستخدم ${uid}؟`)) return;
-
-            try {
-                await db.collection('deposits').doc(id).update({
-                    status: 'rejected',
-                    rejectedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                const userRef = db.collection('users').doc(uid);
-                const userDoc = await userRef.get();
-                if (userDoc.exists) {
-                    const userDeposits = userDoc.data().deposits || [];
-                    const updatedDeposits = userDeposits.map(d => {
-                        if (d.depositId === depositId) {
-                            return { ...d, status: 'rejected' };
-                        }
-                        return d;
-                    });
-                    await userRef.update({ deposits: updatedDeposits });
-                }
-
-                showToast('❌ تم رفض الإيداع');
-            } catch (e) {
-                console.error(e);
-                showToast('❌ حدث خطأ: ' + e.message);
-            }
-        }
-
         async function autoConfirmDeposit() {
             const txId = document.getElementById('autoTxId').value.trim();
             const amount = parseFloat(document.getElementById('autoAmount').value);
@@ -1059,7 +1090,6 @@
             if (!confirm(`تأكيد تلقائي لإيداع ${amount} DZD برقم العملية ${txId}؟`)) return;
 
             try {
-                // البحث عن طلب إيداع معلق بنفس رقم العملية والمبلغ (العملة DZD فقط)
                 const snapshot = await db.collection('deposits')
                     .where('transactionId', '==', txId)
                     .where('amount', '==', amount)
@@ -1090,7 +1120,7 @@
         }
 
         // ============================================================
-        // 9. الوضع المظلم
+        // 10. الوضع المظلم (نفس الكود السابق)
         // ============================================================
         let isDarkTheme = false;
 
@@ -1132,7 +1162,7 @@
         }
 
         // ============================================================
-        // 10. INIT
+        // 11. INIT
         // ============================================================
         document.addEventListener('DOMContentLoaded', function() {
             authAdmin();
@@ -1142,13 +1172,14 @@
             }
         });
 
-        // إلغاء المستمع عند إغلاق الصفحة
         window.addEventListener('beforeunload', function() {
             if (unsubscribeWithdrawals) unsubscribeWithdrawals();
         });
 
-        console.log('🚀 لوحة الإدارة (DZD فقط، مع استماع فوري لطلبات السحب)');
-        console.log('✅ لإضافة أدمن: أنشئ مستنداً في مجموعة admins باسم الـ telegramId');
+        console.log('🚀 لوحة الإدارة (مع إصلاح مشكلة الظهور)');
+        console.log('✅ تم إزالة orderBy لتجنب أخطاء الفهارس');
+        console.log('✅ أضيف زر تحديث يدوي');
+        console.log('✅ لعرض الأخطاء في الواجهة');
     </script>
 </body>
 </html>
