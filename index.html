@@ -21,7 +21,7 @@
 
     <style>
         /* ============================================================
-           جميع الأنماط من الكود الأصلي (مع تحسينات بسيطة)
+           جميع الأنماط (محذوف منها ما يخص التشخيص)
            ============================================================ */
         * {
             margin: 0;
@@ -582,28 +582,6 @@
         #unauthorizedMessage p {
             color: var(--text-secondary);
         }
-
-        .diagnostic-box {
-            background: #f8f9fa;
-            border-radius: var(--radius-sm);
-            padding: 12px;
-            font-size: 13px;
-            color: var(--text-secondary);
-            border: 1px solid var(--border);
-            margin-top: 12px;
-            white-space: pre-wrap;
-            word-break: break-all;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        .diagnostic-box.success {
-            border-color: var(--success);
-            background: #e8f8f5;
-        }
-        .diagnostic-box.error {
-            border-color: var(--danger);
-            background: #fdedec;
-        }
     </style>
 </head>
 <body>
@@ -616,9 +594,6 @@
                 <button onclick="toggleTheme()" class="theme-toggle" id="themeToggle">
                     <i class="fas fa-moon"></i>
                 </button>
-                <button onclick="refreshAll()" title="تحديث">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
             </div>
         </header>
 
@@ -628,22 +603,6 @@
                 <i class="fas fa-shield-alt text-danger"></i> لوحة الإدارة
                 <span id="adminStatusBadge" class="status status-success" style="font-size:12px;">✅ أدمن</span>
             </h2>
-
-            <!-- تشخيص سريع -->
-            <div class="card" style="border:2px solid var(--info);">
-                <div class="card-header">
-                    <div class="card-title"><i class="fas fa-stethoscope text-info"></i> تشخيص الطلبات</div>
-                </div>
-                <div id="diagnosticInfo" class="diagnostic-box">⏳ جاري التحقق...</div>
-                <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
-                    <button class="btn btn-info btn-sm" onclick="fetchAllWithdrawals()" style="flex:1; min-width:100px;">
-                        <i class="fas fa-list"></i> عرض الكل
-                    </button>
-                    <button class="btn btn-outline btn-sm" onclick="fetchPendingWithdrawals()" style="flex:1; min-width:100px;">
-                        <i class="fas fa-clock"></i> المعلقة فقط
-                    </button>
-                </div>
-            </div>
 
             <!-- طلبات السحب -->
             <div class="card">
@@ -761,54 +720,9 @@
         }
 
         // ============================================================
-        // 4. جلب طلبات السحب من users/*/withdrawals
+        // 4. جلب طلبات السحب المعلقة فقط من users/*/withdrawals
         // ============================================================
-        async function fetchAllWithdrawals() {
-            showToast('⏳ جلب جميع الطلبات...');
-            try {
-                const usersSnap = await db.collection('users').get();
-                const all = [];
-
-                usersSnap.forEach(userDoc => {
-                    const uid = userDoc.id;
-                    const data = userDoc.data();
-                    const displayName = data.displayName || uid;
-                    const withdrawals = data.withdrawals || [];
-
-                    withdrawals.forEach(w => {
-                        all.push({
-                            ...w,
-                            uid: uid,
-                            userDisplayName: displayName,
-                            userDocId: uid
-                        });
-                    });
-                });
-
-                if (all.length === 0) {
-                    showToast('⚠️ لا توجد طلبات سحب', true);
-                } else {
-                    showToast(`✅ تم جلب ${all.length} طلب`);
-                }
-                renderWithdrawalsList(all, 'جميع الطلبات');
-                updateDiagnostic(all, usersSnap.size);
-            } catch (err) {
-                console.error(err);
-                showToast('❌ فشل الجلب: ' + err.message, true);
-                document.getElementById('adminWithdrawalsList').innerHTML = `
-                    <div class="admin-error">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <div>فشل جلب الطلبات: ${err.message}</div>
-                        <button class="btn btn-primary btn-sm mt-16" onclick="fetchAllWithdrawals()" style="width:auto;margin:10px auto;">
-                            <i class="fas fa-sync-alt"></i> إعادة المحاولة
-                        </button>
-                    </div>
-                `;
-            }
-        }
-
-        async function fetchPendingWithdrawals() {
-            showToast('⏳ جلب المعلقة...');
+        async function loadPendingWithdrawals() {
             try {
                 const usersSnap = await db.collection('users').get();
                 const pending = [];
@@ -831,27 +745,33 @@
                     });
                 });
 
-                renderWithdrawalsList(pending, 'المعلقة');
+                renderWithdrawalsList(pending);
                 document.getElementById('pendingWithdrawalsCount').textContent = pending.length;
-                showToast(`✅ ${pending.length} طلب معلق`);
-                updateDiagnostic(pending, usersSnap.size);
             } catch (err) {
                 console.error(err);
-                showToast('❌ فشل الجلب: ' + err.message, true);
+                document.getElementById('adminWithdrawalsList').innerHTML = `
+                    <div class="admin-error">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div>فشل جلب الطلبات: ${err.message}</div>
+                        <button class="btn btn-primary btn-sm mt-16" onclick="loadPendingWithdrawals()" style="width:auto;margin:10px auto;">
+                            <i class="fas fa-sync-alt"></i> إعادة المحاولة
+                        </button>
+                    </div>
+                `;
             }
         }
 
         // ============================================================
         // 5. عرض القائمة
         // ============================================================
-        function renderWithdrawalsList(list, label = '') {
+        function renderWithdrawalsList(list) {
             const container = document.getElementById('adminWithdrawalsList');
 
             if (!list || list.length === 0) {
                 container.innerHTML = `
                     <div class="admin-empty">
-                        <i class="fas fa-inbox"></i>
-                        <div>لا توجد طلبات${label ? ' (' + label + ')' : ''}</div>
+                        <i class="fas fa-check-circle text-success"></i>
+                        <div>لا توجد طلبات سحب معلقة</div>
                     </div>
                 `;
                 return;
@@ -866,9 +786,6 @@
 
             container.innerHTML = list.map(w => {
                 const userDisplay = w.userDisplayName || w.uid || 'مستخدم';
-                const statusClass = w.status === 'pending' ? 'status-pending' :
-                    w.status === 'completed' ? 'status-success' :
-                    w.status === 'rejected' ? 'status-danger' : 'status-info';
 
                 return `
                     <div class="admin-request-card">
@@ -879,9 +796,7 @@
                                     <i class="fas fa-copy"></i>
                                 </button>` : ''}
                             </span>
-                            <span class="status ${statusClass}">
-                                ${w.status || 'غير معروف'}
-                            </span>
+                            <span class="status status-pending status-badge">قيد الانتظار</span>
                         </div>
                         <div class="details">
                             <strong>${w.amount} ${w.currency || 'DZD'}</strong> | الرسوم: ${w.fee || 0}
@@ -889,7 +804,6 @@
                             ${w.recipientAddress ? `<br><small>العنوان: ${w.recipientAddress}</small>` : ''}
                             ${w.withdrawalId ? `<br><small>المعرف: ${w.withdrawalId}</small>` : ''}
                         </div>
-                        ${w.status === 'pending' ? `
                         <div class="actions">
                             <button class="btn btn-success btn-sm" onclick="approveWithdrawal('${w.userDocId}','${w.withdrawalId}','${w.uid}')">
                                 <i class="fas fa-check"></i> تأكيد
@@ -897,32 +811,14 @@
                             <button class="btn btn-danger btn-sm" onclick="rejectWithdrawal('${w.userDocId}','${w.withdrawalId}','${w.uid}',${w.amount},'${w.currency||'DZD'}')">
                                 <i class="fas fa-times"></i> رفض
                             </button>
-                        </div>` : ''}
+                        </div>
                     </div>
                 `;
             }).join('');
         }
 
         // ============================================================
-        // 6. تشخيص
-        // ============================================================
-        function updateDiagnostic(withdrawalsList, totalUsers) {
-            const diagEl = document.getElementById('diagnosticInfo');
-            const pending = withdrawalsList.filter(w => w.status === 'pending').length;
-            const total = withdrawalsList.length;
-
-            let msg = `✅ تم التحليل بنجاح!\n`;
-            msg += `👥 عدد المستخدمين: ${totalUsers}\n`;
-            msg += `📋 إجمالي طلبات السحب: ${total}\n`;
-            msg += `⏳ المعلقة (pending): ${pending}\n`;
-            msg += `📁 موقع البيانات: users/*/withdrawals (مصفوفة داخل كل مستخدم)`;
-
-            diagEl.textContent = msg;
-            diagEl.className = 'diagnostic-box success';
-        }
-
-        // ============================================================
-        // 7. تأكيد / رفض السحب (تعديل المصفوفة داخل المستخدم)
+        // 6. تأكيد / رفض السحب (تعديل المصفوفة داخل المستخدم)
         // ============================================================
         async function approveWithdrawal(userDocId, withdrawalId, uid) {
             if (!confirm(`تأكيد سحب للمستخدم ${uid || userDocId}؟`)) return;
@@ -949,7 +845,7 @@
                 await userRef.update({ withdrawals: updated });
 
                 showToast('✅ تم تأكيد السحب');
-                fetchPendingWithdrawals();
+                loadPendingWithdrawals(); // تحديث القائمة
             } catch (e) {
                 console.error(e);
                 showToast('❌ خطأ: ' + e.message, true);
@@ -987,7 +883,7 @@
                 });
 
                 showToast(`❌ تم رفض السحب وإعادة ${amount} ${currency}`);
-                fetchPendingWithdrawals();
+                loadPendingWithdrawals(); // تحديث القائمة
             } catch (e) {
                 console.error(e);
                 showToast('❌ خطأ: ' + e.message, true);
@@ -995,7 +891,7 @@
         }
 
         // ============================================================
-        // 8. تأكيد إيداع تلقائي (DZD فقط) - يعمل على مجموعة deposits
+        // 7. تأكيد إيداع تلقائي (DZD فقط)
         // ============================================================
         async function autoConfirmDeposit() {
             const txId = document.getElementById('autoTxId').value.trim();
@@ -1052,6 +948,7 @@
                 });
 
                 showToast(`✅ تم تأكيد إيداع ${amount} ${currency}`);
+                loadPendingWithdrawals(); // تحديث القائمة
             } catch (e) {
                 console.error(e);
                 showToast('❌ خطأ: ' + e.message, true);
@@ -1059,7 +956,7 @@
         }
 
         // ============================================================
-        // 9. المصادقة
+        // 8. المصادقة
         // ============================================================
         function getTelegramUser() {
             if (window.Telegram && window.Telegram.WebApp) {
@@ -1102,9 +999,8 @@
                     document.getElementById('unauthorizedMessage').style.display = 'none';
                     document.getElementById('adminPanel').style.display = 'block';
 
-                    // جلب الطلبات فوراً
-                    await fetchAllWithdrawals();
-                    await fetchPendingWithdrawals();
+                    // جلب الطلبات المعلقة فوراً
+                    loadPendingWithdrawals();
                 } else {
                     document.getElementById('unauthorizedMessage').style.display = 'block';
                     document.getElementById('adminPanel').style.display = 'none';
@@ -1119,16 +1015,7 @@
         }
 
         // ============================================================
-        // 10. تحديث يدوي
-        // ============================================================
-        function refreshAll() {
-            showToast('⏳ تحديث...');
-            fetchAllWithdrawals();
-            fetchPendingWithdrawals();
-        }
-
-        // ============================================================
-        // 11. الوضع المظلم
+        // 9. الوضع المظلم
         // ============================================================
         let dark = false;
         function toggleTheme() {
@@ -1159,7 +1046,7 @@
         }
 
         // ============================================================
-        // 12. INIT
+        // 10. INIT
         // ============================================================
         document.addEventListener('DOMContentLoaded', function() {
             authAdmin();
@@ -1168,9 +1055,9 @@
             }
         });
 
-        console.log('🚀 لوحة الإدارة (نسخة نهائية تعمل مع users/*/withdrawals)');
-        console.log('✅ تم إزالة USDT بالكامل، العملة الوحيدة DZD');
-        console.log('✅ يمكنك الآن التحكم في طلبات السحب بنجاح');
+        console.log('🚀 لوحة الإدارة (نسخة مبسطة تعمل مع users/*/withdrawals)');
+        console.log('✅ تم إزالة التشخيص والأزرار الإضافية');
+        console.log('✅ تعرض فقط طلبات السحب المعلقة');
     </script>
 </body>
 </html>
