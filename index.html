@@ -231,6 +231,7 @@
         .status-active { background: var(--success-light); color: var(--success); }
         .status-restricted { background: var(--orange-light); color: var(--orange); }
         .status-frozen { background: var(--purple-light); color: var(--purple); }
+        .status-match { background: var(--orange-light); color: var(--orange); }
 
         .admin-request-card {
             background: var(--bg-card); border-radius: var(--radius-sm);
@@ -518,6 +519,20 @@
         }
         .user-protect-card .user-actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
         .user-protect-card .user-actions .btn { padding: 5px 12px; font-size: 11px; width: auto; }
+
+        /* ===== أنماط طلبات المطابقة ===== */
+        .match-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-sm);
+            padding: 14px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+        .match-card:hover { border-color: var(--orange); }
+        .match-card .match-details { font-size: 14px; color: var(--text-secondary); margin: 4px 0; }
+        .match-card .match-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+        .match-card .match-actions .btn { padding: 6px 14px; font-size: 12px; width: auto; }
     </style>
 </head>
 <body>
@@ -586,7 +601,7 @@
                 </div>
             </div>
 
-            <!-- تبويب الاستثمارات (معدل) -->
+            <!-- تبويب الاستثمارات -->
             <div id="tab-investments" class="tab-content">
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
                     <i class="fas fa-chart-line text-accent"></i> الاستثمارات
@@ -624,7 +639,7 @@
                 </div>
             </div>
 
-            <!-- تبويب طلبات الإيداع -->
+            <!-- تبويب طلبات الإيداع (معدل) -->
             <div id="tab-deposits" class="tab-content">
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
                     <i class="fas fa-arrow-down text-success"></i> طلبات الإيداع المعلقة
@@ -634,6 +649,20 @@
                     <div class="admin-empty">
                         <i class="fas fa-check-circle text-success"></i>
                         <div>لا توجد طلبات إيداع معلقة</div>
+                    </div>
+                </div>
+
+                <!-- طلبات المطابقة المحفوظة -->
+                <div style="margin-top:20px;">
+                    <h3 style="font-size:18px;font-weight:700;margin-bottom:12px;color:var(--orange);">
+                        <i class="fas fa-clock"></i> طلبات المطابقة المحفوظة (في انتظار المستخدم)
+                        <span id="pendingMatchesCount" class="status status-match" style="margin-right:8px;">0</span>
+                    </h3>
+                    <div id="pendingMatchesList">
+                        <div class="admin-empty">
+                            <i class="fas fa-inbox text-muted"></i>
+                            <div>لا توجد طلبات مطابقة محفوظة</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -715,6 +744,7 @@
         let userData = null;
         let isAdmin = false;
         let unsubscribeUsers = null;
+        let unsubscribeMatches = null;
         let modalCallback = null;
 
         // ============================================================
@@ -940,6 +970,7 @@
                     userData.telegramId = uid;
 
                     listenToUsers();
+                    listenToMatches(); // استماع لطلبات المطابقة
                     document.getElementById('unauthorizedMessage').style.display = 'none';
                     document.getElementById('adminPanel').style.display = 'block';
                     document.getElementById('bottomNav').style.display = 'flex';
@@ -957,7 +988,158 @@
         }
 
         // ============================================================
-        // 6. الاستماع الفوري وجلب جميع البيانات (معدل)
+        // 6. الاستماع الفوري لطلبات المطابقة (جديد)
+        // ============================================================
+        function listenToMatches() {
+            if (unsubscribeMatches) unsubscribeMatches();
+
+            unsubscribeMatches = db.collection('pending_deposit_matches')
+                .where('status', '==', 'pending')
+                .orderBy('createdAt', 'desc')
+                .onSnapshot((snapshot) => {
+                    const matches = [];
+                    snapshot.forEach(doc => {
+                        matches.push({ id: doc.id, ...doc.data() });
+                    });
+                    renderPendingMatches(matches);
+                }, (error) => {
+                    console.error('❌ خطأ في الاستماع لطلبات المطابقة:', error);
+                    renderPendingMatches([]);
+                });
+        }
+
+        // ============================================================
+        // 7. عرض طلبات المطابقة المحفوظة
+        // ============================================================
+        function renderPendingMatches(matches) {
+            const container = document.getElementById('pendingMatchesList');
+            const count = document.getElementById('pendingMatchesCount');
+            count.textContent = matches.length;
+
+            if (!matches.length) {
+                container.innerHTML = `
+                    <div class="admin-empty">
+                        <i class="fas fa-inbox text-muted"></i>
+                        <div>لا توجد طلبات مطابقة محفوظة</div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = matches.map(m => `
+                <div class="match-card">
+                    <div class="flex-between">
+                        <span style="font-weight:700;color:var(--orange);">
+                            <i class="fas fa-clock"></i> في انتظار المستخدم
+                        </span>
+                        <span class="status status-match">معلقة</span>
+                    </div>
+                    <div class="match-details">
+                        <div><strong>رقم العملية:</strong> ${m.transactionId}</div>
+                        <div><strong>المبلغ:</strong> ${m.amount} DZD</div>
+                        <div><small>التاريخ: ${formatDateTime(m.createdAt)}</small></div>
+                    </div>
+                    <div class="match-actions">
+                        <button class="btn btn-warning btn-xs" onclick="editMatch('${m.id}','${m.transactionId}',${m.amount})">
+                            <i class="fas fa-edit"></i> تعديل
+                        </button>
+                        <button class="btn btn-danger btn-xs" onclick="deleteMatch('${m.id}')">
+                            <i class="fas fa-trash"></i> إلغاء
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ============================================================
+        // 8. تعديل طلب المطابقة
+        // ============================================================
+        function editMatch(matchId, currentTxId, currentAmount) {
+            // نافذة مخصصة للتعديل
+            const modal = document.getElementById('confirmModal');
+            const body = document.getElementById('modalBody');
+            const header = document.querySelector('.modal-header .title');
+            const icon = document.getElementById('modalIcon');
+            const confirmBtn = document.getElementById('confirmBtn');
+            const cancelBtn = document.querySelector('.modal-footer .btn-cancel');
+
+            icon.className = 'icon warning';
+            icon.innerHTML = '<i class="fas fa-edit"></i>';
+            header.textContent = 'تعديل طلب المطابقة';
+
+            body.innerHTML = `
+                <div style="text-align:center;margin-bottom:12px;">
+                    <p style="color:var(--text-secondary);font-size:14px;margin-bottom:16px;">
+                        قم بتعديل بيانات طلب المطابقة
+                    </p>
+                    <div class="input-group">
+                        <label>رقم العملية <span class="required">*</span></label>
+                        <input type="text" id="editTxId" value="${currentTxId}" placeholder="رقم العملية">
+                    </div>
+                    <div class="input-group">
+                        <label>المبلغ (DZD) <span class="required">*</span></label>
+                        <input type="number" id="editAmount" value="${currentAmount}" placeholder="المبلغ" step="0.01" min="0.01">
+                    </div>
+                </div>
+            `;
+
+            cancelBtn.textContent = 'إلغاء';
+            confirmBtn.textContent = 'حفظ التعديلات';
+            confirmBtn.className = 'btn btn-confirm-success';
+
+            modal.classList.add('active');
+
+            const handleConfirm = () => {
+                const newTxId = document.getElementById('editTxId').value.trim();
+                const newAmount = parseFloat(document.getElementById('editAmount').value);
+                if (!newTxId) { showToast('⚠️ رقم العملية مطلوب'); return; }
+                if (!newAmount || newAmount <= 0) { showToast('⚠️ أدخل مبلغاً صحيحاً'); return; }
+                modal.classList.remove('active');
+                // تحديث المستند
+                db.collection('pending_deposit_matches').doc(matchId).update({
+                    transactionId: newTxId,
+                    amount: newAmount
+                }).then(() => {
+                    showToast('✅ تم تحديث طلب المطابقة بنجاح');
+                }).catch(err => {
+                    showToast('❌ خطأ: '+err.message);
+                });
+            };
+
+            const handleCancel = () => {
+                modal.classList.remove('active');
+            };
+
+            confirmBtn.onclick = handleConfirm;
+            cancelBtn.onclick = handleCancel;
+        }
+
+        // ============================================================
+        // 9. إلغاء (حذف) طلب المطابقة
+        // ============================================================
+        function deleteMatch(matchId) {
+            showConfirmDialog({
+                title: 'إلغاء طلب المطابقة',
+                icon: 'fa-trash',
+                type: 'danger',
+                details: [
+                    { label: 'الإجراء', value: 'سيتم حذف طلب المطابقة نهائياً' }
+                ],
+                confirmText: 'حذف',
+                onConfirm: async () => {
+                    try {
+                        await db.collection('pending_deposit_matches').doc(matchId).delete();
+                        showToast('✅ تم حذف طلب المطابقة');
+                    } catch(e) {
+                        console.error(e);
+                        showToast('❌ خطأ: '+e.message);
+                    }
+                }
+            });
+        }
+
+        // ============================================================
+        // 10. الاستماع الفوري للمستخدمين (معدل)
         // ============================================================
         function listenToUsers() {
             if (unsubscribeUsers) unsubscribeUsers();
@@ -985,78 +1167,45 @@
                             docId: doc.id
                         });
 
-                        // ---- قراءة الاستثمارات ----
+                        // الاستثمارات
                         const investments = data.investments || [];
-                        if (investments.length === 0) return;
-
-                        let totalInvested = 0;
-                        let totalReturns = 0;
-                        let activeInvestment = null;
-                        let planId = null;
-                        let planName = '';
-
-                        investments.forEach(inv => {
-                            const amount = inv.amount || inv.amountInDZD || 0;
-                            totalInvested += amount;
-                            const ret = inv.totalReturn || 0;
-                            totalReturns += ret;
-                            if (inv.status === 'active') {
-                                activeInvestment = inv;
-                                planId = inv.planId || null;
-                                planName = inv.planName || '';
-                            }
-                        });
-
-                        if (!activeInvestment && investments.length > 0) {
-                            const first = investments[0];
-                            planId = first.planId || null;
-                            planName = first.planName || '';
-                        }
-
-                        if (!planName) {
-                            const planMap = {
-                                'plan_basic': 'الباقة الأساسية',
-                                'plan_advanced': 'الباقة المتقدمة',
-                                'plan_premium': 'الباقة المميزة',
-                                'plan_pro': 'الباقة الاحترافية',
-                                'plan_pro_plus': 'الباقة الاحترافية بلس'
-                            };
-                            planName = planMap[planId] || (planId ? `الخطة: ${planId}` : 'بدون خطة');
-                        }
-
-                        if (!planId && !planName) {
-                            const level = data.miningData?.level || 0;
-                            if (level > 0) {
-                                const levelMap = {
-                                    1: 'الباقة الفضية',
-                                    2: 'الباقة الذهبية',
-                                    3: 'الباقة البلاتينية',
-                                    4: 'الباقة الماسية'
+                        if (investments.length > 0) {
+                            let totalInvested = 0;
+                            let totalReturns = 0;
+                            let planName = '';
+                            investments.forEach(inv => {
+                                totalInvested += inv.amount || inv.amountInDZD || 0;
+                                totalReturns += inv.totalReturn || 0;
+                                if (inv.status === 'active' && inv.planName) {
+                                    planName = inv.planName;
+                                }
+                            });
+                            if (!planName) {
+                                const planMap = {
+                                    'plan_basic': 'الباقة الأساسية',
+                                    'plan_advanced': 'الباقة المتقدمة',
+                                    'plan_premium': 'الباقة المميزة',
+                                    'plan_pro': 'الباقة الاحترافية',
+                                    'plan_pro_plus': 'الباقة الاحترافية بلس'
                                 };
-                                planName = levelMap[level] || `المستوى ${level}`;
-                            } else {
-                                planName = 'مستثمر';
+                                const first = investments[0];
+                                planName = planMap[first.planId] || (first.planId ? `الخطة: ${first.planId}` : 'مستثمر');
                             }
+                            let profitRatio = totalInvested > 0 ? (totalReturns / totalInvested) * 100 : 0;
+                            investors.push({
+                                uid: uid,
+                                displayName: displayName,
+                                package: planName,
+                                totalInvested: totalInvested,
+                                totalReturns: totalReturns,
+                                profitRatio: profitRatio,
+                                currentBalance: dzd,
+                                docId: doc.id,
+                                investments: investments,
+                                miningData: data.miningData || {}
+                            });
+                            totalMinedSum += totalReturns;
                         }
-
-                        let profitRatio = 0;
-                        if (totalInvested > 0) {
-                            profitRatio = (totalReturns / totalInvested) * 100;
-                        }
-
-                        investors.push({
-                            uid: uid,
-                            displayName: displayName,
-                            package: planName,
-                            totalInvested: totalInvested,
-                            totalReturns: totalReturns,
-                            profitRatio: profitRatio,
-                            currentBalance: dzd,
-                            docId: doc.id,
-                            investments: investments,
-                            miningData: data.miningData || {}
-                        });
-                        totalMinedSum += totalReturns;
                     });
 
                     document.getElementById('totalUsers').textContent = totalUsers;
@@ -1066,10 +1215,11 @@
                     renderInvestors(investors);
                     renderProtectUsers(allUsers);
 
-                    // ---- معالجة الطلبات المعلقة (بدون تغيير) ----
-                    const pendingWithdrawals = [];
+                    // ---- معالجة طلبات الإيداع المعلقة ----
                     const pendingDeposits = [];
+                    const pendingWithdrawals = [];
 
+                    // جلب طلبات المطابقة (لمطابقة الإيداعات الحقيقية)
                     const pendingMatchesSnap = await db.collection('pending_deposit_matches')
                         .where('status', '==', 'pending')
                         .get();
@@ -1083,6 +1233,7 @@
                         const uid = doc.id;
                         const displayName = data.displayName || uid;
 
+                        // السحوبات المعلقة
                         if (data.withdrawals && Array.isArray(data.withdrawals)) {
                             data.withdrawals.forEach(w => {
                                 if (w.status === 'pending') {
@@ -1096,6 +1247,7 @@
                             });
                         }
 
+                        // الإيداعات المعلقة
                         if (data.deposits && Array.isArray(data.deposits)) {
                             data.deposits.forEach(d => {
                                 if (d.status === 'pending') {
@@ -1106,6 +1258,7 @@
                                         docId: doc.id
                                     });
 
+                                    // التحقق من المطابقة
                                     const match = pendingMatches.find(m =>
                                         m.transactionId === d.transactionId &&
                                         m.amount === d.amount &&
@@ -1163,76 +1316,43 @@
                     });
 
                     const investments = data.investments || [];
-                    if (investments.length === 0) return;
-
-                    let totalInvested = 0;
-                    let totalReturns = 0;
-                    let activeInvestment = null;
-                    let planId = null;
-                    let planName = '';
-
-                    investments.forEach(inv => {
-                        const amount = inv.amount || inv.amountInDZD || 0;
-                        totalInvested += amount;
-                        const ret = inv.totalReturn || 0;
-                        totalReturns += ret;
-                        if (inv.status === 'active') {
-                            activeInvestment = inv;
-                            planId = inv.planId || null;
-                            planName = inv.planName || '';
-                        }
-                    });
-
-                    if (!activeInvestment && investments.length > 0) {
-                        const first = investments[0];
-                        planId = first.planId || null;
-                        planName = first.planName || '';
-                    }
-
-                    if (!planName) {
-                        const planMap = {
-                            'plan_basic': 'الباقة الأساسية',
-                            'plan_advanced': 'الباقة المتقدمة',
-                            'plan_premium': 'الباقة المميزة',
-                            'plan_pro': 'الباقة الاحترافية',
-                            'plan_pro_plus': 'الباقة الاحترافية بلس'
-                        };
-                        planName = planMap[planId] || (planId ? `الخطة: ${planId}` : 'بدون خطة');
-                    }
-
-                    if (!planId && !planName) {
-                        const level = data.miningData?.level || 0;
-                        if (level > 0) {
-                            const levelMap = {
-                                1: 'الباقة الفضية',
-                                2: 'الباقة الذهبية',
-                                3: 'الباقة البلاتينية',
-                                4: 'الباقة الماسية'
+                    if (investments.length > 0) {
+                        let totalInvested = 0;
+                        let totalReturns = 0;
+                        let planName = '';
+                        investments.forEach(inv => {
+                            totalInvested += inv.amount || inv.amountInDZD || 0;
+                            totalReturns += inv.totalReturn || 0;
+                            if (inv.status === 'active' && inv.planName) {
+                                planName = inv.planName;
+                            }
+                        });
+                        if (!planName) {
+                            const planMap = {
+                                'plan_basic': 'الباقة الأساسية',
+                                'plan_advanced': 'الباقة المتقدمة',
+                                'plan_premium': 'الباقة المميزة',
+                                'plan_pro': 'الباقة الاحترافية',
+                                'plan_pro_plus': 'الباقة الاحترافية بلس'
                             };
-                            planName = levelMap[level] || `المستوى ${level}`;
-                        } else {
-                            planName = 'مستثمر';
+                            const first = investments[0];
+                            planName = planMap[first.planId] || (first.planId ? `الخطة: ${first.planId}` : 'مستثمر');
                         }
+                        let profitRatio = totalInvested > 0 ? (totalReturns / totalInvested) * 100 : 0;
+                        investors.push({
+                            uid: uid,
+                            displayName: displayName,
+                            package: planName,
+                            totalInvested: totalInvested,
+                            totalReturns: totalReturns,
+                            profitRatio: profitRatio,
+                            currentBalance: dzd,
+                            docId: doc.id,
+                            investments: investments,
+                            miningData: data.miningData || {}
+                        });
+                        totalMinedSum += totalReturns;
                     }
-
-                    let profitRatio = 0;
-                    if (totalInvested > 0) {
-                        profitRatio = (totalReturns / totalInvested) * 100;
-                    }
-
-                    investors.push({
-                        uid: uid,
-                        displayName: displayName,
-                        package: planName,
-                        totalInvested: totalInvested,
-                        totalReturns: totalReturns,
-                        profitRatio: profitRatio,
-                        currentBalance: dzd,
-                        docId: doc.id,
-                        investments: investments,
-                        miningData: data.miningData || {}
-                    });
-                    totalMinedSum += totalReturns;
                 });
 
                 document.getElementById('totalUsers').textContent = totalUsers;
@@ -1272,325 +1392,8 @@
         }
 
         // ============================================================
-        // 7. عرض قائمة المستثمرين (تم إزالة معرف الخطة)
+        // 11. عرض قوائم الإيداع والسحب (بدون تغيير كبير)
         // ============================================================
-        function renderInvestors(list) {
-            const container = document.getElementById('investorsList');
-            if (!list.length) {
-                container.innerHTML = `<div class="admin-empty"><i class="fas fa-chart-pie text-muted"></i><div>لا يوجد مستثمرون حتى الآن</div></div>`;
-                return;
-            }
-            container.innerHTML = list.map(inv => `
-                <div class="invest-card">
-                    <div class="flex-between">
-                        <span class="invest-user">
-                            👤 <strong>${inv.displayName}</strong>
-                            <button class="copy-btn" onclick="copyText('${inv.uid}', this)" title="نسخ المعرف">
-                                <i class="fas fa-copy"></i> <span class="icon-text">نسخ</span>
-                            </button>
-                        </span>
-                        <span class="invest-badge">${inv.package}</span>
-                    </div>
-                    <div class="invest-details">
-                        <div class="detail-row">
-                            <span class="label">المبلغ المستثمر</span>
-                            <span class="value highlight">${inv.totalInvested.toFixed(2)} DZD</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">إجمالي الأرباح</span>
-                            <span class="value profit">${inv.totalReturns.toFixed(2)} DZD</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">نسبة الأرباح</span>
-                            <span class="value profit">${inv.profitRatio.toFixed(2)}%</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">الرصيد الحالي</span>
-                            <span class="value">${inv.currentBalance.toFixed(2)} DZD</span>
-                        </div>
-                        ${inv.investments && inv.investments.length > 0 ? `
-                        <div class="detail-row">
-                            <span class="label">عدد الاستثمارات</span>
-                            <span class="value">${inv.investments.length}</span>
-                        </div>
-                        ` : ''}
-                    </div>
-                    <div class="invest-actions">
-                        <button class="btn btn-danger btn-xs" onclick="cancelInvestment('${inv.docId}','${inv.uid}','${inv.displayName}')">
-                            <i class="fas fa-times-circle"></i> إلغاء الباقة
-                        </button>
-                        <button class="btn btn-success btn-xs" onclick="adjustMining('${inv.docId}','${inv.uid}','${inv.displayName}',${inv.totalReturns})">
-                            <i class="fas fa-edit"></i> تعديل الأرباح
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // ============================================================
-        // 8. دوال التحكم في الاستثمارات
-        // ============================================================
-        function cancelInvestment(docId, uid, displayName) {
-            showConfirmDialog({
-                title: 'إلغاء باقة التعدين',
-                icon: 'fa-times-circle',
-                type: 'danger',
-                details: [
-                    { label: 'المستخدم', value: displayName, highlight: true },
-                    { label: 'المعرف', value: uid },
-                    { label: 'الإجراء', value: 'سيتم إلغاء جميع الاستثمارات وإعادة الأرباح إلى 0' }
-                ],
-                confirmText: 'إلغاء الباقة',
-                onConfirm: async () => {
-                    try {
-                        const userRef = db.collection('users').doc(docId);
-                        const userDoc = await userRef.get();
-                        const data = userDoc.data();
-                        const investments = data.investments || [];
-                        const updatedInvestments = investments.map(inv => ({
-                            ...inv,
-                            status: 'cancelled'
-                        }));
-                        await userRef.update({
-                            investments: updatedInvestments,
-                            'miningData.totalInvested': 0,
-                            'miningData.totalInvestmentReturns': 0,
-                            'miningData.totalMinedDZD': 0,
-                            'miningData.level': 0
-                        });
-                        showToast(`✅ تم إلغاء باقة التعدين للمستخدم ${displayName}`);
-                    } catch(e) {
-                        console.error(e);
-                        showToast('❌ خطأ: '+e.message);
-                    }
-                }
-            });
-        }
-
-        function adjustMining(docId, uid, displayName, currentReturns) {
-            const modal = document.getElementById('confirmModal');
-            const body = document.getElementById('modalBody');
-            const header = document.querySelector('.modal-header .title');
-            const icon = document.getElementById('modalIcon');
-            const confirmBtn = document.getElementById('confirmBtn');
-            const cancelBtn = document.querySelector('.modal-footer .btn-cancel');
-
-            icon.className = 'icon warning';
-            icon.innerHTML = '<i class="fas fa-coins"></i>';
-            header.textContent = 'تعديل إجمالي الأرباح';
-
-            body.innerHTML = `
-                <div style="text-align:center;margin-bottom:12px;">
-                    <p style="color:var(--text-secondary);font-size:14px;margin-bottom:8px;">
-                        المستخدم: <strong>${displayName}</strong>
-                    </p>
-                    <p style="color:var(--text-secondary);font-size:14px;margin-bottom:16px;">
-                        إجمالي الأرباح الحالي: <strong>${currentReturns.toFixed(2)} DZD</strong>
-                    </p>
-                    <div class="input-group">
-                        <label>المبلغ (DZD) <span class="required">*</span></label>
-                        <input type="number" id="adjustAmount" placeholder="أدخل المبلغ (موجب للإضافة، سالب للخصم)" step="0.01">
-                    </div>
-                    <div style="font-size:12px;color:var(--text-muted);">
-                        <i class="fas fa-info-circle"></i> استخدم قيمة موجبة للإضافة، قيمة سالبة للخصم
-                    </div>
-                </div>
-            `;
-
-            cancelBtn.textContent = 'إلغاء';
-            confirmBtn.textContent = 'تعديل';
-            confirmBtn.className = 'btn btn-confirm-success';
-
-            modal.classList.add('active');
-
-            const handleConfirm = () => {
-                const input = document.getElementById('adjustAmount');
-                const amount = parseFloat(input.value);
-                if (isNaN(amount) || amount === 0) {
-                    showToast('⚠️ الرجاء إدخال مبلغ صحيح (غير صفر)');
-                    return;
-                }
-                modal.classList.remove('active');
-                performAdjustMining(docId, uid, displayName, currentReturns, amount);
-            };
-
-            const handleCancel = () => {
-                modal.classList.remove('active');
-            };
-
-            confirmBtn.onclick = handleConfirm;
-            cancelBtn.onclick = handleCancel;
-        }
-
-        async function performAdjustMining(docId, uid, displayName, currentReturns, amount) {
-            try {
-                const newTotal = currentReturns + amount;
-                if (newTotal < 0) {
-                    showToast('⚠️ لا يمكن أن تكون الأرباح أقل من صفر');
-                    return;
-                }
-                const userRef = db.collection('users').doc(docId);
-                const userDoc = await userRef.get();
-                const data = userDoc.data();
-                const investments = data.investments || [];
-                let updated = false;
-                const updatedInvestments = investments.map(inv => {
-                    if (!updated && (inv.status === 'active' || inv.status === 'pending' || !inv.status)) {
-                        updated = true;
-                        return { ...inv, totalReturn: newTotal };
-                    }
-                    return inv;
-                });
-                if (!updated && investments.length === 0) {
-                    // لا نضيف، فقط نحدّث miningData
-                }
-                await userRef.update({
-                    investments: updatedInvestments,
-                    'miningData.totalInvestmentReturns': newTotal,
-                    'miningData.totalMinedDZD': newTotal
-                });
-                showToast(`✅ تم تعديل الأرباح للمستخدم ${displayName} إلى ${newTotal.toFixed(2)} DZD`);
-            } catch(e) {
-                console.error(e);
-                showToast('❌ خطأ: '+e.message);
-            }
-        }
-
-        // ============================================================
-        // 9-14. باقي الدوال (الحماية، السحب، الإيداع، التأكيد التلقائي) بدون تغيير
-        // ============================================================
-
-        function renderProtectUsers(users) {
-            const container = document.getElementById('usersProtectList');
-            if (!users.length) {
-                container.innerHTML = `<div class="admin-empty"><i class="fas fa-users-slash text-muted"></i><div>لا يوجد مستخدمون</div></div>`;
-                return;
-            }
-
-            const statusOrder = { 'active': 0, 'restricted': 1, 'frozen': 2, 'banned': 3 };
-            users.sort((a, b) => (statusOrder[a.status] || 0) - (statusOrder[b.status] || 0));
-
-            container.innerHTML = users.map(u => {
-                const statusMap = {
-                    'active': { label: '✅ نشط', class: 'status-active' },
-                    'banned': { label: '⛔ محظور', class: 'status-banned' },
-                    'restricted': { label: '🔒 مقيد', class: 'status-restricted' },
-                    'frozen': { label: '❄️ مجمد', class: 'status-frozen' }
-                };
-                const statusInfo = statusMap[u.status] || statusMap['active'];
-
-                let buttons = '';
-                if (u.status === 'active') {
-                    buttons = `
-                        <button class="btn btn-danger btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','banned','حظر')">
-                            <i class="fas fa-ban"></i> تعطيل
-                        </button>
-                        <button class="btn btn-orange btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','restricted','تقييد')">
-                            <i class="fas fa-lock"></i> تقيد
-                        </button>
-                        <button class="btn btn-purple btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','frozen','تجميد')">
-                            <i class="fas fa-snowflake"></i> تجميد
-                        </button>
-                    `;
-                } else if (u.status === 'banned') {
-                    buttons = `
-                        <button class="btn btn-success btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','active','تفعيل')">
-                            <i class="fas fa-check-circle"></i> تفعيل
-                        </button>
-                    `;
-                } else if (u.status === 'restricted') {
-                    buttons = `
-                        <button class="btn btn-success btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','active','تفعيل')">
-                            <i class="fas fa-check-circle"></i> تفعيل
-                        </button>
-                        <button class="btn btn-danger btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','banned','حظر')">
-                            <i class="fas fa-ban"></i> تعطيل
-                        </button>
-                        <button class="btn btn-purple btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','frozen','تجميد')">
-                            <i class="fas fa-snowflake"></i> تجميد
-                        </button>
-                    `;
-                } else if (u.status === 'frozen') {
-                    buttons = `
-                        <button class="btn btn-success btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','active','تفعيل')">
-                            <i class="fas fa-check-circle"></i> تفعيل
-                        </button>
-                        <button class="btn btn-danger btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','banned','حظر')">
-                            <i class="fas fa-ban"></i> تعطيل
-                        </button>
-                        <button class="btn btn-orange btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','restricted','تقييد')">
-                            <i class="fas fa-lock"></i> تقيد
-                        </button>
-                    `;
-                }
-
-                return `
-                    <div class="user-protect-card">
-                        <div class="flex-between">
-                            <span class="user-name">
-                                👤 <strong>${u.displayName}</strong>
-                            </span>
-                            <span class="status ${statusInfo.class}">${statusInfo.label}</span>
-                        </div>
-                        <div class="user-details">
-                            الرصيد: <strong>${u.dzd.toFixed(2)} DZD</strong>
-                            <br>
-                            <span class="id-wrapper">
-                                <span class="id-text">${u.uid}</span>
-                                <button class="copy-btn" onclick="copyText('${u.uid}', this)" title="نسخ المعرف">
-                                    <i class="fas fa-copy"></i> <span class="icon-text">نسخ</span>
-                                </button>
-                            </span>
-                        </div>
-                        <div class="user-actions">
-                            ${buttons}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function changeUserStatus(docId, uid, displayName, newStatus, actionName) {
-            const statusLabels = {
-                'active': 'نشط',
-                'banned': 'محظور',
-                'restricted': 'مقيد',
-                'frozen': 'مجمد'
-            };
-
-            const iconMap = {
-                'active': { icon: 'fa-check-circle', type: 'success' },
-                'banned': { icon: 'fa-ban', type: 'danger' },
-                'restricted': { icon: 'fa-lock', type: 'orange' },
-                'frozen': { icon: 'fa-snowflake', type: 'purple' }
-            };
-
-            const iconData = iconMap[newStatus] || iconMap['active'];
-
-            showConfirmDialog({
-                title: `${actionName} المستخدم`,
-                icon: iconData.icon,
-                type: iconData.type,
-                details: [
-                    { label: 'المستخدم', value: displayName, highlight: true },
-                    { label: 'المعرف', value: uid },
-                    { label: 'الحالة الجديدة', value: statusLabels[newStatus] || newStatus }
-                ],
-                confirmText: actionName,
-                onConfirm: async () => {
-                    try {
-                        await db.collection('users').doc(docId).update({
-                            status: newStatus
-                        });
-                        showToast(`✅ تم ${actionName} المستخدم ${displayName} (${statusLabels[newStatus]})`);
-                    } catch(e) {
-                        console.error(e);
-                        showToast('❌ خطأ: '+e.message);
-                    }
-                }
-            });
-        }
-
         function renderPendingWithdrawals(list) {
             const container = document.getElementById('adminWithdrawalsList');
             if (!list.length) {
@@ -1690,6 +1493,301 @@
             });
         }
 
+        // ============================================================
+        // 12. باقي الدوال (الحماية، الاستثمارات، السحب، الإيداع، التأكيد التلقائي)
+        // ============================================================
+        // (تم تضمينها كاملة من الكود السابق، ولكن اختصاراً للطول سنضعها كما هي)
+        // لكننا سنضمن أن دالة autoConfirmDeposit تقوم بحفظ المطابقة في مجموعة pending_deposit_matches
+        // (وهي موجودة بالفعل في الكود السابق، وسنتركها كما هي)
+
+        // دالة عرض المستثمرين
+        function renderInvestors(list) {
+            const container = document.getElementById('investorsList');
+            if (!list.length) {
+                container.innerHTML = `<div class="admin-empty"><i class="fas fa-chart-pie text-muted"></i><div>لا يوجد مستثمرون حتى الآن</div></div>`;
+                return;
+            }
+            container.innerHTML = list.map(inv => `
+                <div class="invest-card">
+                    <div class="flex-between">
+                        <span class="invest-user">
+                            👤 <strong>${inv.displayName}</strong>
+                            <button class="copy-btn" onclick="copyText('${inv.uid}', this)" title="نسخ المعرف">
+                                <i class="fas fa-copy"></i> <span class="icon-text">نسخ</span>
+                            </button>
+                        </span>
+                        <span class="invest-badge">${inv.package}</span>
+                    </div>
+                    <div class="invest-details">
+                        <div class="detail-row">
+                            <span class="label">المبلغ المستثمر</span>
+                            <span class="value highlight">${inv.totalInvested.toFixed(2)} DZD</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">إجمالي الأرباح</span>
+                            <span class="value profit">${inv.totalReturns.toFixed(2)} DZD</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">نسبة الأرباح</span>
+                            <span class="value profit">${inv.profitRatio.toFixed(2)}%</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">الرصيد الحالي</span>
+                            <span class="value">${inv.currentBalance.toFixed(2)} DZD</span>
+                        </div>
+                        ${inv.investments && inv.investments.length > 0 ? `
+                        <div class="detail-row">
+                            <span class="label">عدد الاستثمارات</span>
+                            <span class="value">${inv.investments.length}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                    <div class="invest-actions">
+                        <button class="btn btn-danger btn-xs" onclick="cancelInvestment('${inv.docId}','${inv.uid}','${inv.displayName}')">
+                            <i class="fas fa-times-circle"></i> إلغاء الباقة
+                        </button>
+                        <button class="btn btn-success btn-xs" onclick="adjustMining('${inv.docId}','${inv.uid}','${inv.displayName}',${inv.totalReturns})">
+                            <i class="fas fa-edit"></i> تعديل الأرباح
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // دوال التحكم في الاستثمارات (مختصرة)
+        function cancelInvestment(docId, uid, displayName) {
+            showConfirmDialog({
+                title: 'إلغاء باقة التعدين',
+                icon: 'fa-times-circle',
+                type: 'danger',
+                details: [
+                    { label: 'المستخدم', value: displayName, highlight: true },
+                    { label: 'المعرف', value: uid },
+                    { label: 'الإجراء', value: 'سيتم إلغاء جميع الاستثمارات وإعادة الأرباح إلى 0' }
+                ],
+                confirmText: 'إلغاء الباقة',
+                onConfirm: async () => {
+                    try {
+                        const userRef = db.collection('users').doc(docId);
+                        const userDoc = await userRef.get();
+                        const data = userDoc.data();
+                        const investments = data.investments || [];
+                        const updatedInvestments = investments.map(inv => ({ ...inv, status: 'cancelled' }));
+                        await userRef.update({
+                            investments: updatedInvestments,
+                            'miningData.totalInvested': 0,
+                            'miningData.totalInvestmentReturns': 0,
+                            'miningData.totalMinedDZD': 0,
+                            'miningData.level': 0
+                        });
+                        showToast(`✅ تم إلغاء باقة التعدين للمستخدم ${displayName}`);
+                    } catch(e) {
+                        console.error(e);
+                        showToast('❌ خطأ: '+e.message);
+                    }
+                }
+            });
+        }
+
+        function adjustMining(docId, uid, displayName, currentReturns) {
+            const modal = document.getElementById('confirmModal');
+            const body = document.getElementById('modalBody');
+            const header = document.querySelector('.modal-header .title');
+            const icon = document.getElementById('modalIcon');
+            const confirmBtn = document.getElementById('confirmBtn');
+            const cancelBtn = document.querySelector('.modal-footer .btn-cancel');
+
+            icon.className = 'icon warning';
+            icon.innerHTML = '<i class="fas fa-coins"></i>';
+            header.textContent = 'تعديل إجمالي الأرباح';
+
+            body.innerHTML = `
+                <div style="text-align:center;margin-bottom:12px;">
+                    <p style="color:var(--text-secondary);font-size:14px;margin-bottom:8px;">
+                        المستخدم: <strong>${displayName}</strong>
+                    </p>
+                    <p style="color:var(--text-secondary);font-size:14px;margin-bottom:16px;">
+                        إجمالي الأرباح الحالي: <strong>${currentReturns.toFixed(2)} DZD</strong>
+                    </p>
+                    <div class="input-group">
+                        <label>المبلغ (DZD) <span class="required">*</span></label>
+                        <input type="number" id="adjustAmount" placeholder="أدخل المبلغ (موجب للإضافة، سالب للخصم)" step="0.01">
+                    </div>
+                    <div style="font-size:12px;color:var(--text-muted);">
+                        <i class="fas fa-info-circle"></i> استخدم قيمة موجبة للإضافة، قيمة سالبة للخصم
+                    </div>
+                </div>
+            `;
+
+            cancelBtn.textContent = 'إلغاء';
+            confirmBtn.textContent = 'تعديل';
+            confirmBtn.className = 'btn btn-confirm-success';
+
+            modal.classList.add('active');
+
+            const handleConfirm = () => {
+                const input = document.getElementById('adjustAmount');
+                const amount = parseFloat(input.value);
+                if (isNaN(amount) || amount === 0) {
+                    showToast('⚠️ الرجاء إدخال مبلغ صحيح (غير صفر)');
+                    return;
+                }
+                modal.classList.remove('active');
+                performAdjustMining(docId, uid, displayName, currentReturns, amount);
+            };
+
+            const handleCancel = () => {
+                modal.classList.remove('active');
+            };
+
+            confirmBtn.onclick = handleConfirm;
+            cancelBtn.onclick = handleCancel;
+        }
+
+        async function performAdjustMining(docId, uid, displayName, currentReturns, amount) {
+            try {
+                const newTotal = currentReturns + amount;
+                if (newTotal < 0) {
+                    showToast('⚠️ لا يمكن أن تكون الأرباح أقل من صفر');
+                    return;
+                }
+                const userRef = db.collection('users').doc(docId);
+                const userDoc = await userRef.get();
+                const data = userDoc.data();
+                const investments = data.investments || [];
+                let updated = false;
+                const updatedInvestments = investments.map(inv => {
+                    if (!updated && (inv.status === 'active' || inv.status === 'pending' || !inv.status)) {
+                        updated = true;
+                        return { ...inv, totalReturn: newTotal };
+                    }
+                    return inv;
+                });
+                await userRef.update({
+                    investments: updatedInvestments,
+                    'miningData.totalInvestmentReturns': newTotal,
+                    'miningData.totalMinedDZD': newTotal
+                });
+                showToast(`✅ تم تعديل الأرباح للمستخدم ${displayName} إلى ${newTotal.toFixed(2)} DZD`);
+            } catch(e) {
+                console.error(e);
+                showToast('❌ خطأ: '+e.message);
+            }
+        }
+
+        // دوال الحماية
+        function renderProtectUsers(users) {
+            const container = document.getElementById('usersProtectList');
+            if (!users.length) {
+                container.innerHTML = `<div class="admin-empty"><i class="fas fa-users-slash text-muted"></i><div>لا يوجد مستخدمون</div></div>`;
+                return;
+            }
+            const statusOrder = { 'active': 0, 'restricted': 1, 'frozen': 2, 'banned': 3 };
+            users.sort((a, b) => (statusOrder[a.status] || 0) - (statusOrder[b.status] || 0));
+            container.innerHTML = users.map(u => {
+                const statusMap = {
+                    'active': { label: '✅ نشط', class: 'status-active' },
+                    'banned': { label: '⛔ محظور', class: 'status-banned' },
+                    'restricted': { label: '🔒 مقيد', class: 'status-restricted' },
+                    'frozen': { label: '❄️ مجمد', class: 'status-frozen' }
+                };
+                const statusInfo = statusMap[u.status] || statusMap['active'];
+                let buttons = '';
+                if (u.status === 'active') {
+                    buttons = `
+                        <button class="btn btn-danger btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','banned','حظر')">
+                            <i class="fas fa-ban"></i> تعطيل
+                        </button>
+                        <button class="btn btn-orange btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','restricted','تقييد')">
+                            <i class="fas fa-lock"></i> تقيد
+                        </button>
+                        <button class="btn btn-purple btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','frozen','تجميد')">
+                            <i class="fas fa-snowflake"></i> تجميد
+                        </button>
+                    `;
+                } else if (u.status === 'banned') {
+                    buttons = `<button class="btn btn-success btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','active','تفعيل')">
+                            <i class="fas fa-check-circle"></i> تفعيل
+                        </button>`;
+                } else if (u.status === 'restricted') {
+                    buttons = `
+                        <button class="btn btn-success btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','active','تفعيل')">
+                            <i class="fas fa-check-circle"></i> تفعيل
+                        </button>
+                        <button class="btn btn-danger btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','banned','حظر')">
+                            <i class="fas fa-ban"></i> تعطيل
+                        </button>
+                        <button class="btn btn-purple btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','frozen','تجميد')">
+                            <i class="fas fa-snowflake"></i> تجميد
+                        </button>
+                    `;
+                } else if (u.status === 'frozen') {
+                    buttons = `
+                        <button class="btn btn-success btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','active','تفعيل')">
+                            <i class="fas fa-check-circle"></i> تفعيل
+                        </button>
+                        <button class="btn btn-danger btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','banned','حظر')">
+                            <i class="fas fa-ban"></i> تعطيل
+                        </button>
+                        <button class="btn btn-orange btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','restricted','تقييد')">
+                            <i class="fas fa-lock"></i> تقيد
+                        </button>
+                    `;
+                }
+                return `
+                    <div class="user-protect-card">
+                        <div class="flex-between">
+                            <span class="user-name">👤 <strong>${u.displayName}</strong></span>
+                            <span class="status ${statusInfo.class}">${statusInfo.label}</span>
+                        </div>
+                        <div class="user-details">
+                            الرصيد: <strong>${u.dzd.toFixed(2)} DZD</strong>
+                            <br>
+                            <span class="id-wrapper">
+                                <span class="id-text">${u.uid}</span>
+                                <button class="copy-btn" onclick="copyText('${u.uid}', this)" title="نسخ المعرف">
+                                    <i class="fas fa-copy"></i> <span class="icon-text">نسخ</span>
+                                </button>
+                            </span>
+                        </div>
+                        <div class="user-actions">${buttons}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function changeUserStatus(docId, uid, displayName, newStatus, actionName) {
+            const statusLabels = { 'active': 'نشط', 'banned': 'محظور', 'restricted': 'مقيد', 'frozen': 'مجمد' };
+            const iconMap = {
+                'active': { icon: 'fa-check-circle', type: 'success' },
+                'banned': { icon: 'fa-ban', type: 'danger' },
+                'restricted': { icon: 'fa-lock', type: 'orange' },
+                'frozen': { icon: 'fa-snowflake', type: 'purple' }
+            };
+            const iconData = iconMap[newStatus] || iconMap['active'];
+            showConfirmDialog({
+                title: `${actionName} المستخدم`,
+                icon: iconData.icon,
+                type: iconData.type,
+                details: [
+                    { label: 'المستخدم', value: displayName, highlight: true },
+                    { label: 'المعرف', value: uid },
+                    { label: 'الحالة الجديدة', value: statusLabels[newStatus] || newStatus }
+                ],
+                confirmText: actionName,
+                onConfirm: async () => {
+                    try {
+                        await db.collection('users').doc(docId).update({ status: newStatus });
+                        showToast(`✅ تم ${actionName} المستخدم ${displayName} (${statusLabels[newStatus]})`);
+                    } catch(e) {
+                        console.error(e);
+                        showToast('❌ خطأ: '+e.message);
+                    }
+                }
+            });
+        }
+
+        // دوال السحب والإيداع
         function approveWithdrawal(userDocId, withdrawalId, uid, displayName, amount, fee) {
             showConfirmDialog({
                 title: 'تأكيد السحب',
@@ -1818,6 +1916,9 @@
             });
         }
 
+        // ============================================================
+        // 13. تأكيد إيداع تلقائي مع حفظ المطابقة
+        // ============================================================
         async function autoConfirmDeposit() {
             const txId = document.getElementById('autoTxId').value.trim();
             const amount = parseFloat(document.getElementById('autoAmount').value);
@@ -1871,6 +1972,7 @@
                     return;
                 }
 
+                // حفظ للمطابقة
                 const matchData = {
                     transactionId: txId,
                     amount: amount,
@@ -1905,7 +2007,7 @@
         }
 
         // ============================================================
-        // 15. التبديل بين التبويبات
+        // 14. التبديل بين التبويبات
         // ============================================================
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -1918,7 +2020,7 @@
         }
 
         // ============================================================
-        // 16. الوضع المظلم
+        // 15. الوضع المظلم
         // ============================================================
         let isDarkTheme = false;
         function toggleTheme() {
@@ -1957,7 +2059,7 @@
         }
 
         // ============================================================
-        // 17. INIT
+        // 16. INIT
         // ============================================================
         document.addEventListener('DOMContentLoaded', function() {
             authAdmin();
@@ -1967,7 +2069,7 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة - تم إزالة معرف الخطة من الاستثمارات');
+        console.log('🚀 لوحة الإدارة - إضافة طلبات المطابقة المحفوظة مع تعديل وإلغاء');
         console.log('✅ لإضافة أدمن: أنشئ مستنداً في مجموعة admins باسم الـ telegramId');
     </script>
 </body>
