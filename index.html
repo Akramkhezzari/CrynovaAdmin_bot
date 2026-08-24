@@ -20,7 +20,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
-        /* ===== جميع الأنماط السابقة مع إضافات ===== */
+        /* ===== جميع الأنماط السابقة ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --bg-primary: #f0f4f8; --bg-secondary: #ffffff; --bg-card: #ffffff;
@@ -431,7 +431,7 @@
             background: #d35400;
         }
 
-        /* ===== أنماط صفحة الاستثمارات مع أزرار التحكم ===== */
+        /* ===== أنماط صفحة الاستثمارات ===== */
         .invest-card {
             background: var(--bg-card);
             border-radius: var(--radius-sm);
@@ -455,7 +455,7 @@
             color: var(--info);
         }
 
-        /* ===== أنماط صفحة الحماية (معدلة) ===== */
+        /* ===== أنماط صفحة الحماية ===== */
         .user-protect-card {
             background: var(--bg-card);
             border-radius: var(--radius-sm);
@@ -541,7 +541,7 @@
                 </div>
             </div>
 
-            <!-- تبويب الحماية (معدل) -->
+            <!-- تبويب الحماية -->
             <div id="tab-protect" class="tab-content">
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
                     <i class="fas fa-shield-alt text-danger"></i> الحماية وإدارة المستخدمين
@@ -1077,7 +1077,7 @@
         }
 
         // ============================================================
-        // 7. عرض قائمة المستثمرين مع أزرار التحكم
+        // 7. عرض قائمة المستثمرين
         // ============================================================
         function renderInvestors(list) {
             const container = document.getElementById('investorsList');
@@ -1216,7 +1216,7 @@
         }
 
         // ============================================================
-        // 9. عرض قائمة المستخدمين في صفحة الحماية (معدلة)
+        // 9. عرض قائمة المستخدمين في صفحة الحماية
         // ============================================================
         function renderProtectUsers(users) {
             const container = document.getElementById('usersProtectList');
@@ -1225,12 +1225,10 @@
                 return;
             }
 
-            // ترتيب المستخدمين: النشطاء أولاً، ثم المقيدين، ثم المجمدين، ثم المحظورين
             const statusOrder = { 'active': 0, 'restricted': 1, 'frozen': 2, 'banned': 3 };
             users.sort((a, b) => (statusOrder[a.status] || 0) - (statusOrder[b.status] || 0));
 
             container.innerHTML = users.map(u => {
-                // تحديد أيقونة واسم الحالة
                 const statusMap = {
                     'active': { label: '✅ نشط', class: 'status-active' },
                     'banned': { label: '⛔ محظور', class: 'status-banned' },
@@ -1239,7 +1237,6 @@
                 };
                 const statusInfo = statusMap[u.status] || statusMap['active'];
 
-                // تحديد الأزرار حسب الحالة
                 let buttons = '';
                 if (u.status === 'active') {
                     buttons = `
@@ -1312,7 +1309,7 @@
         }
 
         // ============================================================
-        // 10. تغيير حالة المستخدم (دالة موحدة)
+        // 10. تغيير حالة المستخدم
         // ============================================================
         function changeUserStatus(docId, uid, displayName, newStatus, actionName) {
             const statusLabels = {
@@ -1356,7 +1353,7 @@
         }
 
         // ============================================================
-        // 11. عرض القوائم (السحب والإيداع)
+        // 11. عرض قوائم السحب والإيداع (مع زر نسخ لرقم العملية في الإيداع)
         // ============================================================
         function renderPendingWithdrawals(list) {
             const container = document.getElementById('adminWithdrawalsList');
@@ -1425,7 +1422,14 @@
                     <div class="details">
                         <strong>${d.amount} ${d.currency || 'DZD'}</strong>
                         <br><small>التاريخ: ${formatDateTime(d.createdAt)}</small>
-                        ${d.transactionId ? `<br><small>رقم العملية: ${d.transactionId}</small>` : ''}
+                        ${d.transactionId ? `
+                            <br><small style="display:inline-flex;align-items:center;gap:4px;margin-top:4px;">
+                                <span>رقم العملية: <strong>${d.transactionId}</strong></span>
+                                <button class="copy-btn" onclick="copyText('${d.transactionId}')" title="نسخ رقم العملية" style="padding:0 6px;font-size:11px;">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </small>
+                        ` : ''}
                     </div>
                     <div class="actions">
                         <button class="btn btn-success btn-sm" onclick="confirmDeposit('${d.docId}','${d.depositId}','${d.uid}','${d.userDisplayName}',${d.amount})">
@@ -1737,7 +1741,7 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة مع صفحة حماية متطورة (تقيد + تجميد)');
+        console.log('🚀 لوحة الإدارة مع زر نسخ لرقم العملية في طلبات الإيداع');
         console.log('✅ لإضافة أدمن: أنشئ مستنداً في مجموعة admins باسم الـ telegramId');
     </script>
 </body>
