@@ -78,7 +78,7 @@
         }
         .app-header .header-actions button:hover { transform: scale(1.05); box-shadow: var(--shadow-md); }
 
-        /* ===== شريط الإحصائيات الجديد (ثابت) ===== */
+        /* ===== شريط الإحصائيات الثابت ===== */
         .stats-bar {
             background: var(--bg-card);
             border-radius: var(--radius-md);
@@ -206,7 +206,7 @@
         .admin-empty { text-align: center; padding: 30px 0; color: var(--text-muted); }
         .admin-empty i { font-size: 48px; display: block; margin-bottom: 10px; }
 
-        /* ===== شريط التنقل السفلي ===== */
+        /* ===== شريط التنقل السفلي (4 أزرار) ===== */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0;
             max-width: 480px; margin: 0 auto;
@@ -218,7 +218,7 @@
             justify-content: space-around;
             box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
             z-index: 1000;
-            padding: 0 8px;
+            padding: 0 4px;
         }
         .bottom-nav .nav-item {
             flex: 1;
@@ -226,12 +226,12 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 2px;
-            padding: 6px 0;
+            gap: 1px;
+            padding: 4px 0;
             border: none;
             background: transparent;
             color: var(--text-muted);
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             cursor: pointer;
             transition: var(--transition);
@@ -240,7 +240,7 @@
             border-radius: 12px;
         }
         .bottom-nav .nav-item i {
-            font-size: 22px;
+            font-size: 20px;
             transition: var(--transition);
         }
         .bottom-nav .nav-item.active {
@@ -257,13 +257,13 @@
             transform: translateX(calc(50% + 16px));
             background: var(--danger);
             color: white;
-            font-size: 10px;
-            padding: 1px 7px;
+            font-size: 9px;
+            padding: 1px 6px;
             border-radius: 20px;
             font-weight: 700;
-            min-width: 18px;
+            min-width: 16px;
             text-align: center;
-            line-height: 16px;
+            line-height: 14px;
         }
         .bottom-nav .nav-item .badge.hidden { display: none; }
 
@@ -400,6 +400,28 @@
         .modal-footer .btn-confirm-danger:hover {
             background: #c0392b;
         }
+
+        /* ===== أنماط صفحة الاستثمارات ===== */
+        .invest-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-sm);
+            padding: 14px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+        .invest-card:hover { border-color: var(--accent-light); }
+        .invest-card .invest-user { font-weight: 700; color: var(--accent); }
+        .invest-card .invest-details { font-size: 14px; color: var(--text-secondary); margin: 4px 0; }
+        .invest-badge {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            background: var(--info-light);
+            color: var(--info);
+        }
     </style>
 </head>
 <body>
@@ -458,6 +480,34 @@
                 </div>
             </div>
 
+            <!-- تبويب الاستثمارات (جديد) -->
+            <div id="tab-investments" class="tab-content">
+                <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
+                    <i class="fas fa-chart-line text-accent"></i> الاستثمارات
+                </h2>
+
+                <!-- إحصائيات الاستثمارات -->
+                <div class="stats-bar" style="margin-bottom:16px;">
+                    <div class="stat-item">
+                        <span class="stat-label"><i class="fas fa-user-check"></i> عدد المستثمرين</span>
+                        <span class="stat-value" id="totalInvestors">0</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-label"><i class="fas fa-coins"></i> إجمالي التعدين (DZD)</span>
+                        <span class="stat-value" id="totalMinedInvest">0</span>
+                    </div>
+                </div>
+
+                <!-- قائمة المستثمرين -->
+                <div id="investorsList">
+                    <div class="admin-empty">
+                        <i class="fas fa-chart-pie text-muted"></i>
+                        <div>لا يوجد مستثمرون حتى الآن</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- تبويب طلبات السحب -->
             <div id="tab-withdrawals" class="tab-content">
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
@@ -498,11 +548,15 @@
         </div>
     </div>
 
-    <!-- ===== شريط التنقل السفلي ===== -->
+    <!-- ===== شريط التنقل السفلي (4 أزرار) ===== -->
     <nav class="bottom-nav" id="bottomNav">
         <button class="nav-item active" data-tab="tab-home" onclick="switchTab('tab-home')">
             <i class="fas fa-home"></i>
             <span>الرئيسية</span>
+        </button>
+        <button class="nav-item" data-tab="tab-investments" onclick="switchTab('tab-investments')">
+            <i class="fas fa-chart-line"></i>
+            <span>الاستثمارات</span>
         </button>
         <button class="nav-item" data-tab="tab-withdrawals" onclick="switchTab('tab-withdrawals')">
             <i class="fas fa-arrow-up"></i>
@@ -761,16 +815,38 @@
 
             unsubscribeUsers = db.collection('users')
                 .onSnapshot((snapshot) => {
-                    // ---- تحديث الإحصائيات ----
+                    // ---- تحديث الإحصائيات العامة ----
                     let totalUsers = 0;
                     let totalBalance = 0;
+                    let investors = [];
+                    let totalMinedSum = 0;
+
                     snapshot.forEach(doc => {
-                        totalUsers++;
                         const data = doc.data();
+                        totalUsers++;
                         totalBalance += data.wallets?.dzd || 0;
+
+                        // معالجة بيانات الاستثمارات
+                        const mining = data.miningData || {};
+                        if (mining.currentPackage) {
+                            investors.push({
+                                uid: doc.id,
+                                displayName: data.displayName || doc.id,
+                                package: mining.currentPackage,
+                                totalMined: mining.totalMinedDZD || mining.totalMined || 0
+                            });
+                            totalMinedSum += mining.totalMinedDZD || mining.totalMined || 0;
+                        }
                     });
+
+                    // تحديث واجهة الإحصائيات العامة
                     document.getElementById('totalUsers').textContent = totalUsers;
                     document.getElementById('totalPlatformBalance').textContent = totalBalance.toFixed(2);
+
+                    // تحديث واجهة الاستثمارات
+                    document.getElementById('totalInvestors').textContent = investors.length;
+                    document.getElementById('totalMinedInvest').textContent = totalMinedSum.toFixed(2);
+                    renderInvestors(investors);
 
                     // ---- معالجة الطلبات المعلقة ----
                     const pendingWithdrawals = [];
@@ -831,12 +907,30 @@
                 // تحديث الإحصائيات
                 let totalUsers = 0;
                 let totalBalance = 0;
+                let investors = [];
+                let totalMinedSum = 0;
+
                 snap.forEach(doc => {
+                    const data = doc.data();
                     totalUsers++;
-                    totalBalance += doc.data().wallets?.dzd || 0;
+                    totalBalance += data.wallets?.dzd || 0;
+                    const mining = data.miningData || {};
+                    if (mining.currentPackage) {
+                        investors.push({
+                            uid: doc.id,
+                            displayName: data.displayName || doc.id,
+                            package: mining.currentPackage,
+                            totalMined: mining.totalMinedDZD || mining.totalMined || 0
+                        });
+                        totalMinedSum += mining.totalMinedDZD || mining.totalMined || 0;
+                    }
                 });
+
                 document.getElementById('totalUsers').textContent = totalUsers;
                 document.getElementById('totalPlatformBalance').textContent = totalBalance.toFixed(2);
+                document.getElementById('totalInvestors').textContent = investors.length;
+                document.getElementById('totalMinedInvest').textContent = totalMinedSum.toFixed(2);
+                renderInvestors(investors);
 
                 // معالجة الطلبات
                 const pendingWithdrawals = [];
@@ -869,7 +963,34 @@
         }
 
         // ============================================================
-        // 7. عرض القوائم
+        // 7. عرض قائمة المستثمرين (جديد)
+        // ============================================================
+        function renderInvestors(list) {
+            const container = document.getElementById('investorsList');
+            if (!list.length) {
+                container.innerHTML = `<div class="admin-empty"><i class="fas fa-chart-pie text-muted"></i><div>لا يوجد مستثمرون حتى الآن</div></div>`;
+                return;
+            }
+            container.innerHTML = list.map(inv => `
+                <div class="invest-card">
+                    <div class="flex-between">
+                        <span class="invest-user">
+                            👤 <strong>${inv.displayName}</strong>
+                            <button class="copy-btn" onclick="copyText('${inv.uid}')" style="padding:2px 8px;font-size:11px;background:var(--bg-input);color:var(--text-secondary);">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </span>
+                        <span class="invest-badge">${inv.package}</span>
+                    </div>
+                    <div class="invest-details">
+                        إجمالي التعدين: <strong>${inv.totalMined.toFixed(2)} DZD</strong>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ============================================================
+        // 8. عرض القوائم (السحب والإيداع)
         // ============================================================
         function renderPendingWithdrawals(list) {
             const container = document.getElementById('adminWithdrawalsList');
@@ -964,7 +1085,7 @@
         }
 
         // ============================================================
-        // 8. عمليات السحب (تأكيد / رفض)
+        // 9. عمليات السحب (تأكيد / رفض)
         // ============================================================
         function approveWithdrawal(userDocId, withdrawalId, uid, displayName, amount, fee) {
             showConfirmDialog({
@@ -1025,7 +1146,7 @@
         }
 
         // ============================================================
-        // 9. عمليات الإيداع (تأكيد / رفض)
+        // 10. عمليات الإيداع (تأكيد / رفض)
         // ============================================================
         function confirmDeposit(userDocId, depositId, uid, displayName, amount) {
             showConfirmDialog({
@@ -1094,7 +1215,7 @@
         }
 
         // ============================================================
-        // 10. تأكيد إيداع تلقائي
+        // 11. تأكيد إيداع تلقائي
         // ============================================================
         async function autoConfirmDeposit() {
             const txId = document.getElementById('autoTxId').value.trim();
@@ -1156,7 +1277,7 @@
         }
 
         // ============================================================
-        // 11. التبديل بين التبويبات
+        // 12. التبديل بين التبويبات
         // ============================================================
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -1169,7 +1290,7 @@
         }
 
         // ============================================================
-        // 12. الوضع المظلم
+        // 13. الوضع المظلم
         // ============================================================
         let isDarkTheme = false;
         function toggleTheme() {
@@ -1208,7 +1329,7 @@
         }
 
         // ============================================================
-        // 13. INIT
+        // 14. INIT
         // ============================================================
         document.addEventListener('DOMContentLoaded', function() {
             authAdmin();
@@ -1218,7 +1339,7 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة مع شريط إحصائيات ثابت (عدد المستخدمين + إجمالي الرصيد)');
+        console.log('🚀 لوحة الإدارة مع صفحة الاستثمارات الجديدة');
         console.log('✅ لإضافة أدمن: أنشئ مستنداً في مجموعة admins باسم الـ telegramId');
     </script>
 </body>
