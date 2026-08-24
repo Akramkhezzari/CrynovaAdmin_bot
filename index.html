@@ -20,7 +20,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
-        /* ===== جميع الأنماط ===== */
+        /* ===== جميع الأنماط السابقة (بدون تغيير) ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --bg-primary: #f0f4f8; --bg-secondary: #ffffff; --bg-card: #ffffff;
@@ -663,9 +663,6 @@
                     <div class="admin-empty">
                         <i class="fas fa-inbox text-muted"></i>
                         <div>لا توجد طلبات مطابقة محفوظة</div>
-                        <p style="font-size:13px;color:var(--text-muted);margin-top:8px;">
-                            ستظهر هنا الطلبات التي تم حفظها من صفحة "تأكيد إيداع تلقائي" عندما لم يتم العثور على طلب مطابق.
-                        </p>
                     </div>
                 </div>
             </div>
@@ -996,7 +993,7 @@
         }
 
         // ============================================================
-        // 6. الاستماع الفوري لطلبات المطابقة
+        // 6. الاستماع الفوري لطلبات المطابقة (جديد)
         // ============================================================
         function listenToMatches() {
             if (unsubscribeMatches) unsubscribeMatches();
@@ -1009,14 +1006,13 @@
                     snapshot.forEach(doc => {
                         matches.push({ id: doc.id, ...doc.data() });
                     });
-                    console.log(`📋 عدد طلبات المطابقة المحفوظة: ${matches.length}`);
                     renderPendingMatches(matches);
-                    const badge = document.getElementById('matchesBadge');
-                    badge.textContent = matches.length;
+                    // تحديث البادج في شريط التنقل
+                    document.getElementById('matchesBadge').textContent = matches.length;
                     if (matches.length === 0) {
-                        badge.classList.add('hidden');
+                        document.getElementById('matchesBadge').classList.add('hidden');
                     } else {
-                        badge.classList.remove('hidden');
+                        document.getElementById('matchesBadge').classList.remove('hidden');
                     }
                 }, (error) => {
                     console.error('❌ خطأ في الاستماع لطلبات المطابقة:', error);
@@ -1037,9 +1033,6 @@
                     <div class="admin-empty">
                         <i class="fas fa-inbox text-muted"></i>
                         <div>لا توجد طلبات مطابقة محفوظة</div>
-                        <p style="font-size:13px;color:var(--text-muted);margin-top:8px;">
-                            ستظهر هنا الطلبات التي تم حفظها من صفحة "تأكيد إيداع تلقائي" عندما لم يتم العثور على طلب مطابق.
-                        </p>
                     </div>
                 `;
                 return;
@@ -1156,7 +1149,7 @@
         }
 
         // ============================================================
-        // 10. الاستماع الفوري للمستخدمين
+        // 10. الاستماع الفوري للمستخدمين (معدل)
         // ============================================================
         function listenToUsers() {
             if (unsubscribeUsers) unsubscribeUsers();
@@ -1236,6 +1229,7 @@
                     const pendingDeposits = [];
                     const pendingWithdrawals = [];
 
+                    // جلب طلبات المطابقة (لمطابقة الإيداعات الحقيقية)
                     const pendingMatchesSnap = await db.collection('pending_deposit_matches')
                         .where('status', '==', 'pending')
                         .get();
@@ -1249,6 +1243,7 @@
                         const uid = doc.id;
                         const displayName = data.displayName || uid;
 
+                        // السحوبات المعلقة
                         if (data.withdrawals && Array.isArray(data.withdrawals)) {
                             data.withdrawals.forEach(w => {
                                 if (w.status === 'pending') {
@@ -1262,6 +1257,7 @@
                             });
                         }
 
+                        // الإيداعات المعلقة
                         if (data.deposits && Array.isArray(data.deposits)) {
                             data.deposits.forEach(d => {
                                 if (d.status === 'pending') {
@@ -1272,6 +1268,7 @@
                                         docId: doc.id
                                     });
 
+                                    // التحقق من المطابقة
                                     const match = pendingMatches.find(m =>
                                         m.transactionId === d.transactionId &&
                                         m.amount === d.amount &&
@@ -1405,7 +1402,7 @@
         }
 
         // ============================================================
-        // 11. عرض قوائم السحب والإيداع
+        // 11. عرض قوائم الإيداع والسحب (بدون تغيير)
         // ============================================================
         function renderPendingWithdrawals(list) {
             const container = document.getElementById('adminWithdrawalsList');
@@ -1507,8 +1504,13 @@
         }
 
         // ============================================================
-        // 12. عرض المستثمرين
+        // 12. باقي الدوال (الحماية، الاستثمارات، السحب، الإيداع، التأكيد التلقائي)
         // ============================================================
+        // (تم تضمينها كاملة من الكود السابق، ولكن اختصاراً للطول سنضعها كما هي)
+        // لكننا سنضمن أن دالة autoConfirmDeposit تقوم بحفظ المطابقة في مجموعة pending_deposit_matches
+        // (وهي موجودة بالفعل في الكود السابق، وسنتركها كما هي)
+
+        // دالة عرض المستثمرين
         function renderInvestors(list) {
             const container = document.getElementById('investorsList');
             if (!list.length) {
@@ -1562,9 +1564,7 @@
             `).join('');
         }
 
-        // ============================================================
-        // 13. دوال التحكم في الاستثمارات
-        // ============================================================
+        // دوال التحكم في الاستثمارات (مختصرة)
         function cancelInvestment(docId, uid, displayName) {
             showConfirmDialog({
                 title: 'إلغاء باقة التعدين',
@@ -1685,9 +1685,7 @@
             }
         }
 
-        // ============================================================
-        // 14. صفحة الحماية
-        // ============================================================
+        // دوال الحماية
         function renderProtectUsers(users) {
             const container = document.getElementById('usersProtectList');
             if (!users.length) {
@@ -1799,9 +1797,7 @@
             });
         }
 
-        // ============================================================
-        // 15. عمليات السحب والإيداع
-        // ============================================================
+        // دوال السحب والإيداع
         function approveWithdrawal(userDocId, withdrawalId, uid, displayName, amount, fee) {
             showConfirmDialog({
                 title: 'تأكيد السحب',
@@ -1931,7 +1927,7 @@
         }
 
         // ============================================================
-        // 16. تأكيد إيداع تلقائي مع حفظ المطابقة
+        // 13. تأكيد إيداع تلقائي مع حفظ المطابقة
         // ============================================================
         async function autoConfirmDeposit() {
             const txId = document.getElementById('autoTxId').value.trim();
@@ -2021,7 +2017,7 @@
         }
 
         // ============================================================
-        // 17. التبديل بين التبويبات
+        // 14. التبديل بين التبويبات
         // ============================================================
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -2034,7 +2030,7 @@
         }
 
         // ============================================================
-        // 18. الوضع المظلم
+        // 15. الوضع المظلم
         // ============================================================
         let isDarkTheme = false;
         function toggleTheme() {
@@ -2073,7 +2069,7 @@
         }
 
         // ============================================================
-        // 19. INIT
+        // 16. INIT
         // ============================================================
         document.addEventListener('DOMContentLoaded', function() {
             authAdmin();
@@ -2083,7 +2079,7 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة - صفحة المطابقات المستقلة مع جميع الميزات');
+        console.log('🚀 لوحة الإدارة - صفحة المطابقات المستقلة');
         console.log('✅ لإضافة أدمن: أنشئ مستنداً في مجموعة admins باسم الـ telegramId');
     </script>
 </body>
