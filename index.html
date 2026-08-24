@@ -109,7 +109,6 @@
             padding: 16px 16px 24px;
         }
 
-        /* HEADER */
         .app-header {
             display: flex;
             justify-content: space-between;
@@ -155,7 +154,6 @@
             box-shadow: var(--shadow-md);
         }
 
-        /* CARDS */
         .card {
             background: var(--bg-card);
             border-radius: var(--radius-md);
@@ -168,34 +166,6 @@
         .card:hover {
             box-shadow: var(--shadow-md);
             border-color: var(--accent-light);
-        }
-        .card.gradient {
-            background: var(--accent-gradient);
-            border: none;
-            color: var(--text-white);
-        }
-        .card.gradient .card-title i,
-        .card.gradient .text-muted,
-        .card.gradient .balance-label {
-            color: rgba(255, 255, 255, 0.8);
-        }
-        .card.gradient .balance-large {
-            -webkit-text-fill-color: white;
-            background: none;
-        }
-        .card.dzd-gradient {
-            background: linear-gradient(135deg, #e17055, #d63031);
-            border: none;
-            color: var(--text-white);
-        }
-        .card.dzd-gradient .card-title i,
-        .card.dzd-gradient .text-muted,
-        .card.dzd-gradient .balance-label {
-            color: rgba(255, 255, 255, 0.8);
-        }
-        .card.dzd-gradient .balance-large {
-            -webkit-text-fill-color: white;
-            background: none;
         }
 
         .card-header {
@@ -216,7 +186,6 @@
             font-size: 18px;
         }
 
-        /* BUTTONS */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -267,16 +236,6 @@
             box-shadow: 0 8px 24px rgba(225, 112, 85, 0.35);
         }
 
-        .btn-dzd {
-            background: linear-gradient(135deg, #e17055, #d63031);
-            color: white;
-            box-shadow: 0 4px 24px rgba(225, 112, 85, 0.3);
-        }
-        .btn-dzd:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 32px rgba(225, 112, 85, 0.4);
-        }
-
         .btn-info {
             background: var(--info);
             color: white;
@@ -286,67 +245,11 @@
             box-shadow: 0 8px 24px rgba(9, 132, 227, 0.35);
         }
 
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--border);
-            color: var(--text-primary);
-        }
-        .btn-outline:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-            background: var(--accent-glow);
-        }
-
-        .btn-ghost {
-            background: var(--bg-input);
-            color: var(--text-secondary);
-        }
-        .btn-ghost:hover {
-            background: var(--border);
-        }
-
         .btn-sm {
             padding: 10px 16px;
             font-size: 14px;
         }
-        .btn-xs {
-            padding: 6px 12px;
-            font-size: 12px;
-            border-radius: 6px;
-        }
-        .btn-block {
-            width: 100%;
-        }
 
-        /* COPY BUTTON */
-        .copy-btn {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 6px 14px;
-            border-radius: var(--radius-sm);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            font-family: inherit;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            flex-shrink: 0;
-        }
-        .copy-btn:hover {
-            background: var(--accent-light);
-            transform: scale(1.02);
-        }
-        .copy-btn:active {
-            transform: scale(0.95);
-        }
-        .copy-btn.copied {
-            background: var(--success);
-        }
-
-        /* INPUTS */
         .input-group {
             margin-bottom: 16px;
         }
@@ -362,8 +265,7 @@
             margin-right: 2px;
         }
         .input-group input,
-        .input-group select,
-        .input-group textarea {
+        .input-group select {
             width: 100%;
             padding: 14px 16px;
             background: var(--bg-input);
@@ -376,32 +278,13 @@
             font-weight: 500;
         }
         .input-group input:focus,
-        .input-group select:focus,
-        .input-group textarea:focus {
+        .input-group select:focus {
             outline: none;
             border-color: var(--accent);
             box-shadow: 0 0 0 4px var(--accent-glow);
             background: var(--bg-card);
         }
-        .input-group input::placeholder {
-            color: var(--text-muted);
-            font-weight: 400;
-        }
-        .input-group .input-icon {
-            position: relative;
-        }
-        .input-group .input-icon i {
-            position: absolute;
-            right: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-        }
-        .input-group .input-icon input {
-            padding-right: 44px;
-        }
 
-        /* STATUS BADGES */
         .status {
             display: inline-block;
             padding: 4px 14px;
@@ -427,7 +310,6 @@
             color: var(--info);
         }
 
-        /* ADMIN PANEL STYLES */
         .admin-request-card {
             background: var(--bg-card);
             border-radius: var(--radius-sm);
@@ -459,9 +341,7 @@
             width: auto;
             flex: 1;
         }
-        .admin-request-card .status-badge {
-            font-size: 12px;
-        }
+
         .admin-empty {
             text-align: center;
             padding: 30px 0;
@@ -483,94 +363,39 @@
             margin-bottom: 10px;
         }
 
-        /* UTILITY */
-        .text-center {
-            text-align: center;
-        }
-        .text-accent {
-            color: var(--accent);
-        }
-        .text-success {
-            color: var(--success);
-        }
-        .text-danger {
-            color: var(--danger);
-        }
-        .text-warning {
-            color: var(--warning);
-        }
-        .text-muted {
-            color: var(--text-secondary);
-        }
-        .text-white {
+        .copy-btn {
+            background: var(--accent);
             color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
         }
-        .text-dzd {
-            color: var(--dzd-color);
+        .copy-btn:hover {
+            background: var(--accent-light);
+            transform: scale(1.02);
         }
-        .mt-8 {
-            margin-top: 8px;
-        }
-        .mt-16 {
-            margin-top: 16px;
-        }
-        .mt-24 {
-            margin-top: 24px;
-        }
-        .mb-8 {
-            margin-bottom: 8px;
-        }
-        .mb-16 {
-            margin-bottom: 16px;
-        }
-        .flex {
-            display: flex;
-        }
+
         .flex-between {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .flex-center {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .flex-wrap {
-            flex-wrap: wrap;
-        }
-        .gap-8 {
-            gap: 8px;
-        }
-        .gap-12 {
-            gap: 12px;
-        }
-        .gap-16 {
-            gap: 16px;
-        }
-        .w-full {
-            width: 100%;
-        }
-        .hidden {
-            display: none !important;
-        }
-        .relative {
-            position: relative;
-        }
-        .rounded-full {
-            border-radius: 50%;
-        }
-        .divider {
-            height: 1px;
-            background: var(--border);
-            margin: 16px 0;
-        }
-        .clickable {
-            cursor: pointer;
+        .mt-16 {
+            margin-top: 16px;
         }
 
         #unauthorizedMessage {
             padding: 40px 20px;
+            text-align: center;
         }
         #unauthorizedMessage i {
             font-size: 64px;
@@ -645,10 +470,10 @@
         </div>
 
         <!-- رسالة عدم صلاحية -->
-        <div id="unauthorizedMessage" style="display:none;text-align:center;padding:40px 0;">
-            <i class="fas fa-lock" style="font-size:64px;color:var(--danger);"></i>
-            <h2 style="margin-top:16px;">غير مصرح</h2>
-            <p style="color:var(--text-secondary);">ليس لديك صلاحية للدخول إلى لوحة الإدارة.</p>
+        <div id="unauthorizedMessage" style="display:none;">
+            <i class="fas fa-lock"></i>
+            <h2>غير مصرح</h2>
+            <p>ليس لديك صلاحية للدخول إلى لوحة الإدارة.</p>
             <button class="btn btn-primary" onclick="location.href='index.html'" style="margin-top:20px;width:auto;">
                 <i class="fas fa-arrow-right"></i> العودة إلى التطبيق
             </button>
@@ -674,7 +499,6 @@
         // ============================================================
         // 2. STATE
         // ============================================================
-        let isAdmin = false;
         let userId = null;
 
         // ============================================================
@@ -720,7 +544,7 @@
         }
 
         // ============================================================
-        // 4. جلب طلبات السحب المعلقة فقط من users/*/withdrawals
+        // 4. جلب طلبات السحب المعلقة من users/*/withdrawals
         // ============================================================
         async function loadPendingWithdrawals() {
             try {
@@ -777,7 +601,6 @@
                 return;
             }
 
-            // ترتيب تنازلي حسب createdAt
             list.sort((a, b) => {
                 const ta = a.createdAt?.toMillis?.() || 0;
                 const tb = b.createdAt?.toMillis?.() || 0;
@@ -786,7 +609,6 @@
 
             container.innerHTML = list.map(w => {
                 const userDisplay = w.userDisplayName || w.uid || 'مستخدم';
-
                 return `
                     <div class="admin-request-card">
                         <div class="flex-between">
@@ -796,7 +618,7 @@
                                     <i class="fas fa-copy"></i>
                                 </button>` : ''}
                             </span>
-                            <span class="status status-pending status-badge">قيد الانتظار</span>
+                            <span class="status status-pending">قيد الانتظار</span>
                         </div>
                         <div class="details">
                             <strong>${w.amount} ${w.currency || 'DZD'}</strong> | الرسوم: ${w.fee || 0}
@@ -845,7 +667,7 @@
                 await userRef.update({ withdrawals: updated });
 
                 showToast('✅ تم تأكيد السحب');
-                loadPendingWithdrawals(); // تحديث القائمة
+                loadPendingWithdrawals();
             } catch (e) {
                 console.error(e);
                 showToast('❌ خطأ: ' + e.message, true);
@@ -883,7 +705,7 @@
                 });
 
                 showToast(`❌ تم رفض السحب وإعادة ${amount} ${currency}`);
-                loadPendingWithdrawals(); // تحديث القائمة
+                loadPendingWithdrawals();
             } catch (e) {
                 console.error(e);
                 showToast('❌ خطأ: ' + e.message, true);
@@ -891,14 +713,14 @@
         }
 
         // ============================================================
-        // 7. تأكيد إيداع تلقائي (DZD فقط)
+        // 7. تأكيد إيداع تلقائي (DZD فقط) - يعمل على مجموعة deposits
         // ============================================================
         async function autoConfirmDeposit() {
             const txId = document.getElementById('autoTxId').value.trim();
             const amount = parseFloat(document.getElementById('autoAmount').value);
 
             if (!txId) { showToast('⚠️ أدخل رقم العملية', true); return; }
-            if (!amount || amount <= 0) { showToast('⚠️ أدخل مبلغاً صحيحاً', true); return; }
+            if (!amount || amount <= 0) { showToast('⚠️ أدخل مبلغاً صحيحاً أكبر من 0', true); return; }
             if (!confirm(`تأكيد تلقائي لإيداع ${amount} DZD برقم العملية ${txId}؟`)) return;
 
             try {
@@ -919,26 +741,14 @@
                 const data = doc.data();
                 const depositId = data.depositId || '';
 
-                await approveDeposit(doc.id, data.uid, data.amount, data.currency, depositId);
-
-                document.getElementById('autoTxId').value = '';
-                document.getElementById('autoAmount').value = '';
-                showToast(`✅ تم تأكيد الإيداع (${txId})`);
-            } catch (e) {
-                console.error(e);
-                showToast('❌ خطأ: ' + e.message, true);
-            }
-        }
-
-        async function approveDeposit(id, uid, amount, currency, depositId) {
-            if (!confirm(`تأكيد إيداع ${amount} ${currency} للمستخدم ${uid}؟`)) return;
-            try {
-                await db.collection('deposits').doc(id).update({
+                // تأكيد الإيداع
+                await db.collection('deposits').doc(doc.id).update({
                     status: 'confirmed',
                     confirmedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                const userRef = db.collection('users').doc(uid);
+                // إضافة الرصيد للمستخدم
+                const userRef = db.collection('users').doc(data.uid);
                 const userDoc = await userRef.get();
                 if (!userDoc.exists) throw new Error('المستخدم غير موجود');
 
@@ -947,8 +757,12 @@
                     'wallets.dzd': (wallets.dzd || 0) + amount
                 });
 
-                showToast(`✅ تم تأكيد إيداع ${amount} ${currency}`);
-                loadPendingWithdrawals(); // تحديث القائمة
+                // إفراغ الحقول
+                document.getElementById('autoTxId').value = '';
+                document.getElementById('autoAmount').value = '';
+
+                showToast(`✅ تم تأكيد الإيداع (${txId})`);
+                loadPendingWithdrawals(); // تحديث القائمة (للتأكد)
             } catch (e) {
                 console.error(e);
                 showToast('❌ خطأ: ' + e.message, true);
@@ -993,13 +807,11 @@
 
                 const adminDoc = await db.collection('admins').doc(userId).get();
                 if (adminDoc.exists) {
-                    isAdmin = true;
                     document.getElementById('adminStatusBadge').textContent = '✅ أدمن';
                     document.getElementById('adminStatusBadge').className = 'status status-success';
                     document.getElementById('unauthorizedMessage').style.display = 'none';
                     document.getElementById('adminPanel').style.display = 'block';
 
-                    // جلب الطلبات المعلقة فوراً
                     loadPendingWithdrawals();
                 } else {
                     document.getElementById('unauthorizedMessage').style.display = 'block';
@@ -1055,9 +867,8 @@
             }
         });
 
-        console.log('🚀 لوحة الإدارة (نسخة مبسطة تعمل مع users/*/withdrawals)');
-        console.log('✅ تم إزالة التشخيص والأزرار الإضافية');
-        console.log('✅ تعرض فقط طلبات السحب المعلقة');
+        console.log('🚀 لوحة الإدارة - تعمل مع users/*/withdrawals و deposits');
+        console.log('✅ الإيداع التلقائي يعمل عند إدخال رقم العملية والمبلغ المطابق');
     </script>
 </body>
 </html>
