@@ -20,7 +20,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
-        /* ===== جميع الأنماط السابقة ===== */
+        /* ===== جميع الأنماط (بدون تغيير) ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --bg-primary: #f0f4f8; --bg-secondary: #ffffff; --bg-card: #ffffff;
@@ -542,11 +542,10 @@
         // 4. نافذة التأكيد المتطورة
         // ============================================================
         function showConfirmDialog(options) {
-            // options: { title, icon, type, details, confirmText, cancelText, onConfirm, onCancel }
             const defaultOptions = {
                 title: 'تأكيد العملية',
                 icon: 'question-circle',
-                type: 'success', // success, danger, warning
+                type: 'success',
                 details: [],
                 confirmText: 'تأكيد',
                 cancelText: 'إلغاء',
@@ -555,7 +554,6 @@
             };
             const opts = { ...defaultOptions, ...options };
 
-            // تعيين الأيقونة واللون
             const iconMap = {
                 'success': { class: 'success', icon: 'fa-check-circle' },
                 'danger': { class: 'danger', icon: 'fa-times-circle' },
@@ -567,7 +565,6 @@
 
             document.getElementById('modalTitle').textContent = opts.title;
 
-            // بناء التفاصيل
             const body = document.getElementById('modalBody');
             body.innerHTML = '';
             opts.details.forEach(detail => {
@@ -584,7 +581,6 @@
                 body.appendChild(row);
             });
 
-            // تعيين أزرار التأكيد والإلغاء
             const confirmBtn = document.getElementById('confirmBtn');
             confirmBtn.textContent = opts.confirmText;
             confirmBtn.className = `btn btn-confirm-${opts.type}`;
@@ -819,8 +815,8 @@
                         <small>التاريخ: ${formatDateTime(w.createdAt)}</small>
                         ${w.recipientAddress ? `
                             <br><small style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:4px;">
-                                <span>العنوان: ${w.recipientAddress}</span>
-                                <button class="copy-btn" onclick="copyText('${w.recipientAddress}')" title="نسخ العنوان">
+                                <span>رقم الحساب البريدي: ${w.recipientAddress}</span>
+                                <button class="copy-btn" onclick="copyText('${w.recipientAddress}')" title="نسخ رقم الحساب البريدي">
                                     <i class="fas fa-copy"></i>
                                 </button>
                             </small>
@@ -1022,7 +1018,6 @@
             if (!txId) { showToast('⚠️ أدخل رقم العملية'); return; }
             if (!amount || amount <= 0) { showToast('⚠️ أدخل مبلغاً صحيحاً'); return; }
 
-            // نبحث أولاً عن الطلب لعرض تفاصيله في نافذة التأكيد
             try {
                 const usersSnap = await db.collection('users').get();
                 let targetData = null;
@@ -1139,7 +1134,7 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة مع نافذة تأكيد متطورة');
+        console.log('🚀 لوحة الإدارة - تم تغيير "العنوان" إلى "رقم الحساب البريدي"');
         console.log('✅ لإضافة أدمن: أنشئ مستنداً في مجموعة admins باسم الـ telegramId');
     </script>
 </body>
