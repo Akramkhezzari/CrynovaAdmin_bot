@@ -709,12 +709,24 @@
                 </div>
             </div>
 
-            <!-- تبويب طلبات الإيداع -->
+            <!-- تبويب طلبات الإيداع (مع شريط بحث) -->
             <div id="tab-deposits" class="tab-content">
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
                     <i class="fas fa-arrow-down text-success"></i> طلبات الإيداع المعلقة
                     <span id="depositsBadgeCount" class="status status-pending" style="margin-right:8px;">0</span>
                 </h2>
+
+                <!-- ===== شريط البحث ===== -->
+                <div class="search-bar">
+                    <input type="text" id="depositSearchInput" placeholder="بحث بواسطة UID..." aria-label="بحث عن طلبات إيداع">
+                    <button class="btn btn-primary btn-sm" onclick="searchDeposits()">
+                        <i class="fas fa-search"></i> بحث
+                    </button>
+                    <button class="btn btn-sm btn-clear" onclick="clearDepositsSearch()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
                 <div id="adminDepositsList">
                     <div class="admin-empty">
                         <i class="fas fa-check-circle text-success"></i>
@@ -828,6 +840,10 @@
         // متغيرات خاصة بالبحث في طلبات السحب
         let allPendingWithdrawals = [];
         let withdrawalsFilter = '';
+
+        // متغيرات خاصة بالبحث في طلبات الإيداع
+        let allPendingDeposits = [];
+        let depositsFilter = '';
 
         // ============================================================
         // 3. دوال مساعدة
@@ -1389,14 +1405,15 @@
                     // عرض المستخدمين في صفحة الحماية
                     renderProtectUsers(allUsers);
 
-                    // تخزين طلبات السحب للبحث
+                    // تخزين طلبات السحب والإيداع للبحث
                     pendingWithdrawals.sort((a, b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0));
                     allPendingWithdrawals = pendingWithdrawals;
                     renderWithdrawalsWithFilter();
 
-                    // ترتيب الإيداعات وعرضها
                     pendingDeposits.sort((a, b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0));
-                    renderPendingDeposits(pendingDeposits);
+                    allPendingDeposits = pendingDeposits;
+                    renderDepositsWithFilter();
+
                     updateBadges(pendingWithdrawals.length, pendingDeposits.length);
 
                     // معالجة المطابقات التلقائية (نفس الكود السابق)
@@ -1410,7 +1427,6 @@
                         });
 
                         // البحث عن مطابقات مع طلبات الإيداع المعلقة
-                        // نستخدم pendingDeposits التي جمعناها أعلاه
                         pendingDeposits.forEach(d => {
                             const match = pendingMatches.find(m =>
                                 m.transactionId === d.transactionId &&
@@ -1478,6 +1494,28 @@
             renderWithdrawalsWithFilter();
         }
 
+        // دوال البحث في طلبات الإيداع
+        function renderDepositsWithFilter() {
+            let filtered = allPendingDeposits;
+            if (depositsFilter.trim() !== '') {
+                const filterLower = depositsFilter.trim().toLowerCase();
+                filtered = allPendingDeposits.filter(d => d.uid.toLowerCase().includes(filterLower));
+            }
+            renderPendingDeposits(filtered);
+        }
+
+        function searchDeposits() {
+            const input = document.getElementById('depositSearchInput');
+            depositsFilter = input.value;
+            renderDepositsWithFilter();
+        }
+
+        function clearDepositsSearch() {
+            document.getElementById('depositSearchInput').value = '';
+            depositsFilter = '';
+            renderDepositsWithFilter();
+        }
+
         // الاستماع للضغط على Enter في حقول البحث
         document.addEventListener('DOMContentLoaded', function() {
             const searchInvestorInput = document.getElementById('investorSearchInput');
@@ -1493,6 +1531,14 @@
                 searchWithdrawalInput.addEventListener('keypress', function(e) {
                     if (e.key === 'Enter') {
                         searchWithdrawals();
+                    }
+                });
+            }
+            const searchDepositInput = document.getElementById('depositSearchInput');
+            if (searchDepositInput) {
+                searchDepositInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        searchDeposits();
                     }
                 });
             }
@@ -1592,7 +1638,9 @@
                 renderWithdrawalsWithFilter();
 
                 pendingDeposits.sort((a,b) => (b.createdAt?.toDate?.()||0) - (a.createdAt?.toDate?.()||0));
-                renderPendingDeposits(pendingDeposits);
+                allPendingDeposits = pendingDeposits;
+                renderDepositsWithFilter();
+
                 updateBadges(pendingWithdrawals.length, pendingDeposits.length);
             } catch(e) { console.error(e); }
         }
@@ -1650,7 +1698,7 @@
         function renderPendingDeposits(list) {
             const container = document.getElementById('adminDepositsList');
             if (!list.length) {
-                container.innerHTML = `<div class="admin-empty"><i class="fas fa-check-circle text-success"></i><div>لا توجد طلبات إيداع معلقة</div></div>`;
+                container.innerHTML = `<div class="admin-empty"><i class="fas fa-check-circle text-success"></i><div>لا توجد طلبات إيداع معلقة${depositsFilter ? ' مطابقة للبحث' : ''}</div></div>`;
                 return;
             }
             container.innerHTML = list.map(d => `
@@ -2272,8 +2320,8 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة - تم إضافة محرك البحث في صفحة طلبات السحب');
-        console.log('✅ يمكن البحث عن طلبات السحب باستخدام UID.');
+        console.log('🚀 لوحة الإدارة - تم إضافة محرك البحث في صفحة طلبات الإيداع');
+        console.log('✅ يمكن البحث عن طلبات الإيداع باستخدام UID.');
     </script>
 </body>
 </html>
