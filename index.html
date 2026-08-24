@@ -20,564 +20,205 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
-        /* ============================================================
-           جميع الأنماط من الكود الأصلي (بدون تغيير)
-           ============================================================ */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        /* جميع الأنماط كما هي (لم تتغير) */
+        * { margin:0; padding:0; box-sizing:border-box; }
         :root {
-            --bg-primary: #f0f4f8;
-            --bg-secondary: #ffffff;
-            --bg-card: #ffffff;
-            --bg-card-hover: #f8faff;
-            --bg-input: #f0f4f8;
-            --bg-nav: #ffffff;
-
-            --text-primary: #1a1a2e;
-            --text-secondary: #4a4a6a;
-            --text-muted: #8a8aaa;
-            --text-white: #ffffff;
-
-            --accent: #6c5ce7;
-            --accent-light: #a29bfe;
-            --accent-glow: rgba(108, 92, 231, 0.15);
-            --accent-gradient: linear-gradient(135deg, #6c5ce7, #a29bfe);
-
-            --success: #00b894;
-            --success-light: rgba(0, 184, 148, 0.12);
-            --warning: #fdcb6e;
-            --warning-light: rgba(253, 203, 110, 0.12);
-            --danger: #e17055;
-            --danger-light: rgba(225, 112, 85, 0.12);
-            --info: #0984e3;
-            --info-light: rgba(9, 132, 227, 0.12);
-            --dzd-color: #e17055;
-            --dzd-light: rgba(225, 112, 85, 0.12);
-
-            --border: #e2e8f0;
-            --border-light: #f0f4f8;
-            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
-            --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.08);
-            --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.12);
-            --shadow-glow: 0 4px 24px rgba(108, 92, 231, 0.25);
-
-            --radius-sm: 10px;
-            --radius-md: 16px;
-            --radius-lg: 24px;
-            --radius-xl: 32px;
-
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-slow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            --bg-primary: #f0f4f8; --bg-secondary: #ffffff; --bg-card: #ffffff;
+            --bg-card-hover: #f8faff; --bg-input: #f0f4f8; --bg-nav: #ffffff;
+            --text-primary: #1a1a2e; --text-secondary: #4a4a6a; --text-muted: #8a8aaa;
+            --text-white: #ffffff; --accent: #6c5ce7; --accent-light: #a29bfe;
+            --accent-glow: rgba(108,92,231,0.15); --accent-gradient: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            --success: #00b894; --success-light: rgba(0,184,148,0.12);
+            --warning: #fdcb6e; --warning-light: rgba(253,203,110,0.12);
+            --danger: #e17055; --danger-light: rgba(225,112,85,0.12);
+            --info: #0984e3; --info-light: rgba(9,132,227,0.12);
+            --dzd-color: #e17055; --dzd-light: rgba(225,112,85,0.12);
+            --border: #e2e8f0; --border-light: #f0f4f8;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+            --shadow-md: 0 8px 32px rgba(0,0,0,0.08);
+            --shadow-lg: 0 16px 48px rgba(0,0,0,0.12);
+            --shadow-glow: 0 4px 24px rgba(108,92,231,0.25);
+            --radius-sm: 10px; --radius-md: 16px; --radius-lg: 24px; --radius-xl: 32px;
+            --transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+            --transition-slow: all 0.5s cubic-bezier(0.4,0,0.2,1);
         }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
+        html { scroll-behavior: smooth; }
         body {
             font-family: 'Cairo', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
-            padding-bottom: 30px;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+            background: var(--bg-primary); color: var(--text-primary);
+            min-height: 100vh; padding-bottom: 30px; overflow-x: hidden;
+            -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
         }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-light); }
 
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--bg-primary);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--accent);
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--accent-light);
-        }
+        .app-container { max-width: 480px; margin: 0 auto; padding: 16px 16px 24px; }
 
-        .app-container {
-            max-width: 480px;
-            margin: 0 auto;
-            padding: 16px 16px 24px;
-        }
-
-        /* HEADER */
         .app-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: flex; justify-content: space-between; align-items: center;
             padding: 12px 0 20px;
         }
         .app-header .logo {
-            font-size: 20px;
-            font-weight: 900;
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
+            font-size: 20px; font-weight: 900;
+            background: var(--accent-gradient); -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            display: flex; align-items: center; gap: 8px;
         }
-        .app-header .logo i {
-            -webkit-text-fill-color: var(--accent);
-            font-size: 24px;
-        }
-        .app-header .header-actions {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
+        .app-header .logo i { -webkit-text-fill-color: var(--accent); font-size: 24px; }
+        .app-header .header-actions { display: flex; gap: 8px; align-items: center; }
         .app-header .header-actions button {
-            width: 40px;
-            height: 40px;
-            border: none;
-            border-radius: 50%;
-            background: var(--bg-card);
-            color: var(--text-secondary);
-            font-size: 18px;
-            cursor: pointer;
-            transition: var(--transition);
+            width: 40px; height: 40px; border: none; border-radius: 50%;
+            background: var(--bg-card); color: var(--text-secondary); font-size: 18px;
+            cursor: pointer; transition: var(--transition);
             box-shadow: var(--shadow-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
         }
-        .app-header .header-actions button:hover {
-            transform: scale(1.05);
-            box-shadow: var(--shadow-md);
-        }
+        .app-header .header-actions button:hover { transform: scale(1.05); box-shadow: var(--shadow-md); }
 
-        /* CARDS */
         .card {
-            background: var(--bg-card);
-            border-radius: var(--radius-md);
-            padding: 20px;
-            margin-bottom: 16px;
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow-sm);
+            background: var(--bg-card); border-radius: var(--radius-md);
+            padding: 20px; margin-bottom: 16px;
+            border: 1px solid var(--border); box-shadow: var(--shadow-sm);
             transition: var(--transition);
         }
-        .card:hover {
-            box-shadow: var(--shadow-md);
-            border-color: var(--accent-light);
+        .card:hover { box-shadow: var(--shadow-md); border-color: var(--accent-light); }
+        .card.gradient { background: var(--accent-gradient); border: none; color: var(--text-white); }
+        .card.gradient .card-title i, .card.gradient .text-muted, .card.gradient .balance-label {
+            color: rgba(255,255,255,0.8);
         }
-        .card.gradient {
-            background: var(--accent-gradient);
-            border: none;
-            color: var(--text-white);
+        .card.gradient .balance-large { -webkit-text-fill-color: white; background: none; }
+        .card.dzd-gradient { background: linear-gradient(135deg, #e17055, #d63031); border: none; color: var(--text-white); }
+        .card.dzd-gradient .card-title i, .card.dzd-gradient .text-muted, .card.dzd-gradient .balance-label {
+            color: rgba(255,255,255,0.8);
         }
-        .card.gradient .card-title i,
-        .card.gradient .text-muted,
-        .card.gradient .balance-label {
-            color: rgba(255, 255, 255, 0.8);
-        }
-        .card.gradient .balance-large {
-            -webkit-text-fill-color: white;
-            background: none;
-        }
-        .card.dzd-gradient {
-            background: linear-gradient(135deg, #e17055, #d63031);
-            border: none;
-            color: var(--text-white);
-        }
-        .card.dzd-gradient .card-title i,
-        .card.dzd-gradient .text-muted,
-        .card.dzd-gradient .balance-label {
-            color: rgba(255, 255, 255, 0.8);
-        }
-        .card.dzd-gradient .balance-large {
-            -webkit-text-fill-color: white;
-            background: none;
-        }
+        .card.dzd-gradient .balance-large { -webkit-text-fill-color: white; background: none; }
 
         .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 14px;
         }
-        .card-title {
-            font-size: 17px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .card-title i {
-            color: var(--accent);
-            font-size: 18px;
-        }
+        .card-title { font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .card-title i { color: var(--accent); font-size: 18px; }
 
-        /* BUTTONS */
         .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 14px 24px;
-            border: none;
-            border-radius: var(--radius-sm);
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: var(--transition);
-            text-decoration: none;
-            width: 100%;
-            font-family: inherit;
-            position: relative;
-            overflow: hidden;
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 14px 24px; border: none; border-radius: var(--radius-sm);
+            font-size: 16px; font-weight: 700; cursor: pointer;
+            transition: var(--transition); text-decoration: none; width: 100%;
+            font-family: inherit; position: relative; overflow: hidden;
         }
-        .btn:active {
-            transform: scale(0.96);
-        }
+        .btn:active { transform: scale(0.96); }
+        .btn-primary { background: var(--accent-gradient); color: white; box-shadow: var(--shadow-glow); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(108,92,231,0.35); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,184,148,0.35); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(225,112,85,0.35); }
+        .btn-dzd { background: linear-gradient(135deg, #e17055, #d63031); color: white; box-shadow: 0 4px 24px rgba(225,112,85,0.3); }
+        .btn-dzd:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(225,112,85,0.4); }
+        .btn-info { background: var(--info); color: white; }
+        .btn-info:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(9,132,227,0.35); }
+        .btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text-primary); }
+        .btn-outline:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+        .btn-ghost { background: var(--bg-input); color: var(--text-secondary); }
+        .btn-ghost:hover { background: var(--border); }
+        .btn-sm { padding: 10px 16px; font-size: 14px; }
+        .btn-xs { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
+        .btn-block { width: 100%; }
 
-        .btn-primary {
-            background: var(--accent-gradient);
-            color: white;
-            box-shadow: var(--shadow-glow);
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 32px rgba(108, 92, 231, 0.35);
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0, 184, 148, 0.35);
-        }
-
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-        .btn-danger:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(225, 112, 85, 0.35);
-        }
-
-        .btn-dzd {
-            background: linear-gradient(135deg, #e17055, #d63031);
-            color: white;
-            box-shadow: 0 4px 24px rgba(225, 112, 85, 0.3);
-        }
-        .btn-dzd:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 32px rgba(225, 112, 85, 0.4);
-        }
-
-        .btn-info {
-            background: var(--info);
-            color: white;
-        }
-        .btn-info:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(9, 132, 227, 0.35);
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--border);
-            color: var(--text-primary);
-        }
-        .btn-outline:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-            background: var(--accent-glow);
-        }
-
-        .btn-ghost {
-            background: var(--bg-input);
-            color: var(--text-secondary);
-        }
-        .btn-ghost:hover {
-            background: var(--border);
-        }
-
-        .btn-sm {
-            padding: 10px 16px;
-            font-size: 14px;
-        }
-        .btn-xs {
-            padding: 6px 12px;
-            font-size: 12px;
-            border-radius: 6px;
-        }
-        .btn-block {
-            width: 100%;
-        }
-
-        /* COPY BUTTON */
         .copy-btn {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 6px 14px;
-            border-radius: var(--radius-sm);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            font-family: inherit;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            flex-shrink: 0;
+            background: var(--accent); color: white; border: none;
+            padding: 6px 14px; border-radius: var(--radius-sm);
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            transition: var(--transition); font-family: inherit;
+            display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;
         }
-        .copy-btn:hover {
-            background: var(--accent-light);
-            transform: scale(1.02);
-        }
-        .copy-btn:active {
-            transform: scale(0.95);
-        }
-        .copy-btn.copied {
-            background: var(--success);
-        }
+        .copy-btn:hover { background: var(--accent-light); transform: scale(1.02); }
+        .copy-btn:active { transform: scale(0.95); }
+        .copy-btn.copied { background: var(--success); }
 
-        /* INPUTS */
-        .input-group {
-            margin-bottom: 16px;
+        .input-group { margin-bottom: 16px; }
+        .input-group label { display: block; color: var(--text-secondary); font-size: 14px; margin-bottom: 6px; font-weight: 600; }
+        .input-group label .required { color: var(--danger); margin-right: 2px; }
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%; padding: 14px 16px; background: var(--bg-input);
+            border: 2px solid var(--border); border-radius: var(--radius-sm);
+            color: var(--text-primary); font-size: 16px;
+            transition: var(--transition); font-family: inherit; font-weight: 500;
         }
-        .input-group label {
-            display: block;
-            color: var(--text-secondary);
-            font-size: 14px;
-            margin-bottom: 6px;
-            font-weight: 600;
-        }
-        .input-group label .required {
-            color: var(--danger);
-            margin-right: 2px;
-        }
-        .input-group input,
-        .input-group select,
-        .input-group textarea {
-            width: 100%;
-            padding: 14px 16px;
-            background: var(--bg-input);
-            border: 2px solid var(--border);
-            border-radius: var(--radius-sm);
-            color: var(--text-primary);
-            font-size: 16px;
-            transition: var(--transition);
-            font-family: inherit;
-            font-weight: 500;
-        }
-        .input-group input:focus,
-        .input-group select:focus,
-        .input-group textarea:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 4px var(--accent-glow);
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus {
+            outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-glow);
             background: var(--bg-card);
         }
-        .input-group input::placeholder {
-            color: var(--text-muted);
-            font-weight: 400;
-        }
-        .input-group .input-icon {
-            position: relative;
-        }
+        .input-group input::placeholder { color: var(--text-muted); font-weight: 400; }
+        .input-group .input-icon { position: relative; }
         .input-group .input-icon i {
-            position: absolute;
-            right: 14px;
-            top: 50%;
-            transform: translateY(-50%);
+            position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
             color: var(--text-muted);
         }
-        .input-group .input-icon input {
-            padding-right: 44px;
-        }
+        .input-group .input-icon input { padding-right: 44px; }
 
-        /* STATUS BADGES */
         .status {
-            display: inline-block;
-            padding: 4px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 0.3px;
+            display: inline-block; padding: 4px 14px; border-radius: 20px;
+            font-size: 12px; font-weight: 700; letter-spacing: 0.3px;
         }
-        .status-success {
-            background: var(--success-light);
-            color: var(--success);
-        }
-        .status-pending {
-            background: var(--warning-light);
-            color: #b7950b;
-        }
-        .status-danger {
-            background: var(--danger-light);
-            color: var(--danger);
-        }
-        .status-info {
-            background: var(--info-light);
-            color: var(--info);
-        }
+        .status-success { background: var(--success-light); color: var(--success); }
+        .status-pending { background: var(--warning-light); color: #b7950b; }
+        .status-danger { background: var(--danger-light); color: var(--danger); }
+        .status-info { background: var(--info-light); color: var(--info); }
 
-        /* ADMIN PANEL STYLES */
         .admin-request-card {
-            background: var(--bg-card);
-            border-radius: var(--radius-sm);
-            padding: 14px;
-            margin-bottom: 12px;
-            border: 1px solid var(--border);
-            transition: var(--transition);
+            background: var(--bg-card); border-radius: var(--radius-sm);
+            padding: 14px; margin-bottom: 12px;
+            border: 1px solid var(--border); transition: var(--transition);
         }
-        .admin-request-card:hover {
-            border-color: var(--accent-light);
-        }
-        .admin-request-card .user-info {
-            font-weight: 700;
-            color: var(--accent);
-        }
-        .admin-request-card .details {
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin: 6px 0;
-        }
-        .admin-request-card .actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-        }
-        .admin-request-card .actions .btn {
-            padding: 8px 16px;
-            font-size: 13px;
-            width: auto;
-            flex: 1;
-        }
-        .admin-request-card .status-badge {
-            font-size: 12px;
-        }
-        .admin-empty {
-            text-align: center;
-            padding: 30px 0;
-            color: var(--text-muted);
-        }
-        .admin-empty i {
-            font-size: 48px;
-            display: block;
-            margin-bottom: 10px;
-        }
+        .admin-request-card:hover { border-color: var(--accent-light); }
+        .admin-request-card .user-info { font-weight: 700; color: var(--accent); }
+        .admin-request-card .details { font-size: 14px; color: var(--text-secondary); margin: 6px 0; }
+        .admin-request-card .actions { display: flex; gap: 8px; margin-top: 10px; }
+        .admin-request-card .actions .btn { padding: 8px 16px; font-size: 13px; width: auto; flex: 1; }
+        .admin-request-card .status-badge { font-size: 12px; }
+        .admin-empty { text-align: center; padding: 30px 0; color: var(--text-muted); }
+        .admin-empty i { font-size: 48px; display: block; margin-bottom: 10px; }
 
-        /* UTILITY */
-        .text-center {
-            text-align: center;
-        }
-        .text-accent {
-            color: var(--accent);
-        }
-        .text-success {
-            color: var(--success);
-        }
-        .text-danger {
-            color: var(--danger);
-        }
-        .text-warning {
-            color: var(--warning);
-        }
-        .text-muted {
-            color: var(--text-secondary);
-        }
-        .text-white {
-            color: white;
-        }
-        .text-dzd {
-            color: var(--dzd-color);
-        }
-        .mt-8 {
-            margin-top: 8px;
-        }
-        .mt-16 {
-            margin-top: 16px;
-        }
-        .mt-24 {
-            margin-top: 24px;
-        }
-        .mb-8 {
-            margin-bottom: 8px;
-        }
-        .mb-16 {
-            margin-bottom: 16px;
-        }
-        .flex {
-            display: flex;
-        }
-        .flex-between {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .flex-center {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .flex-wrap {
-            flex-wrap: wrap;
-        }
-        .gap-8 {
-            gap: 8px;
-        }
-        .gap-12 {
-            gap: 12px;
-        }
-        .gap-16 {
-            gap: 16px;
-        }
-        .w-full {
-            width: 100%;
-        }
-        .hidden {
-            display: none !important;
-        }
-        .relative {
-            position: relative;
-        }
-        .rounded-full {
-            border-radius: 50%;
-        }
-        .divider {
-            height: 1px;
-            background: var(--border);
-            margin: 16px 0;
-        }
-        .clickable {
-            cursor: pointer;
-        }
+        .text-center { text-align: center; }
+        .text-accent { color: var(--accent); }
+        .text-success { color: var(--success); }
+        .text-danger { color: var(--danger); }
+        .text-warning { color: var(--warning); }
+        .text-muted { color: var(--text-secondary); }
+        .text-white { color: white; }
+        .text-dzd { color: var(--dzd-color); }
+        .mt-8 { margin-top: 8px; }
+        .mt-16 { margin-top: 16px; }
+        .mt-24 { margin-top: 24px; }
+        .mb-8 { margin-bottom: 8px; }
+        .mb-16 { margin-bottom: 16px; }
+        .flex { display: flex; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .flex-center { display: flex; align-items: center; gap: 8px; }
+        .flex-wrap { flex-wrap: wrap; }
+        .gap-8 { gap: 8px; }
+        .gap-12 { gap: 12px; }
+        .gap-16 { gap: 16px; }
+        .w-full { width: 100%; }
+        .hidden { display: none !important; }
+        .relative { position: relative; }
+        .rounded-full { border-radius: 50%; }
+        .divider { height: 1px; background: var(--border); margin: 16px 0; }
+        .clickable { cursor: pointer; }
 
-        #unauthorizedMessage {
-            padding: 40px 20px;
-        }
-        #unauthorizedMessage i {
-            font-size: 64px;
-            color: var(--danger);
-        }
-        #unauthorizedMessage h2 {
-            margin-top: 16px;
-        }
-        #unauthorizedMessage p {
-            color: var(--text-secondary);
-        }
+        #unauthorizedMessage { padding: 40px 20px; }
+        #unauthorizedMessage i { font-size: 64px; color: var(--danger); }
+        #unauthorizedMessage h2 { margin-top: 16px; }
+        #unauthorizedMessage p { color: var(--text-secondary); }
     </style>
 </head>
 <body>
 
     <div class="app-container">
-        <!-- HEADER -->
         <header class="app-header">
             <div class="logo"><i class="fas fa-shield-alt"></i> لوحة الإدارة</div>
             <div class="header-actions">
@@ -587,16 +228,15 @@
             </div>
         </header>
 
-        <!-- ===== صفحة الإدارة ===== -->
         <div id="adminPanel">
             <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
                 <i class="fas fa-shield-alt text-danger"></i> لوحة الإدارة
             </h2>
 
-            <!-- طلبات السحب -->
+            <!-- طلبات السحب المعلقة -->
             <div class="card">
                 <div class="card-header">
-                    <div class="card-title"><i class="fas fa-arrow-up text-danger"></i> طلبات السحب</div>
+                    <div class="card-title"><i class="fas fa-arrow-up text-danger"></i> طلبات السحب المعلقة</div>
                     <span id="pendingWithdrawalsCount" class="status status-pending">0</span>
                 </div>
                 <div id="adminWithdrawalsList">
@@ -607,7 +247,7 @@
                 </div>
             </div>
 
-            <!-- تأكيد إيداع تلقائي (DZD فقط) -->
+            <!-- تأكيد إيداع تلقائي -->
             <div class="card" style="border:2px solid var(--info);">
                 <div class="card-header">
                     <div class="card-title"><i class="fas fa-bolt text-info"></i> تأكيد إيداع تلقائي (DZD)</div>
@@ -621,12 +261,11 @@
                     <label>المبلغ (DZD) <span class="required">*</span></label>
                     <input type="number" id="autoAmount" placeholder="أدخل المبلغ المستلم" step="0.01" min="0.01">
                 </div>
-                <!-- تم إزالة خيار العملة، أصبح DZD فقط -->
                 <button class="btn btn-info" onclick="autoConfirmDeposit()" style="color:white;">
                     <i class="fas fa-check-circle"></i> تأكيد تلقائي
                 </button>
                 <div style="font-size:12px;color:var(--text-muted);margin-top:8px;">
-                    <i class="fas fa-info-circle"></i> سيتم البحث عن طلب إيداع معلق بنفس رقم العملية والمبلغ (DZD)، وتأكيده تلقائياً.
+                    <i class="fas fa-info-circle"></i> سيتم البحث عن طلب إيداع معلق بنفس رقم العملية والمبلغ (DZD) وتأكيده.
                 </div>
             </div>
         </div>
@@ -663,7 +302,7 @@
         // ============================================================
         let userData = null;
         let isAdmin = false;
-        let unsubscribeWithdrawals = null;
+        let unsubscribeUsers = null;
 
         // ============================================================
         // 3. دوال مساعدة
@@ -672,34 +311,6 @@
             if (!timestamp) return '--';
             const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
             return date.toLocaleDateString('ar-EG', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
-        }
-
-        function getStatusBadge(status) {
-            const map = {
-                'active': 'status-success',
-                'pending': 'status-pending',
-                'completed': 'status-success',
-                'confirmed': 'status-success',
-                'rejected': 'status-danger',
-                'failed': 'status-danger',
-                'processing': 'status-pending',
-                'inactive': 'status-danger'
-            };
-            return map[status] || 'status-info';
-        }
-
-        function getStatusText(status) {
-            const map = {
-                'active': 'نشط',
-                'pending': 'قيد الانتظار',
-                'completed': 'مكتمل',
-                'confirmed': 'مؤكد',
-                'rejected': 'مرفوض',
-                'failed': 'فشل',
-                'processing': 'قيد المعالجة',
-                'inactive': 'غير نشط'
-            };
-            return map[status] || status;
         }
 
         function copyText(text) {
@@ -756,19 +367,24 @@
             }
             const uid = tgUser.id.toString();
             try {
+                // التحقق من وجود المستخدم
                 const userDoc = await db.collection('users').doc(uid).get();
                 if (!userDoc.exists) {
+                    // إنشاء مستخدم جديد بالهيكل المناسب
                     const displayName = tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : '');
                     await db.collection('users').doc(uid).set({
                         telegramId: uid,
                         displayName: displayName || 'مستخدم',
                         joinDate: firebase.firestore.FieldValue.serverTimestamp(),
-                        // محفظة DZD فقط
                         wallets: {
                             dzd: 0,
-                            dzdReward: 0,
+                            dzdLocked: 0,
                             dzdReferral: 0,
-                            dzdLocked: 0
+                            dzdReward: 0,
+                            locked: 0,
+                            main: 0,
+                            referral: 0,
+                            reward: 0
                         },
                         miningData: {
                             currentPackage: null,
@@ -791,21 +407,16 @@
                     });
                 }
 
+                // التحقق من صلاحية الأدمن
                 const adminDoc = await db.collection('admins').doc(uid).get();
                 if (adminDoc.exists) {
                     isAdmin = true;
                     userData = (await db.collection('users').doc(uid).get()).data();
                     userData.telegramId = uid;
 
-                    // مستمع لتحديث بيانات المستخدم
-                    db.collection('users').doc(uid).onSnapshot((doc) => {
-                        if (doc.exists) {
-                            userData = { telegramId: uid, ...doc.data() };
-                        }
-                    });
+                    // بدء الاستماع الفوري للمستخدمين (لجلب الطلبات)
+                    listenToUsers();
 
-                    // بدء الاستماع الفوري لطلبات السحب
-                    listenToWithdrawals();
                     document.getElementById('unauthorizedMessage').style.display = 'none';
                     document.getElementById('adminPanel').style.display = 'block';
                 } else {
@@ -820,37 +431,76 @@
         }
 
         // ============================================================
-        // 5. الاستماع الفوري لطلبات السحب
+        // 5. الاستماع الفوري لجميع المستخدمين (لجلب الطلبات)
         // ============================================================
-        function listenToWithdrawals() {
-            if (unsubscribeWithdrawals) {
-                unsubscribeWithdrawals();
+        function listenToUsers() {
+            if (unsubscribeUsers) {
+                unsubscribeUsers();
             }
 
-            unsubscribeWithdrawals = db.collection('withdrawals')
-                .where('status', '==', 'pending')
-                .orderBy('createdAt', 'desc')
+            // الاستماع لكل التغييرات في مجموعة users
+            unsubscribeUsers = db.collection('users')
                 .onSnapshot((snapshot) => {
-                    const list = [];
+                    const allWithdrawals = [];
                     snapshot.forEach(doc => {
-                        list.push({ id: doc.id, ...doc.data() });
+                        const data = doc.data();
+                        const uid = doc.id;
+                        const displayName = data.displayName || uid;
+                        // معالجة طلبات السحب
+                        if (data.withdrawals && Array.isArray(data.withdrawals)) {
+                            data.withdrawals.forEach(w => {
+                                if (w.status === 'pending') {
+                                    allWithdrawals.push({
+                                        ...w,
+                                        uid: uid,
+                                        userDisplayName: displayName,
+                                        docId: doc.id // معرف المستخدم
+                                    });
+                                }
+                            });
+                        }
                     });
-                    renderAdminWithdrawals(list);
+                    // ترتيب حسب تاريخ الإنشاء (الأحدث أولاً)
+                    allWithdrawals.sort((a, b) => {
+                        const da = a.createdAt?.toDate?.() || new Date(0);
+                        const db2 = b.createdAt?.toDate?.() || new Date(0);
+                        return db2 - da;
+                    });
+                    renderAdminWithdrawals(allWithdrawals);
                 }, (error) => {
-                    console.error('❌ خطأ في الاستماع لطلبات السحب:', error);
-                    loadAdminWithdrawalsFallback();
+                    console.error('❌ خطأ في الاستماع للمستخدمين:', error);
+                    // محاولة جلب مرة واحدة كحل بديل
+                    loadUsersFallback();
                 });
         }
 
-        async function loadAdminWithdrawalsFallback() {
+        async function loadUsersFallback() {
             try {
-                const snap = await db.collection('withdrawals')
-                    .where('status', '==', 'pending')
-                    .orderBy('createdAt', 'desc')
-                    .get();
-                const list = [];
-                snap.forEach(d => list.push({ id: d.id, ...d.data() }));
-                renderAdminWithdrawals(list);
+                const snap = await db.collection('users').get();
+                const allWithdrawals = [];
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const uid = doc.id;
+                    const displayName = data.displayName || uid;
+                    if (data.withdrawals && Array.isArray(data.withdrawals)) {
+                        data.withdrawals.forEach(w => {
+                            if (w.status === 'pending') {
+                                allWithdrawals.push({
+                                    ...w,
+                                    uid: uid,
+                                    userDisplayName: displayName,
+                                    docId: doc.id
+                                });
+                            }
+                        });
+                    }
+                });
+                allWithdrawals.sort((a, b) => {
+                    const da = a.createdAt?.toDate?.() || new Date(0);
+                    const db2 = b.createdAt?.toDate?.() || new Date(0);
+                    return db2 - da;
+                });
+                renderAdminWithdrawals(allWithdrawals);
             } catch (e) {
                 console.error(e);
                 renderAdminWithdrawals([]);
@@ -893,12 +543,13 @@
                             <br><small>التاريخ: ${formatDateTime(w.createdAt)}</small>
                             ${w.recipientAddress ? `<br><small>العنوان: ${w.recipientAddress}</small>` : ''}
                             ${w.eccpId ? `<br><small>ECCP: ${w.eccpId}</small>` : ''}
+                            ${w.withdrawalId ? `<br><small>رقم الطلب: ${w.withdrawalId}</small>` : ''}
                         </div>
                         <div class="actions">
-                            <button class="btn btn-success btn-sm" onclick="approveWithdrawal('${w.id}','${w.uid}','${w.withdrawalId||''}')">
+                            <button class="btn btn-success btn-sm" onclick="approveWithdrawal('${w.docId}','${w.withdrawalId}','${w.uid}')">
                                 <i class="fas fa-check"></i> تأكيد
                             </button>
-                            <button class="btn btn-danger btn-sm" onclick="rejectWithdrawal('${w.id}','${w.uid}',${w.amount},'${w.currency||'DZD'}','${w.withdrawalId||''}')">
+                            <button class="btn btn-danger btn-sm" onclick="rejectWithdrawal('${w.docId}','${w.withdrawalId}','${w.uid}',${w.amount},'${w.currency||'DZD'}')">
                                 <i class="fas fa-times"></i> رفض
                             </button>
                         </div>
@@ -908,30 +559,27 @@
         }
 
         // ============================================================
-        // 7. تأكيد / رفض السحب (DZD فقط)
+        // 7. تأكيد / رفض السحب (التحديث داخل مصفوفة المستخدم)
         // ============================================================
-        async function approveWithdrawal(id, uid, withdrawalId) {
+        async function approveWithdrawal(userDocId, withdrawalId, uid) {
             if (!confirm(`تأكيد سحب للمستخدم ${uid}؟`)) return;
 
             try {
-                await db.collection('withdrawals').doc(id).update({
-                    status: 'completed',
-                    completedAt: firebase.firestore.FieldValue.serverTimestamp()
+                const userRef = db.collection('users').doc(userDocId);
+                const userDoc = await userRef.get();
+                if (!userDoc.exists) throw new Error('المستخدم غير موجود');
+
+                const data = userDoc.data();
+                const withdrawals = data.withdrawals || [];
+                // تحديث حالة الطلب
+                const updated = withdrawals.map(w => {
+                    if (w.withdrawalId === withdrawalId) {
+                        return { ...w, status: 'completed' };
+                    }
+                    return w;
                 });
 
-                const userRef = db.collection('users').doc(uid);
-                const userDoc = await userRef.get();
-                if (userDoc.exists) {
-                    const userWithdrawals = userDoc.data().withdrawals || [];
-                    const updatedWithdrawals = userWithdrawals.map(w => {
-                        if (w.withdrawalId === withdrawalId) {
-                            return { ...w, status: 'completed' };
-                        }
-                        return w;
-                    });
-                    await userRef.update({ withdrawals: updatedWithdrawals });
-                }
-
+                await userRef.update({ withdrawals: updated });
                 showToast('✅ تم تأكيد السحب');
             } catch (e) {
                 console.error(e);
@@ -939,33 +587,33 @@
             }
         }
 
-        async function rejectWithdrawal(id, uid, amount, currency, withdrawalId) {
+        async function rejectWithdrawal(userDocId, withdrawalId, uid, amount, currency) {
             if (!confirm(`رفض طلب السحب وإعادة ${amount} DZD للمستخدم ${uid}؟`)) return;
 
             try {
-                await db.collection('withdrawals').doc(id).update({
-                    status: 'rejected',
-                    rejectedAt: firebase.firestore.FieldValue.serverTimestamp()
+                const userRef = db.collection('users').doc(userDocId);
+                const userDoc = await userRef.get();
+                if (!userDoc.exists) throw new Error('المستخدم غير موجود');
+
+                const data = userDoc.data();
+                const wallets = data.wallets || {};
+                const currentDzd = wallets.dzd || 0;
+
+                // تحديث المحفظة بإعادة المبلغ (نعتبر العملة DZD دائماً)
+                await userRef.update({
+                    'wallets.dzd': currentDzd + amount
                 });
 
-                const userRef = db.collection('users').doc(uid);
-                const userDoc = await userRef.get();
-                if (userDoc.exists) {
-                    // نضيف المبلغ إلى محفظة DZD (بغض النظر عن العملة المدخلة)
-                    await userRef.update({
-                        'wallets.dzd': firebase.firestore.FieldValue.increment(amount)
-                    });
+                // تحديث حالة الطلب
+                const withdrawals = data.withdrawals || [];
+                const updated = withdrawals.map(w => {
+                    if (w.withdrawalId === withdrawalId) {
+                        return { ...w, status: 'rejected' };
+                    }
+                    return w;
+                });
 
-                    const userWithdrawals = userDoc.data().withdrawals || [];
-                    const updatedWithdrawals = userWithdrawals.map(w => {
-                        if (w.withdrawalId === withdrawalId) {
-                            return { ...w, status: 'rejected' };
-                        }
-                        return w;
-                    });
-                    await userRef.update({ withdrawals: updatedWithdrawals });
-                }
-
+                await userRef.update({ withdrawals: updated });
                 showToast(`❌ تم رفض السحب وإعادة ${amount} DZD`);
             } catch (e) {
                 console.error(e);
@@ -976,34 +624,30 @@
         // ============================================================
         // 8. تأكيد إيداع تلقائي (DZD فقط)
         // ============================================================
-        async function approveDeposit(id, uid, amount, depositId) {
-            // العملة دائماً DZD
-            if (!confirm(`تأكيد إيداع ${amount} DZD للمستخدم ${uid}؟`)) return;
-
+        async function approveDeposit(userDocId, depositId, amount) {
+            // نمرر معرف المستند ورقم الإيداع والمبلغ
             try {
-                await db.collection('deposits').doc(id).update({
-                    status: 'confirmed',
-                    confirmedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                const userRef = db.collection('users').doc(uid);
+                const userRef = db.collection('users').doc(userDocId);
                 const userDoc = await userRef.get();
                 if (!userDoc.exists) throw new Error('المستخدم غير موجود');
 
-                // إضافة إلى محفظة DZD
-                await userRef.update({
-                    'wallets.dzd': firebase.firestore.FieldValue.increment(amount)
-                });
-
-                const userDeposits = userDoc.data().deposits || [];
-                const updatedDeposits = userDeposits.map(d => {
+                const data = userDoc.data();
+                const deposits = data.deposits || [];
+                const updated = deposits.map(d => {
                     if (d.depositId === depositId) {
                         return { ...d, status: 'confirmed' };
                     }
                     return d;
                 });
-                await userRef.update({ deposits: updatedDeposits });
 
+                // إضافة المبلغ إلى محفظة dzd
+                const currentDzd = data.wallets?.dzd || 0;
+                await userRef.update({
+                    'wallets.dzd': currentDzd + amount,
+                    deposits: updated
+                });
+
+                // إضافة معاملة
                 await userRef.update({
                     transactions: firebase.firestore.FieldValue.arrayUnion({
                         type: 'deposit',
@@ -1032,30 +676,35 @@
             if (!confirm(`تأكيد تلقائي لإيداع ${amount} DZD برقم العملية ${txId}؟`)) return;
 
             try {
-                // البحث عن طلب إيداع معلق بنفس رقم العملية والمبلغ والعملة DZD
-                const snapshot = await db.collection('deposits')
-                    .where('transactionId', '==', txId)
-                    .where('amount', '==', amount)
-                    .where('currency', '==', 'DZD')
-                    .where('status', '==', 'pending')
-                    .limit(1)
-                    .get();
+                // البحث عن مستخدم لديه إيداع معلق بنفس البيانات
+                const usersSnap = await db.collection('users').get();
+                let found = false;
 
-                if (snapshot.empty) {
-                    showToast('❌ لم يتم العثور على طلب إيداع معلق بهذه البيانات (DZD)');
-                    return;
+                for (const doc of usersSnap.docs) {
+                    const data = doc.data();
+                    const deposits = data.deposits || [];
+                    const target = deposits.find(d =>
+                        d.transactionId === txId &&
+                        d.amount === amount &&
+                        d.currency === 'DZD' &&
+                        d.status === 'pending'
+                    );
+
+                    if (target) {
+                        // تم العثور على طلب مطابق
+                        await approveDeposit(doc.id, target.depositId, amount);
+                        found = true;
+                        break;
+                    }
                 }
 
-                const doc = snapshot.docs[0];
-                const data = doc.data();
-                const depositId = data.depositId || '';
-
-                await approveDeposit(doc.id, data.uid, data.amount, depositId);
-
-                document.getElementById('autoTxId').value = '';
-                document.getElementById('autoAmount').value = '';
-
-                showToast(`✅ تم تأكيد الإيداع تلقائياً (رقم العملية: ${txId})`);
+                if (!found) {
+                    showToast('❌ لم يتم العثور على طلب إيداع معلق بهذه البيانات (DZD)');
+                } else {
+                    document.getElementById('autoTxId').value = '';
+                    document.getElementById('autoAmount').value = '';
+                    showToast(`✅ تم تأكيد الإيداع تلقائياً (رقم العملية: ${txId})`);
+                }
             } catch (e) {
                 console.error(e);
                 showToast('❌ حدث خطأ: ' + e.message);
@@ -1115,7 +764,7 @@
             }
         });
 
-        console.log('🚀 لوحة الإدارة (DZD فقط)');
+        console.log('🚀 لوحة الإدارة - الهيكل الجديد (الطلبات داخل المستخدمين)');
         console.log('✅ لإضافة أدمن: أنشئ مستنداً في مجموعة admins باسم الـ telegramId');
     </script>
 </body>
