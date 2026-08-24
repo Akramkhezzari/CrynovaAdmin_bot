@@ -533,6 +533,39 @@
         .match-card .match-details { font-size: 14px; color: var(--text-secondary); margin: 4px 0; }
         .match-card .match-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
         .match-card .match-actions .btn { padding: 6px 14px; font-size: 12px; width: auto; }
+
+        /* ===== رسالة خطأ مخصصة ===== */
+        .error-box {
+            background: var(--danger-light);
+            border: 2px solid var(--danger);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            margin: 12px 0;
+            text-align: center;
+        }
+        .error-box i {
+            font-size: 32px;
+            color: var(--danger);
+            display: block;
+            margin-bottom: 8px;
+        }
+        .error-box .error-detail {
+            font-size: 14px;
+            color: var(--text-secondary);
+            word-break: break-word;
+            margin-top: 6px;
+            background: var(--bg-card);
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+        .error-box .error-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: var(--info);
+            text-decoration: underline;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -756,6 +789,7 @@
         let unsubscribeUsers = null;
         let unsubscribeMatches = null;
         let modalCallback = null;
+        let lastError = null; // لتخزين آخر خطأ لعرضه
 
         // ============================================================
         // 3. دوال مساعدة
@@ -817,11 +851,12 @@
             }, 1500);
         }
 
-        function showToast(msg) {
+        function showToast(msg, isError = false) {
             const t = document.createElement('div');
+            const bgColor = isError ? 'var(--danger)' : 'var(--accent)';
             t.style.cssText = `
                 position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
-                background: var(--accent); color: #fff; padding: 12px 24px;
+                background: ${bgColor}; color: #fff; padding: 12px 24px;
                 border-radius: 30px; font-weight: 700; z-index: 9999;
                 box-shadow: var(--shadow-lg); font-family: 'Cairo', sans-serif;
                 max-width: 90%; text-align: center;
@@ -832,7 +867,33 @@
                 t.style.opacity = '0';
                 t.style.transition = 'opacity 0.3s';
                 setTimeout(() => t.remove(), 300);
-            }, 3000);
+            }, 5000);
+        }
+
+        // عرض خطأ مفصل في واجهة المطابقات
+        function showMatchError(error) {
+            const container = document.getElementById('pendingMatchesList');
+            const errorMsg = error?.message || 'خطأ غير معروف';
+            const errorCode = error?.code || '';
+            let linkHtml = '';
+            if (errorCode === 'failed-precondition' && errorMsg.includes('index')) {
+                // محاولة إنشاء رابط الفهرس تلقائياً
+                const projectId = firebaseConfig.projectId;
+                const collectionId = 'pending_deposit_matches';
+                const indexUrl = `https://console.firebase.google.com/project/${projectId}/firestore/indexes?create_composite=ClJwcm9qZWN0cy9jcnlub3ZhLTRkNmIzL2RhdGFiYXNlcy8oZGVmYXVsdCkvY29sbGVjdGlvbkdyb3Vwcy9wZW5kaW5nX2RlcG9zaXRfbWF0Y2hlcy9pbmRleGVzL18QARoLCgZzdGF0dXMSAQESDAoIY3JlYXRlZEF0EAEaDAoIX19uYW1lX18QAQ`;
+                linkHtml = `<a href="${indexUrl}" target="_blank" class="error-link">🔗 اضغط هنا لإنشاء الفهرس المطلوب</a>`;
+            }
+            container.innerHTML = `
+                <div class="error-box">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div style="font-weight:700;color:var(--danger);">خطأ في تحميل طلبات المطابقة</div>
+                    <div class="error-detail">${errorMsg}</div>
+                    ${linkHtml}
+                    <div style="margin-top:12px;font-size:13px;color:var(--text-muted);">
+                        <i class="fas fa-info-circle"></i> يمكنك محاولة تحديث الصفحة أو الاتصال بالدعم الفني.
+                    </div>
+                </div>
+            `;
         }
 
         // ============================================================
@@ -998,46 +1059,57 @@
         }
 
         // ============================================================
-        // 6. الاستماع الفوري لطلبات المطابقة (مع تصحيح)
+        // 6. الاستماع الفوري لطلبات المطابقة (مع معالجة الأخطاء)
         // ============================================================
         function listenToMatches() {
             if (unsubscribeMatches) unsubscribeMatches();
 
             console.log('🔄 بدء الاستماع لطلبات المطابقة...');
-            // استخدام المجموعة الصحيحة: pending_deposit_matches
-            unsubscribeMatches = db.collection('pending_deposit_matches')
-                .where('status', '==', 'pending')
-                .orderBy('createdAt', 'desc')
-                .onSnapshot((snapshot) => {
-                    console.log(`📦 تم استلام ${snapshot.size} طلب مطابقة`);
-                    const matches = [];
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        console.log('📄 المستند:', doc.id, data);
-                        matches.push({ id: doc.id, ...data });
+            try {
+                unsubscribeMatches = db.collection('pending_deposit_matches')
+                    .where('status', '==', 'pending')
+                    .orderBy('createdAt', 'desc')
+                    .onSnapshot((snapshot) => {
+                        console.log(`📦 تم استلام ${snapshot.size} طلب مطابقة`);
+                        const matches = [];
+                        snapshot.forEach(doc => {
+                            const data = doc.data();
+                            console.log('📄 المستند:', doc.id, data);
+                            matches.push({ id: doc.id, ...data });
+                        });
+                        renderPendingMatches(matches);
+                        // تحديث البادج
+                        document.getElementById('matchesBadge').textContent = matches.length;
+                        document.getElementById('pendingMatchesCount').textContent = matches.length;
+                        if (matches.length === 0) {
+                            document.getElementById('matchesBadge').classList.add('hidden');
+                        } else {
+                            document.getElementById('matchesBadge').classList.remove('hidden');
+                        }
+                        // مسح أي خطأ سابق
+                        lastError = null;
+                    }, (error) => {
+                        console.error('❌ خطأ في الاستماع لطلبات المطابقة:', error);
+                        lastError = error;
+                        renderPendingMatches([]);
+                        showMatchError(error);
+                        showToast('❌ خطأ في تحميل طلبات المطابقة: ' + error.message, true);
                     });
-                    renderPendingMatches(matches);
-                    // تحديث البادج في شريط التنقل
-                    document.getElementById('matchesBadge').textContent = matches.length;
-                    document.getElementById('pendingMatchesCount').textContent = matches.length;
-                    if (matches.length === 0) {
-                        document.getElementById('matchesBadge').classList.add('hidden');
-                    } else {
-                        document.getElementById('matchesBadge').classList.remove('hidden');
-                    }
-                }, (error) => {
-                    console.error('❌ خطأ في الاستماع لطلبات المطابقة:', error);
-                    renderPendingMatches([]);
-                    showToast('❌ خطأ في تحميل طلبات المطابقة');
-                });
+            } catch (error) {
+                console.error('❌ خطأ غير متوقع:', error);
+                lastError = error;
+                showMatchError(error);
+                showToast('❌ خطأ غير متوقع: ' + error.message, true);
+            }
         }
 
-        // دالة تحديث يدوي قوية
+        // دالة تحديث يدوي قوية مع جلب مباشر
         function refreshMatches() {
             if (unsubscribeMatches) unsubscribeMatches();
+            // إعادة تشغيل المستمع
             listenToMatches();
             showToast('🔄 جاري تحديث طلبات المطابقة...');
-            // جلب مباشر للتأكد
+            // جلب مباشر للتأكد وعرض النتائج حتى لو فشل المستمع
             db.collection('pending_deposit_matches')
                 .where('status', '==', 'pending')
                 .orderBy('createdAt', 'desc')
@@ -1056,8 +1128,15 @@
                     } else {
                         document.getElementById('matchesBadge').classList.remove('hidden');
                     }
+                    // مسح أي خطأ سابق
+                    lastError = null;
                 })
-                .catch(err => console.error('❌ جلب مباشر فشل:', err));
+                .catch(err => {
+                    console.error('❌ جلب مباشر فشل:', err);
+                    lastError = err;
+                    showMatchError(err);
+                    showToast('❌ فشل الجلب المباشر: ' + err.message, true);
+                });
         }
 
         // ============================================================
@@ -1067,6 +1146,12 @@
             const container = document.getElementById('pendingMatchesList');
             const count = document.getElementById('pendingMatchesCount');
             count.textContent = matches.length;
+
+            // إذا كان هناك خطأ سابق ولم يتم عرضه، نعرضه
+            if (lastError && matches.length === 0) {
+                showMatchError(lastError);
+                return;
+            }
 
             if (!matches.length) {
                 container.innerHTML = `
@@ -1153,7 +1238,7 @@
                     showToast('✅ تم تحديث طلب المطابقة بنجاح');
                     refreshMatches();
                 }).catch(err => {
-                    showToast('❌ خطأ: '+err.message);
+                    showToast('❌ خطأ: '+err.message, true);
                 });
             };
 
@@ -1184,7 +1269,7 @@
                         refreshMatches();
                     } catch(e) {
                         console.error(e);
-                        showToast('❌ خطأ: '+e.message);
+                        showToast('❌ خطأ: '+e.message, true);
                     }
                 }
             });
@@ -1272,60 +1357,65 @@
                     const pendingWithdrawals = [];
 
                     // جلب طلبات المطابقة (لمطابقة الإيداعات الحقيقية)
-                    const pendingMatchesSnap = await db.collection('pending_deposit_matches')
-                        .where('status', '==', 'pending')
-                        .get();
-                    const pendingMatches = [];
-                    pendingMatchesSnap.forEach(doc => {
-                        pendingMatches.push({ id: doc.id, ...doc.data() });
-                    });
+                    try {
+                        const pendingMatchesSnap = await db.collection('pending_deposit_matches')
+                            .where('status', '==', 'pending')
+                            .get();
+                        const pendingMatches = [];
+                        pendingMatchesSnap.forEach(doc => {
+                            pendingMatches.push({ id: doc.id, ...doc.data() });
+                        });
 
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        const uid = doc.id;
-                        const displayName = data.displayName || uid;
+                        snapshot.forEach(doc => {
+                            const data = doc.data();
+                            const uid = doc.id;
+                            const displayName = data.displayName || uid;
 
-                        // السحوبات المعلقة
-                        if (data.withdrawals && Array.isArray(data.withdrawals)) {
-                            data.withdrawals.forEach(w => {
-                                if (w.status === 'pending') {
-                                    pendingWithdrawals.push({
-                                        ...w,
-                                        uid: uid,
-                                        userDisplayName: displayName,
-                                        docId: doc.id
-                                    });
-                                }
-                            });
-                        }
-
-                        // الإيداعات المعلقة
-                        if (data.deposits && Array.isArray(data.deposits)) {
-                            data.deposits.forEach(d => {
-                                if (d.status === 'pending') {
-                                    pendingDeposits.push({
-                                        ...d,
-                                        uid: uid,
-                                        userDisplayName: displayName,
-                                        docId: doc.id
-                                    });
-
-                                    // التحقق من المطابقة
-                                    const match = pendingMatches.find(m =>
-                                        m.transactionId === d.transactionId &&
-                                        m.amount === d.amount &&
-                                        m.currency === d.currency &&
-                                        m.status === 'pending'
-                                    );
-                                    if (match) {
-                                        confirmDepositDirect(doc.id, d.depositId, uid, displayName, d.amount);
-                                        db.collection('pending_deposit_matches').doc(match.id).delete();
-                                        refreshMatches(); // تحديث بعد الحذف
+                            // السحوبات المعلقة
+                            if (data.withdrawals && Array.isArray(data.withdrawals)) {
+                                data.withdrawals.forEach(w => {
+                                    if (w.status === 'pending') {
+                                        pendingWithdrawals.push({
+                                            ...w,
+                                            uid: uid,
+                                            userDisplayName: displayName,
+                                            docId: doc.id
+                                        });
                                     }
-                                }
-                            });
-                        }
-                    });
+                                });
+                            }
+
+                            // الإيداعات المعلقة
+                            if (data.deposits && Array.isArray(data.deposits)) {
+                                data.deposits.forEach(d => {
+                                    if (d.status === 'pending') {
+                                        pendingDeposits.push({
+                                            ...d,
+                                            uid: uid,
+                                            userDisplayName: displayName,
+                                            docId: doc.id
+                                        });
+
+                                        // التحقق من المطابقة
+                                        const match = pendingMatches.find(m =>
+                                            m.transactionId === d.transactionId &&
+                                            m.amount === d.amount &&
+                                            m.currency === d.currency &&
+                                            m.status === 'pending'
+                                        );
+                                        if (match) {
+                                            confirmDepositDirect(doc.id, d.depositId, uid, displayName, d.amount);
+                                            db.collection('pending_deposit_matches').doc(match.id).delete();
+                                            refreshMatches(); // تحديث بعد الحذف
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                    } catch (e) {
+                        console.warn('⚠️ خطأ في جلب طلبات المطابقة أثناء معالجة المستخدمين:', e);
+                        // لا نعرض خطأ للمستخدم هنا لأن المستمع الرئيسي سيتعامل معه
+                    }
 
                     const sortByDate = (a, b) => {
                         const da = a.createdAt?.toDate?.() || new Date(0);
@@ -1632,7 +1722,7 @@
                         showToast(`✅ تم إلغاء باقة التعدين للمستخدم ${displayName}`);
                     } catch(e) {
                         console.error(e);
-                        showToast('❌ خطأ: '+e.message);
+                        showToast('❌ خطأ: '+e.message, true);
                     }
                 }
             });
@@ -1720,7 +1810,7 @@
                 showToast(`✅ تم تعديل الأرباح للمستخدم ${displayName} إلى ${newTotal.toFixed(2)} DZD`);
             } catch(e) {
                 console.error(e);
-                showToast('❌ خطأ: '+e.message);
+                showToast('❌ خطأ: '+e.message, true);
             }
         }
 
@@ -1830,7 +1920,7 @@
                         showToast(`✅ تم ${actionName} المستخدم ${displayName} (${statusLabels[newStatus]})`);
                     } catch(e) {
                         console.error(e);
-                        showToast('❌ خطأ: '+e.message);
+                        showToast('❌ خطأ: '+e.message, true);
                     }
                 }
             });
@@ -1860,7 +1950,7 @@
                         );
                         await userRef.update({ withdrawals: updated });
                         showToast('✅ تم تأكيد السحب');
-                    } catch(e) { console.error(e); showToast('❌ خطأ: '+e.message); }
+                    } catch(e) { console.error(e); showToast('❌ خطأ: '+e.message, true); }
                 }
             });
         }
@@ -1890,7 +1980,7 @@
                         );
                         await userRef.update({ withdrawals: updated });
                         showToast(`❌ تم رفض السحب وإعادة ${amount} DZD`);
-                    } catch(e) { console.error(e); showToast('❌ خطأ: '+e.message); }
+                    } catch(e) { console.error(e); showToast('❌ خطأ: '+e.message, true); }
                 }
             });
         }
@@ -1919,7 +2009,7 @@
                     })
                 });
                 showToast(`✅ تم تأكيد إيداع ${amount} DZD للمستخدم ${displayName}`);
-            } catch(e) { console.error(e); showToast('❌ خطأ: '+e.message); }
+            } catch(e) { console.error(e); showToast('❌ خطأ: '+e.message, true); }
         }
 
         function confirmDeposit(userDocId, depositId, uid, displayName, amount) {
@@ -1960,7 +2050,7 @@
                         );
                         await userRef.update({ deposits: updated });
                         showToast('❌ تم رفض الإيداع');
-                    } catch(e) { console.error(e); showToast('❌ خطأ: '+e.message); }
+                    } catch(e) { console.error(e); showToast('❌ خطأ: '+e.message, true); }
                 }
             });
         }
@@ -2055,7 +2145,7 @@
 
             } catch(e) {
                 console.error(e);
-                showToast('❌ خطأ: '+e.message);
+                showToast('❌ خطأ: '+e.message, true);
             }
         }
 
@@ -2130,7 +2220,7 @@
         console.log('🚀 لوحة الإدارة - صفحة المطابقات المستقلة');
         console.log('✅ يتم حفظ طلبات المطابقة في مجموعة "pending_deposit_matches"');
         console.log('✅ لإضافة أدمن: أنشئ مستنداً في مجموعة admins باسم الـ telegramId');
-        console.log('✅ في حال عدم ظهور الطلبات، اضغط زر "تحديث" في تبويب المطابقات');
+        console.log('✅ في حال ظهور خطأ، سيتم عرض تفاصيله مع رابط لإنشاء الفهرس إذا لزم الأمر');
     </script>
 </body>
 </html>
