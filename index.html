@@ -20,7 +20,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
-        /* جميع الأنماط كما هي (لم تتغير) */
+        /* ===== نفس الأنماط السابقة مع إضافات للتنقل السفلي ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --bg-primary: #f0f4f8; --bg-secondary: #ffffff; --bg-card: #ffffff;
@@ -40,13 +40,14 @@
             --shadow-glow: 0 4px 24px rgba(108,92,231,0.25);
             --radius-sm: 10px; --radius-md: 16px; --radius-lg: 24px; --radius-xl: 32px;
             --transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
-            --transition-slow: all 0.5s cubic-bezier(0.4,0,0.2,1);
+            --bottom-nav-height: 70px;
         }
         html { scroll-behavior: smooth; }
         body {
             font-family: 'Cairo', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--bg-primary); color: var(--text-primary);
-            min-height: 100vh; padding-bottom: 30px; overflow-x: hidden;
+            min-height: 100vh; padding-bottom: calc(var(--bottom-nav-height) + 20px);
+            overflow-x: hidden;
             -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
         }
         ::-webkit-scrollbar { width: 6px; }
@@ -84,17 +85,6 @@
             transition: var(--transition);
         }
         .card:hover { box-shadow: var(--shadow-md); border-color: var(--accent-light); }
-        .card.gradient { background: var(--accent-gradient); border: none; color: var(--text-white); }
-        .card.gradient .card-title i, .card.gradient .text-muted, .card.gradient .balance-label {
-            color: rgba(255,255,255,0.8);
-        }
-        .card.gradient .balance-large { -webkit-text-fill-color: white; background: none; }
-        .card.dzd-gradient { background: linear-gradient(135deg, #e17055, #d63031); border: none; color: var(--text-white); }
-        .card.dzd-gradient .card-title i, .card.dzd-gradient .text-muted, .card.dzd-gradient .balance-label {
-            color: rgba(255,255,255,0.8);
-        }
-        .card.dzd-gradient .balance-large { -webkit-text-fill-color: white; background: none; }
-
         .card-header {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 14px;
@@ -116,17 +106,9 @@
         .btn-success:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,184,148,0.35); }
         .btn-danger { background: var(--danger); color: white; }
         .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(225,112,85,0.35); }
-        .btn-dzd { background: linear-gradient(135deg, #e17055, #d63031); color: white; box-shadow: 0 4px 24px rgba(225,112,85,0.3); }
-        .btn-dzd:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(225,112,85,0.4); }
         .btn-info { background: var(--info); color: white; }
         .btn-info:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(9,132,227,0.35); }
-        .btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text-primary); }
-        .btn-outline:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
-        .btn-ghost { background: var(--bg-input); color: var(--text-secondary); }
-        .btn-ghost:hover { background: var(--border); }
         .btn-sm { padding: 10px 16px; font-size: 14px; }
-        .btn-xs { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
-        .btn-block { width: 100%; }
 
         .copy-btn {
             background: var(--accent); color: white; border: none;
@@ -142,23 +124,16 @@
         .input-group { margin-bottom: 16px; }
         .input-group label { display: block; color: var(--text-secondary); font-size: 14px; margin-bottom: 6px; font-weight: 600; }
         .input-group label .required { color: var(--danger); margin-right: 2px; }
-        .input-group input, .input-group select, .input-group textarea {
+        .input-group input, .input-group select {
             width: 100%; padding: 14px 16px; background: var(--bg-input);
             border: 2px solid var(--border); border-radius: var(--radius-sm);
             color: var(--text-primary); font-size: 16px;
             transition: var(--transition); font-family: inherit; font-weight: 500;
         }
-        .input-group input:focus, .input-group select:focus, .input-group textarea:focus {
+        .input-group input:focus, .input-group select:focus {
             outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-glow);
             background: var(--bg-card);
         }
-        .input-group input::placeholder { color: var(--text-muted); font-weight: 400; }
-        .input-group .input-icon { position: relative; }
-        .input-group .input-icon i {
-            position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
-            color: var(--text-muted);
-        }
-        .input-group .input-icon input { padding-right: 44px; }
 
         .status {
             display: inline-block; padding: 4px 14px; border-radius: 20px;
@@ -179,38 +154,91 @@
         .admin-request-card .details { font-size: 14px; color: var(--text-secondary); margin: 6px 0; }
         .admin-request-card .actions { display: flex; gap: 8px; margin-top: 10px; }
         .admin-request-card .actions .btn { padding: 8px 16px; font-size: 13px; width: auto; flex: 1; }
-        .admin-request-card .status-badge { font-size: 12px; }
         .admin-empty { text-align: center; padding: 30px 0; color: var(--text-muted); }
         .admin-empty i { font-size: 48px; display: block; margin-bottom: 10px; }
 
-        .text-center { text-align: center; }
-        .text-accent { color: var(--accent); }
-        .text-success { color: var(--success); }
-        .text-danger { color: var(--danger); }
-        .text-warning { color: var(--warning); }
-        .text-muted { color: var(--text-secondary); }
-        .text-white { color: white; }
-        .text-dzd { color: var(--dzd-color); }
-        .mt-8 { margin-top: 8px; }
-        .mt-16 { margin-top: 16px; }
-        .mt-24 { margin-top: 24px; }
-        .mb-8 { margin-bottom: 8px; }
-        .mb-16 { margin-bottom: 16px; }
-        .flex { display: flex; }
-        .flex-between { display: flex; justify-content: space-between; align-items: center; }
-        .flex-center { display: flex; align-items: center; gap: 8px; }
-        .flex-wrap { flex-wrap: wrap; }
-        .gap-8 { gap: 8px; }
-        .gap-12 { gap: 12px; }
-        .gap-16 { gap: 16px; }
-        .w-full { width: 100%; }
-        .hidden { display: none !important; }
-        .relative { position: relative; }
-        .rounded-full { border-radius: 50%; }
-        .divider { height: 1px; background: var(--border); margin: 16px 0; }
-        .clickable { cursor: pointer; }
+        /* ===== شريط التنقل السفلي ===== */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            max-width: 480px; margin: 0 auto;
+            height: var(--bottom-nav-height);
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+            z-index: 1000;
+            padding: 0 8px;
+        }
+        .bottom-nav .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            padding: 6px 0;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: inherit;
+            position: relative;
+            border-radius: 12px;
+        }
+        .bottom-nav .nav-item i {
+            font-size: 22px;
+            transition: var(--transition);
+        }
+        .bottom-nav .nav-item.active {
+            color: var(--accent);
+        }
+        .bottom-nav .nav-item.active i {
+            transform: translateY(-2px);
+            color: var(--accent);
+        }
+        .bottom-nav .nav-item .badge {
+            position: absolute;
+            top: 2px;
+            right: 50%;
+            transform: translateX(calc(50% + 16px));
+            background: var(--danger);
+            color: white;
+            font-size: 10px;
+            padding: 1px 7px;
+            border-radius: 20px;
+            font-weight: 700;
+            min-width: 18px;
+            text-align: center;
+            line-height: 16px;
+        }
+        .bottom-nav .nav-item .badge.hidden { display: none; }
 
-        #unauthorizedMessage { padding: 40px 20px; }
+        /* أقسام التبويب */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* إضافات */
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .text-muted { color: var(--text-secondary); }
+        .mt-16 { margin-top: 16px; }
+        .mb-8 { margin-bottom: 8px; }
+        .hidden { display: none !important; }
+
+        #unauthorizedMessage { padding: 40px 20px; text-align: center; }
         #unauthorizedMessage i { font-size: 64px; color: var(--danger); }
         #unauthorizedMessage h2 { margin-top: 16px; }
         #unauthorizedMessage p { color: var(--text-secondary); }
@@ -219,6 +247,7 @@
 <body>
 
     <div class="app-container">
+        <!-- HEADER -->
         <header class="app-header">
             <div class="logo"><i class="fas fa-shield-alt"></i> لوحة الإدارة</div>
             <div class="header-actions">
@@ -228,17 +257,43 @@
             </div>
         </header>
 
+        <!-- ===== المحتوى الرئيسي ===== -->
         <div id="adminPanel">
-            <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
-                <i class="fas fa-shield-alt text-danger"></i> لوحة الإدارة
-            </h2>
-
-            <!-- طلبات السحب المعلقة -->
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title"><i class="fas fa-arrow-up text-danger"></i> طلبات السحب المعلقة</div>
-                    <span id="pendingWithdrawalsCount" class="status status-pending">0</span>
+            <!-- تبويب الرئيسية -->
+            <div id="tab-home" class="tab-content active">
+                <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
+                    <i class="fas fa-home text-accent"></i> الرئيسية
+                </h2>
+                <!-- تأكيد إيداع تلقائي -->
+                <div class="card" style="border:2px solid var(--info);">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fas fa-bolt text-info"></i> تأكيد إيداع تلقائي (DZD)</div>
+                        <span class="status status-info">أتمتة</span>
+                    </div>
+                    <div class="input-group">
+                        <label>رقم العملية <span class="required">*</span></label>
+                        <input type="text" id="autoTxId" placeholder="أدخل رقم العملية كما في الطلب">
+                    </div>
+                    <div class="input-group">
+                        <label>المبلغ (DZD) <span class="required">*</span></label>
+                        <input type="number" id="autoAmount" placeholder="أدخل المبلغ المستلم" step="0.01" min="0.01">
+                    </div>
+                    <button class="btn btn-info" onclick="autoConfirmDeposit()" style="color:white;">
+                        <i class="fas fa-check-circle"></i> تأكيد تلقائي
+                    </button>
+                    <div style="font-size:12px;color:var(--text-muted);margin-top:8px;">
+                        <i class="fas fa-info-circle"></i> سيتم البحث عن طلب إيداع معلق بنفس رقم العملية والمبلغ (DZD) وتأكيده.
+                    </div>
                 </div>
+                <!-- يمكن إضافة إحصائيات سريعة هنا -->
+            </div>
+
+            <!-- تبويب طلبات السحب -->
+            <div id="tab-withdrawals" class="tab-content">
+                <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
+                    <i class="fas fa-arrow-up text-danger"></i> طلبات السحب المعلقة
+                    <span id="withdrawalsBadgeCount" class="status status-pending" style="margin-right:8px;">0</span>
+                </h2>
                 <div id="adminWithdrawalsList">
                     <div class="admin-empty">
                         <i class="fas fa-check-circle text-success"></i>
@@ -247,39 +302,49 @@
                 </div>
             </div>
 
-            <!-- تأكيد إيداع تلقائي -->
-            <div class="card" style="border:2px solid var(--info);">
-                <div class="card-header">
-                    <div class="card-title"><i class="fas fa-bolt text-info"></i> تأكيد إيداع تلقائي (DZD)</div>
-                    <span class="status status-info">أتمتة</span>
-                </div>
-                <div class="input-group">
-                    <label>رقم العملية <span class="required">*</span></label>
-                    <input type="text" id="autoTxId" placeholder="أدخل رقم العملية كما في الطلب">
-                </div>
-                <div class="input-group">
-                    <label>المبلغ (DZD) <span class="required">*</span></label>
-                    <input type="number" id="autoAmount" placeholder="أدخل المبلغ المستلم" step="0.01" min="0.01">
-                </div>
-                <button class="btn btn-info" onclick="autoConfirmDeposit()" style="color:white;">
-                    <i class="fas fa-check-circle"></i> تأكيد تلقائي
-                </button>
-                <div style="font-size:12px;color:var(--text-muted);margin-top:8px;">
-                    <i class="fas fa-info-circle"></i> سيتم البحث عن طلب إيداع معلق بنفس رقم العملية والمبلغ (DZD) وتأكيده.
+            <!-- تبويب طلبات الإيداع -->
+            <div id="tab-deposits" class="tab-content">
+                <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
+                    <i class="fas fa-arrow-down text-success"></i> طلبات الإيداع المعلقة
+                    <span id="depositsBadgeCount" class="status status-pending" style="margin-right:8px;">0</span>
+                </h2>
+                <div id="adminDepositsList">
+                    <div class="admin-empty">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <div>لا توجد طلبات إيداع معلقة</div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- رسالة عدم صلاحية -->
-        <div id="unauthorizedMessage" style="display:none;text-align:center;padding:40px 0;">
-            <i class="fas fa-lock" style="font-size:64px;color:var(--danger);"></i>
-            <h2 style="margin-top:16px;">غير مصرح</h2>
-            <p style="color:var(--text-secondary);">ليس لديك صلاحية للدخول إلى لوحة الإدارة.</p>
-            <button class="btn btn-primary" onclick="location.href='index.html'" style="margin-top:20px;width:auto;">
+        <div id="unauthorizedMessage" style="display:none;">
+            <i class="fas fa-lock"></i>
+            <h2>غير مصرح</h2>
+            <p>ليس لديك صلاحية للدخول إلى لوحة الإدارة.</p>
+            <button class="btn btn-primary" onclick="location.href='index.html'" style="width:auto;margin:20px auto 0;">
                 <i class="fas fa-arrow-right"></i> العودة إلى التطبيق
             </button>
         </div>
     </div>
+
+    <!-- ===== شريط التنقل السفلي ===== -->
+    <nav class="bottom-nav" id="bottomNav">
+        <button class="nav-item active" data-tab="tab-home" onclick="switchTab('tab-home')">
+            <i class="fas fa-home"></i>
+            <span>الرئيسية</span>
+        </button>
+        <button class="nav-item" data-tab="tab-withdrawals" onclick="switchTab('tab-withdrawals')">
+            <i class="fas fa-arrow-up"></i>
+            <span>السحب</span>
+            <span class="badge" id="withdrawalsBadge">0</span>
+        </button>
+        <button class="nav-item" data-tab="tab-deposits" onclick="switchTab('tab-deposits')">
+            <i class="fas fa-arrow-down"></i>
+            <span>الإيداع</span>
+            <span class="badge" id="depositsBadge">0</span>
+        </button>
+    </nav>
 
     <script>
         // ============================================================
@@ -331,7 +396,7 @@
         function showToast(msg) {
             const t = document.createElement('div');
             t.style.cssText = `
-                position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+                position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
                 background: var(--accent); color: #fff; padding: 12px 24px;
                 border-radius: 30px; font-weight: 700; z-index: 9999;
                 box-shadow: var(--shadow-lg); font-family: 'Cairo', sans-serif;
@@ -363,14 +428,13 @@
             if (!tgUser) {
                 document.getElementById('unauthorizedMessage').style.display = 'block';
                 document.getElementById('adminPanel').style.display = 'none';
+                document.getElementById('bottomNav').style.display = 'none';
                 return;
             }
             const uid = tgUser.id.toString();
             try {
-                // التحقق من وجود المستخدم
                 const userDoc = await db.collection('users').doc(uid).get();
                 if (!userDoc.exists) {
-                    // إنشاء مستخدم جديد بالهيكل المناسب
                     const displayName = tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : '');
                     await db.collection('users').doc(uid).set({
                         telegramId: uid,
@@ -392,12 +456,9 @@
                             totalMinedDZD: 0,
                             totalReferrals: 0,
                             miningHistory: {
-                                today: 0,
-                                todayDZD: 0,
-                                thisWeek: 0,
-                                thisWeekDZD: 0,
-                                thisMonth: 0,
-                                thisMonthDZD: 0
+                                today: 0, todayDZD: 0,
+                                thisWeek: 0, thisWeekDZD: 0,
+                                thisMonth: 0, thisMonthDZD: 0
                             }
                         },
                         transactions: [],
@@ -407,246 +468,260 @@
                     });
                 }
 
-                // التحقق من صلاحية الأدمن
                 const adminDoc = await db.collection('admins').doc(uid).get();
                 if (adminDoc.exists) {
                     isAdmin = true;
                     userData = (await db.collection('users').doc(uid).get()).data();
                     userData.telegramId = uid;
 
-                    // بدء الاستماع الفوري للمستخدمين (لجلب الطلبات)
                     listenToUsers();
-
                     document.getElementById('unauthorizedMessage').style.display = 'none';
                     document.getElementById('adminPanel').style.display = 'block';
+                    document.getElementById('bottomNav').style.display = 'flex';
                 } else {
                     document.getElementById('unauthorizedMessage').style.display = 'block';
                     document.getElementById('adminPanel').style.display = 'none';
+                    document.getElementById('bottomNav').style.display = 'none';
                 }
             } catch (e) {
                 console.error(e);
                 document.getElementById('unauthorizedMessage').style.display = 'block';
                 document.getElementById('adminPanel').style.display = 'none';
+                document.getElementById('bottomNav').style.display = 'none';
             }
         }
 
         // ============================================================
-        // 5. الاستماع الفوري لجميع المستخدمين (لجلب الطلبات)
+        // 5. الاستماع الفوري وجلب الطلبات
         // ============================================================
         function listenToUsers() {
-            if (unsubscribeUsers) {
-                unsubscribeUsers();
-            }
+            if (unsubscribeUsers) unsubscribeUsers();
 
-            // الاستماع لكل التغييرات في مجموعة users
             unsubscribeUsers = db.collection('users')
                 .onSnapshot((snapshot) => {
-                    const allWithdrawals = [];
+                    const pendingWithdrawals = [];
+                    const pendingDeposits = [];
+
                     snapshot.forEach(doc => {
                         const data = doc.data();
                         const uid = doc.id;
                         const displayName = data.displayName || uid;
-                        // معالجة طلبات السحب
+
+                        // معالجة السحوبات
                         if (data.withdrawals && Array.isArray(data.withdrawals)) {
                             data.withdrawals.forEach(w => {
                                 if (w.status === 'pending') {
-                                    allWithdrawals.push({
+                                    pendingWithdrawals.push({
                                         ...w,
                                         uid: uid,
                                         userDisplayName: displayName,
-                                        docId: doc.id // معرف المستخدم
+                                        docId: doc.id
+                                    });
+                                }
+                            });
+                        }
+
+                        // معالجة الإيداعات
+                        if (data.deposits && Array.isArray(data.deposits)) {
+                            data.deposits.forEach(d => {
+                                if (d.status === 'pending') {
+                                    pendingDeposits.push({
+                                        ...d,
+                                        uid: uid,
+                                        userDisplayName: displayName,
+                                        docId: doc.id
                                     });
                                 }
                             });
                         }
                     });
-                    // ترتيب حسب تاريخ الإنشاء (الأحدث أولاً)
-                    allWithdrawals.sort((a, b) => {
+
+                    // ترتيب تنازلي حسب التاريخ
+                    const sortByDate = (a, b) => {
                         const da = a.createdAt?.toDate?.() || new Date(0);
                         const db2 = b.createdAt?.toDate?.() || new Date(0);
                         return db2 - da;
-                    });
-                    renderAdminWithdrawals(allWithdrawals);
+                    };
+                    pendingWithdrawals.sort(sortByDate);
+                    pendingDeposits.sort(sortByDate);
+
+                    renderPendingWithdrawals(pendingWithdrawals);
+                    renderPendingDeposits(pendingDeposits);
+                    updateBadges(pendingWithdrawals.length, pendingDeposits.length);
                 }, (error) => {
                     console.error('❌ خطأ في الاستماع للمستخدمين:', error);
-                    // محاولة جلب مرة واحدة كحل بديل
-                    loadUsersFallback();
+                    loadFallback();
                 });
         }
 
-        async function loadUsersFallback() {
+        async function loadFallback() {
             try {
                 const snap = await db.collection('users').get();
-                const allWithdrawals = [];
+                const pendingWithdrawals = [];
+                const pendingDeposits = [];
                 snap.forEach(doc => {
                     const data = doc.data();
                     const uid = doc.id;
                     const displayName = data.displayName || uid;
-                    if (data.withdrawals && Array.isArray(data.withdrawals)) {
+                    if (data.withdrawals) {
                         data.withdrawals.forEach(w => {
                             if (w.status === 'pending') {
-                                allWithdrawals.push({
-                                    ...w,
-                                    uid: uid,
-                                    userDisplayName: displayName,
-                                    docId: doc.id
-                                });
+                                pendingWithdrawals.push({ ...w, uid, userDisplayName: displayName, docId: doc.id });
+                            }
+                        });
+                    }
+                    if (data.deposits) {
+                        data.deposits.forEach(d => {
+                            if (d.status === 'pending') {
+                                pendingDeposits.push({ ...d, uid, userDisplayName: displayName, docId: doc.id });
                             }
                         });
                     }
                 });
-                allWithdrawals.sort((a, b) => {
-                    const da = a.createdAt?.toDate?.() || new Date(0);
-                    const db2 = b.createdAt?.toDate?.() || new Date(0);
-                    return db2 - da;
-                });
-                renderAdminWithdrawals(allWithdrawals);
-            } catch (e) {
-                console.error(e);
-                renderAdminWithdrawals([]);
-            }
+                pendingWithdrawals.sort((a,b) => (b.createdAt?.toDate?.()||0) - (a.createdAt?.toDate?.()||0));
+                pendingDeposits.sort((a,b) => (b.createdAt?.toDate?.()||0) - (a.createdAt?.toDate?.()||0));
+                renderPendingWithdrawals(pendingWithdrawals);
+                renderPendingDeposits(pendingDeposits);
+                updateBadges(pendingWithdrawals.length, pendingDeposits.length);
+            } catch(e) { console.error(e); }
         }
 
         // ============================================================
-        // 6. عرض طلبات السحب
+        // 6. عرض القوائم
         // ============================================================
-        function renderAdminWithdrawals(list) {
+        function renderPendingWithdrawals(list) {
             const container = document.getElementById('adminWithdrawalsList');
-            const count = document.getElementById('pendingWithdrawalsCount');
-            count.textContent = list.length;
-
             if (!list.length) {
-                container.innerHTML = `
-                    <div class="admin-empty">
-                        <i class="fas fa-check-circle text-success"></i>
-                        <div>لا توجد طلبات سحب معلقة</div>
-                    </div>
-                `;
+                container.innerHTML = `<div class="admin-empty"><i class="fas fa-check-circle text-success"></i><div>لا توجد طلبات سحب معلقة</div></div>`;
                 return;
             }
-
-            container.innerHTML = list.map(w => {
-                const userDisplayName = w.userDisplayName || w.uid || 'مستخدم';
-                return `
-                    <div class="admin-request-card">
-                        <div class="flex-between">
-                            <span class="user-info">
-                                👤 <strong>${userDisplayName}</strong>
-                                <button class="copy-btn" onclick="copyText('${w.uid}')" style="padding:2px 8px;font-size:11px;background:var(--bg-input);color:var(--text-secondary);">
-                                    <i class="fas fa-copy"></i>
-                                </button>
-                            </span>
-                            <span class="status status-pending status-badge">قيد الانتظار</span>
-                        </div>
-                        <div class="details">
-                            <strong>${w.amount} ${w.currency || 'DZD'}</strong> | الرسوم: ${w.fee || 0}
-                            <br><small>التاريخ: ${formatDateTime(w.createdAt)}</small>
-                            ${w.recipientAddress ? `<br><small>العنوان: ${w.recipientAddress}</small>` : ''}
-                            ${w.eccpId ? `<br><small>ECCP: ${w.eccpId}</small>` : ''}
-                            ${w.withdrawalId ? `<br><small>رقم الطلب: ${w.withdrawalId}</small>` : ''}
-                        </div>
-                        <div class="actions">
-                            <button class="btn btn-success btn-sm" onclick="approveWithdrawal('${w.docId}','${w.withdrawalId}','${w.uid}')">
-                                <i class="fas fa-check"></i> تأكيد
+            container.innerHTML = list.map(w => `
+                <div class="admin-request-card">
+                    <div class="flex-between">
+                        <span class="user-info">
+                            👤 <strong>${w.userDisplayName}</strong>
+                            <button class="copy-btn" onclick="copyText('${w.uid}')" style="padding:2px 8px;font-size:11px;background:var(--bg-input);color:var(--text-secondary);">
+                                <i class="fas fa-copy"></i>
                             </button>
-                            <button class="btn btn-danger btn-sm" onclick="rejectWithdrawal('${w.docId}','${w.withdrawalId}','${w.uid}',${w.amount},'${w.currency||'DZD'}')">
-                                <i class="fas fa-times"></i> رفض
-                            </button>
-                        </div>
+                        </span>
+                        <span class="status status-pending">قيد الانتظار</span>
                     </div>
-                `;
-            }).join('');
+                    <div class="details">
+                        <strong>${w.amount} ${w.currency || 'DZD'}</strong> | رسوم: ${w.fee || 0}
+                        <br><small>التاريخ: ${formatDateTime(w.createdAt)}</small>
+                        ${w.recipientAddress ? `<br><small>العنوان: ${w.recipientAddress}</small>` : ''}
+                        ${w.withdrawalId ? `<br><small>رقم الطلب: ${w.withdrawalId}</small>` : ''}
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-success btn-sm" onclick="approveWithdrawal('${w.docId}','${w.withdrawalId}','${w.uid}')">
+                            <i class="fas fa-check"></i> تأكيد
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="rejectWithdrawal('${w.docId}','${w.withdrawalId}','${w.uid}',${w.amount},'${w.currency||'DZD'}')">
+                            <i class="fas fa-times"></i> رفض
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderPendingDeposits(list) {
+            const container = document.getElementById('adminDepositsList');
+            if (!list.length) {
+                container.innerHTML = `<div class="admin-empty"><i class="fas fa-check-circle text-success"></i><div>لا توجد طلبات إيداع معلقة</div></div>`;
+                return;
+            }
+            container.innerHTML = list.map(d => `
+                <div class="admin-request-card">
+                    <div class="flex-between">
+                        <span class="user-info">
+                            👤 <strong>${d.userDisplayName}</strong>
+                            <button class="copy-btn" onclick="copyText('${d.uid}')" style="padding:2px 8px;font-size:11px;background:var(--bg-input);color:var(--text-secondary);">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </span>
+                        <span class="status status-pending">قيد الانتظار</span>
+                    </div>
+                    <div class="details">
+                        <strong>${d.amount} ${d.currency || 'DZD'}</strong>
+                        <br><small>التاريخ: ${formatDateTime(d.createdAt)}</small>
+                        ${d.transactionId ? `<br><small>رقم العملية: ${d.transactionId}</small>` : ''}
+                        ${d.depositId ? `<br><small>رقم الإيداع: ${d.depositId}</small>` : ''}
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-success btn-sm" onclick="confirmDeposit('${d.docId}','${d.depositId}','${d.uid}',${d.amount})">
+                            <i class="fas fa-check"></i> تأكيد
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="rejectDeposit('${d.docId}','${d.depositId}','${d.uid}')">
+                            <i class="fas fa-times"></i> رفض
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateBadges(withdrawCount, depositCount) {
+            document.getElementById('withdrawalsBadge').textContent = withdrawCount;
+            document.getElementById('withdrawalsBadgeCount').textContent = withdrawCount;
+            document.getElementById('depositsBadge').textContent = depositCount;
+            document.getElementById('depositsBadgeCount').textContent = depositCount;
+            // إخفاء البادج إذا كان الصفر
+            document.querySelectorAll('.badge').forEach(b => {
+                if (parseInt(b.textContent) === 0) b.classList.add('hidden');
+                else b.classList.remove('hidden');
+            });
         }
 
         // ============================================================
-        // 7. تأكيد / رفض السحب (التحديث داخل مصفوفة المستخدم)
+        // 7. عمليات السحب (تأكيد / رفض)
         // ============================================================
         async function approveWithdrawal(userDocId, withdrawalId, uid) {
             if (!confirm(`تأكيد سحب للمستخدم ${uid}؟`)) return;
-
             try {
                 const userRef = db.collection('users').doc(userDocId);
                 const userDoc = await userRef.get();
                 if (!userDoc.exists) throw new Error('المستخدم غير موجود');
-
                 const data = userDoc.data();
-                const withdrawals = data.withdrawals || [];
-                // تحديث حالة الطلب
-                const updated = withdrawals.map(w => {
-                    if (w.withdrawalId === withdrawalId) {
-                        return { ...w, status: 'completed' };
-                    }
-                    return w;
-                });
-
+                const updated = (data.withdrawals || []).map(w =>
+                    w.withdrawalId === withdrawalId ? { ...w, status: 'completed' } : w
+                );
                 await userRef.update({ withdrawals: updated });
                 showToast('✅ تم تأكيد السحب');
-            } catch (e) {
-                console.error(e);
-                showToast('❌ حدث خطأ: ' + e.message);
-            }
+            } catch(e) { console.error(e); showToast('❌ خطأ: '+e.message); }
         }
 
         async function rejectWithdrawal(userDocId, withdrawalId, uid, amount, currency) {
-            if (!confirm(`رفض طلب السحب وإعادة ${amount} DZD للمستخدم ${uid}؟`)) return;
-
+            if (!confirm(`رفض سحب وإعادة ${amount} DZD للمستخدم ${uid}؟`)) return;
             try {
                 const userRef = db.collection('users').doc(userDocId);
                 const userDoc = await userRef.get();
                 if (!userDoc.exists) throw new Error('المستخدم غير موجود');
-
                 const data = userDoc.data();
-                const wallets = data.wallets || {};
-                const currentDzd = wallets.dzd || 0;
-
-                // تحديث المحفظة بإعادة المبلغ (نعتبر العملة DZD دائماً)
-                await userRef.update({
-                    'wallets.dzd': currentDzd + amount
-                });
-
-                // تحديث حالة الطلب
-                const withdrawals = data.withdrawals || [];
-                const updated = withdrawals.map(w => {
-                    if (w.withdrawalId === withdrawalId) {
-                        return { ...w, status: 'rejected' };
-                    }
-                    return w;
-                });
-
+                const currentDzd = data.wallets?.dzd || 0;
+                await userRef.update({ 'wallets.dzd': currentDzd + amount });
+                const updated = (data.withdrawals || []).map(w =>
+                    w.withdrawalId === withdrawalId ? { ...w, status: 'rejected' } : w
+                );
                 await userRef.update({ withdrawals: updated });
                 showToast(`❌ تم رفض السحب وإعادة ${amount} DZD`);
-            } catch (e) {
-                console.error(e);
-                showToast('❌ حدث خطأ: ' + e.message);
-            }
+            } catch(e) { console.error(e); showToast('❌ خطأ: '+e.message); }
         }
 
         // ============================================================
-        // 8. تأكيد إيداع تلقائي (DZD فقط)
+        // 8. عمليات الإيداع (تأكيد / رفض)
         // ============================================================
-        async function approveDeposit(userDocId, depositId, amount) {
-            // نمرر معرف المستند ورقم الإيداع والمبلغ
+        async function confirmDeposit(userDocId, depositId, uid, amount) {
+            if (!confirm(`تأكيد إيداع ${amount} DZD للمستخدم ${uid}؟`)) return;
             try {
                 const userRef = db.collection('users').doc(userDocId);
                 const userDoc = await userRef.get();
                 if (!userDoc.exists) throw new Error('المستخدم غير موجود');
-
                 const data = userDoc.data();
-                const deposits = data.deposits || [];
-                const updated = deposits.map(d => {
-                    if (d.depositId === depositId) {
-                        return { ...d, status: 'confirmed' };
-                    }
-                    return d;
-                });
-
-                // إضافة المبلغ إلى محفظة dzd
                 const currentDzd = data.wallets?.dzd || 0;
-                await userRef.update({
-                    'wallets.dzd': currentDzd + amount,
-                    deposits: updated
-                });
-
+                await userRef.update({ 'wallets.dzd': currentDzd + amount });
+                const updated = (data.deposits || []).map(d =>
+                    d.depositId === depositId ? { ...d, status: 'confirmed' } : d
+                );
+                await userRef.update({ deposits: updated });
                 // إضافة معاملة
                 await userRef.update({
                     transactions: firebase.firestore.FieldValue.arrayUnion({
@@ -659,27 +734,38 @@
                         depositId: depositId
                     })
                 });
-
                 showToast(`✅ تم تأكيد إيداع ${amount} DZD`);
-            } catch (e) {
-                console.error(e);
-                showToast('❌ حدث خطأ: ' + e.message);
-            }
+            } catch(e) { console.error(e); showToast('❌ خطأ: '+e.message); }
         }
 
+        async function rejectDeposit(userDocId, depositId, uid) {
+            if (!confirm(`رفض طلب الإيداع للمستخدم ${uid}؟`)) return;
+            try {
+                const userRef = db.collection('users').doc(userDocId);
+                const userDoc = await userRef.get();
+                if (!userDoc.exists) throw new Error('المستخدم غير موجود');
+                const data = userDoc.data();
+                const updated = (data.deposits || []).map(d =>
+                    d.depositId === depositId ? { ...d, status: 'rejected' } : d
+                );
+                await userRef.update({ deposits: updated });
+                showToast('❌ تم رفض الإيداع');
+            } catch(e) { console.error(e); showToast('❌ خطأ: '+e.message); }
+        }
+
+        // ============================================================
+        // 9. تأكيد إيداع تلقائي (من الصفحة الرئيسية)
+        // ============================================================
         async function autoConfirmDeposit() {
             const txId = document.getElementById('autoTxId').value.trim();
             const amount = parseFloat(document.getElementById('autoAmount').value);
-
             if (!txId) { showToast('⚠️ أدخل رقم العملية'); return; }
-            if (!amount || amount <= 0) { showToast('⚠️ أدخل مبلغاً صحيحاً (أكبر من 0)'); return; }
+            if (!amount || amount <= 0) { showToast('⚠️ أدخل مبلغاً صحيحاً'); return; }
             if (!confirm(`تأكيد تلقائي لإيداع ${amount} DZD برقم العملية ${txId}؟`)) return;
 
             try {
-                // البحث عن مستخدم لديه إيداع معلق بنفس البيانات
                 const usersSnap = await db.collection('users').get();
                 let found = false;
-
                 for (const doc of usersSnap.docs) {
                     const data = doc.data();
                     const deposits = data.deposits || [];
@@ -689,33 +775,42 @@
                         d.currency === 'DZD' &&
                         d.status === 'pending'
                     );
-
                     if (target) {
-                        // تم العثور على طلب مطابق
-                        await approveDeposit(doc.id, target.depositId, amount);
+                        await confirmDeposit(doc.id, target.depositId, data.uid || doc.id, amount);
                         found = true;
                         break;
                     }
                 }
-
                 if (!found) {
-                    showToast('❌ لم يتم العثور على طلب إيداع معلق بهذه البيانات (DZD)');
+                    showToast('❌ لم يتم العثور على طلب إيداع معلق بهذه البيانات');
                 } else {
                     document.getElementById('autoTxId').value = '';
                     document.getElementById('autoAmount').value = '';
                     showToast(`✅ تم تأكيد الإيداع تلقائياً (رقم العملية: ${txId})`);
                 }
-            } catch (e) {
-                console.error(e);
-                showToast('❌ حدث خطأ: ' + e.message);
-            }
+            } catch(e) { console.error(e); showToast('❌ خطأ: '+e.message); }
         }
 
         // ============================================================
-        // 9. الوضع المظلم
+        // 10. التبديل بين التبويبات
+        // ============================================================
+        function switchTab(tabId) {
+            // إخفاء كل التبويبات
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            // إظهار المطلوب
+            const target = document.getElementById(tabId);
+            if (target) target.classList.add('active');
+
+            // تحديث التنقل
+            document.querySelectorAll('.bottom-nav .nav-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.tab === tabId);
+            });
+        }
+
+        // ============================================================
+        // 11. الوضع المظلم
         // ============================================================
         let isDarkTheme = false;
-
         function toggleTheme() {
             isDarkTheme = !isDarkTheme;
             const root = document.documentElement;
@@ -730,7 +825,6 @@
                 root.style.setProperty('--text-secondary', '#8888aa');
                 root.style.setProperty('--text-muted', '#555577');
                 root.style.setProperty('--border', '#2a2a5a');
-                root.style.setProperty('--border-light', '#2a2a5a');
                 root.style.setProperty('--shadow-sm', '0 2px 8px rgba(0,0,0,0.4)');
                 root.style.setProperty('--shadow-md', '0 8px 32px rgba(0,0,0,0.5)');
                 root.style.setProperty('--shadow-lg', '0 16px 48px rgba(0,0,0,0.6)');
@@ -745,7 +839,6 @@
                 root.style.setProperty('--text-secondary', '#4a4a6a');
                 root.style.setProperty('--text-muted', '#8a8aaa');
                 root.style.setProperty('--border', '#e2e8f0');
-                root.style.setProperty('--border-light', '#f0f4f8');
                 root.style.setProperty('--shadow-sm', '0 2px 8px rgba(0,0,0,0.06)');
                 root.style.setProperty('--shadow-md', '0 8px 32px rgba(0,0,0,0.08)');
                 root.style.setProperty('--shadow-lg', '0 16px 48px rgba(0,0,0,0.12)');
@@ -754,17 +847,18 @@
         }
 
         // ============================================================
-        // 10. INIT
+        // 12. INIT
         // ============================================================
         document.addEventListener('DOMContentLoaded', function() {
             authAdmin();
             if (window.Telegram?.WebApp) {
-                const tg = window.Telegram.WebApp;
-                tg.BackButton.hide();
+                window.Telegram.WebApp.BackButton.hide();
             }
+            // تعيين التبويب الافتراضي
+            switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة - الهيكل الجديد (الطلبات داخل المستخدمين)');
+        console.log('🚀 لوحة الإدارة مع شريط تنقل سفلي (سحب وإيداع)');
         console.log('✅ لإضافة أدمن: أنشئ مستنداً في مجموعة admins باسم الـ telegramId');
     </script>
 </body>
