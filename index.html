@@ -468,8 +468,14 @@
         }
         .invest-card:hover { border-color: var(--accent-light); }
         .invest-card .invest-user { font-weight: 700; color: var(--accent); }
-        .invest-card .invest-details { font-size: 14px; color: var(--text-secondary); margin: 4px 0; }
-        .invest-card .invest-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+        .invest-card .invest-details { font-size: 14px; color: var(--text-secondary); margin: 6px 0; }
+        .invest-card .invest-details .detail-row { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px dashed var(--border-light); }
+        .invest-card .invest-details .detail-row:last-child { border-bottom: none; }
+        .invest-card .invest-details .label { color: var(--text-muted); font-weight: 500; }
+        .invest-card .invest-details .value { font-weight: 700; color: var(--text-primary); }
+        .invest-card .invest-details .value.highlight { color: var(--accent); }
+        .invest-card .invest-details .value.profit { color: var(--success); }
+        .invest-card .invest-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
         .invest-card .invest-actions .btn { padding: 6px 14px; font-size: 12px; width: auto; }
         .invest-badge {
             display: inline-block;
@@ -952,7 +958,7 @@
         }
 
         // ============================================================
-        // 6. الاستماع الفوري وجلب جميع البيانات (معدل للهيكل الجديد)
+        // 6. الاستماع الفوري وجلب جميع البيانات (معدل)
         // ============================================================
         function listenToUsers() {
             if (unsubscribeUsers) unsubscribeUsers();
@@ -970,36 +976,50 @@
                         const uid = doc.id;
                         const displayName = data.displayName || uid;
                         totalUsers++;
-                        totalBalance += data.wallets?.dzd || 0;
+                        const dzd = data.wallets?.dzd || 0;
+                        totalBalance += dzd;
                         allUsers.push({
                             uid: uid,
                             displayName: displayName,
                             status: data.status || 'active',
-                            dzd: data.wallets?.dzd || 0,
+                            dzd: dzd,
                             docId: doc.id
                         });
 
-                        // ---- تحديد المستثمرين بناءً على الهيكل الجديد ----
+                        // ---- تحديد المستثمرين ----
                         const mining = data.miningData || {};
                         const investments = data.investments || [];
-                        // شرط المستثمر: وجود استثمارات أو totalInvested > 0
                         const hasInvestment = (investments && investments.length > 0) || (mining.totalInvested && mining.totalInvested > 0);
                         if (hasInvestment) {
-                            // اسم الباقة: نأخذ المستوى أو نضع "استثمار"
-                            const packageName = mining.level ? `المستوى ${mining.level}` : 'استثمار';
-                            // إجمالي التعدين: نأخذ totalMinedDZD إن وجد، وإلا totalInvestmentReturns، وإلا totalInvested
-                            let totalMined = mining.totalMinedDZD || mining.totalInvestmentReturns || mining.totalInvested || 0;
-                            if (typeof totalMined === 'string') totalMined = parseFloat(totalMined) || 0;
+                            const level = mining.level || 1;
+                            // تسمية الباقة حسب المستوى (يمكن تعديلها)
+                            const packageNames = {
+                                1: 'الباقة الفضية',
+                                2: 'الباقة الذهبية',
+                                3: 'الباقة البلاتينية',
+                                4: 'الباقة الماسية'
+                            };
+                            const packageName = packageNames[level] || `المستوى ${level}`;
+                            const totalInvested = mining.totalInvested || 0;
+                            const totalReturns = mining.totalInvestmentReturns || mining.totalMinedDZD || 0;
+                            // حساب نسبة الأرباح
+                            let profitRatio = 0;
+                            if (totalInvested > 0) {
+                                profitRatio = (totalReturns / totalInvested) * 100;
+                            }
                             investors.push({
                                 uid: uid,
                                 displayName: displayName,
                                 package: packageName,
-                                totalMined: totalMined,
+                                totalInvested: totalInvested,
+                                totalReturns: totalReturns,
+                                profitRatio: profitRatio,
+                                currentBalance: dzd,
                                 docId: doc.id,
                                 miningData: mining,
                                 investments: investments
                             });
-                            totalMinedSum += totalMined;
+                            totalMinedSum += totalReturns;
                         }
                     });
 
@@ -1096,12 +1116,13 @@
                     const uid = doc.id;
                     const displayName = data.displayName || uid;
                     totalUsers++;
-                    totalBalance += data.wallets?.dzd || 0;
+                    const dzd = data.wallets?.dzd || 0;
+                    totalBalance += dzd;
                     allUsers.push({
                         uid: uid,
                         displayName: displayName,
                         status: data.status || 'active',
-                        dzd: data.wallets?.dzd || 0,
+                        dzd: dzd,
                         docId: doc.id
                     });
 
@@ -1109,19 +1130,33 @@
                     const investments = data.investments || [];
                     const hasInvestment = (investments && investments.length > 0) || (mining.totalInvested && mining.totalInvested > 0);
                     if (hasInvestment) {
-                        const packageName = mining.level ? `المستوى ${mining.level}` : 'استثمار';
-                        let totalMined = mining.totalMinedDZD || mining.totalInvestmentReturns || mining.totalInvested || 0;
-                        if (typeof totalMined === 'string') totalMined = parseFloat(totalMined) || 0;
+                        const level = mining.level || 1;
+                        const packageNames = {
+                            1: 'الباقة الفضية',
+                            2: 'الباقة الذهبية',
+                            3: 'الباقة البلاتينية',
+                            4: 'الباقة الماسية'
+                        };
+                        const packageName = packageNames[level] || `المستوى ${level}`;
+                        const totalInvested = mining.totalInvested || 0;
+                        const totalReturns = mining.totalInvestmentReturns || mining.totalMinedDZD || 0;
+                        let profitRatio = 0;
+                        if (totalInvested > 0) {
+                            profitRatio = (totalReturns / totalInvested) * 100;
+                        }
                         investors.push({
                             uid: uid,
                             displayName: displayName,
                             package: packageName,
-                            totalMined: totalMined,
+                            totalInvested: totalInvested,
+                            totalReturns: totalReturns,
+                            profitRatio: profitRatio,
+                            currentBalance: dzd,
                             docId: doc.id,
                             miningData: mining,
                             investments: investments
                         });
-                        totalMinedSum += totalMined;
+                        totalMinedSum += totalReturns;
                     }
                 });
 
@@ -1162,7 +1197,7 @@
         }
 
         // ============================================================
-        // 7. عرض قائمة المستثمرين (معدل)
+        // 7. عرض قائمة المستثمرين (معدل لعرض التفاصيل الكاملة)
         // ============================================================
         function renderInvestors(list) {
             const container = document.getElementById('investorsList');
@@ -1182,16 +1217,35 @@
                         <span class="invest-badge">${inv.package}</span>
                     </div>
                     <div class="invest-details">
-                        إجمالي التعدين: <strong>${inv.totalMined.toFixed(2)} DZD</strong>
-                        <br><small>المعرف: ${inv.uid}</small>
-                        ${inv.investments && inv.investments.length > 0 ? `<br><small>عدد الاستثمارات: ${inv.investments.length}</small>` : ''}
+                        <div class="detail-row">
+                            <span class="label">المبلغ المستثمر</span>
+                            <span class="value highlight">${inv.totalInvested.toFixed(2)} DZD</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">إجمالي الأرباح</span>
+                            <span class="value profit">${inv.totalReturns.toFixed(2)} DZD</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">نسبة الأرباح</span>
+                            <span class="value profit">${inv.profitRatio.toFixed(2)}%</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">الرصيد الحالي</span>
+                            <span class="value">${inv.currentBalance.toFixed(2)} DZD</span>
+                        </div>
+                        ${inv.investments && inv.investments.length > 0 ? `
+                        <div class="detail-row">
+                            <span class="label">عدد الاستثمارات</span>
+                            <span class="value">${inv.investments.length}</span>
+                        </div>
+                        ` : ''}
                     </div>
                     <div class="invest-actions">
                         <button class="btn btn-danger btn-xs" onclick="cancelInvestment('${inv.docId}','${inv.uid}','${inv.displayName}')">
                             <i class="fas fa-times-circle"></i> إلغاء الباقة
                         </button>
-                        <button class="btn btn-success btn-xs" onclick="adjustMining('${inv.docId}','${inv.uid}','${inv.displayName}',${inv.totalMined})">
-                            <i class="fas fa-edit"></i> تعديل التعدين
+                        <button class="btn btn-success btn-xs" onclick="adjustMining('${inv.docId}','${inv.uid}','${inv.displayName}',${inv.totalReturns})">
+                            <i class="fas fa-edit"></i> تعديل الأرباح
                         </button>
                     </div>
                 </div>
@@ -1230,7 +1284,7 @@
             });
         }
 
-        function adjustMining(docId, uid, displayName, currentMined) {
+        function adjustMining(docId, uid, displayName, currentReturns) {
             const modal = document.getElementById('confirmModal');
             const body = document.getElementById('modalBody');
             const header = document.querySelector('.modal-header .title');
@@ -1240,7 +1294,7 @@
 
             icon.className = 'icon warning';
             icon.innerHTML = '<i class="fas fa-coins"></i>';
-            header.textContent = 'تعديل إجمالي التعدين';
+            header.textContent = 'تعديل إجمالي الأرباح';
 
             body.innerHTML = `
                 <div style="text-align:center;margin-bottom:12px;">
@@ -1248,7 +1302,7 @@
                         المستخدم: <strong>${displayName}</strong>
                     </p>
                     <p style="color:var(--text-secondary);font-size:14px;margin-bottom:16px;">
-                        إجمالي التعدين الحالي: <strong>${currentMined.toFixed(2)} DZD</strong>
+                        إجمالي الأرباح الحالي: <strong>${currentReturns.toFixed(2)} DZD</strong>
                     </p>
                     <div class="input-group">
                         <label>المبلغ (DZD) <span class="required">*</span></label>
@@ -1274,7 +1328,7 @@
                     return;
                 }
                 modal.classList.remove('active');
-                performAdjustMining(docId, uid, displayName, currentMined, amount);
+                performAdjustMining(docId, uid, displayName, currentReturns, amount);
             };
 
             const handleCancel = () => {
@@ -1285,31 +1339,29 @@
             cancelBtn.onclick = handleCancel;
         }
 
-        async function performAdjustMining(docId, uid, displayName, currentMined, amount) {
+        async function performAdjustMining(docId, uid, displayName, currentReturns, amount) {
             try {
-                const newTotal = currentMined + amount;
+                const newTotal = currentReturns + amount;
                 if (newTotal < 0) {
-                    showToast('⚠️ لا يمكن أن يكون التعدين أقل من صفر');
+                    showToast('⚠️ لا يمكن أن تكون الأرباح أقل من صفر');
                     return;
                 }
-                // نحدّث totalMinedDZD أو totalInvestmentReturns أيهما موجود
                 const userRef = db.collection('users').doc(docId);
                 const userDoc = await userRef.get();
                 const data = userDoc.data();
                 const mining = data.miningData || {};
-                // نختار الحقل المناسب للتحديث
-                let updateField = 'miningData.totalMinedDZD';
-                if (mining.totalMinedDZD !== undefined) {
-                    updateField = 'miningData.totalMinedDZD';
-                } else if (mining.totalInvestmentReturns !== undefined) {
+                let updateField = 'miningData.totalInvestmentReturns';
+                if (mining.totalInvestmentReturns !== undefined) {
                     updateField = 'miningData.totalInvestmentReturns';
+                } else if (mining.totalMinedDZD !== undefined) {
+                    updateField = 'miningData.totalMinedDZD';
                 } else {
                     updateField = 'miningData.totalInvested';
                 }
                 await userRef.update({
                     [updateField]: newTotal
                 });
-                showToast(`✅ تم تعديل إجمالي التعدين للمستخدم ${displayName} إلى ${newTotal.toFixed(2)} DZD`);
+                showToast(`✅ تم تعديل الأرباح للمستخدم ${displayName} إلى ${newTotal.toFixed(2)} DZD`);
             } catch(e) {
                 console.error(e);
                 showToast('❌ خطأ: '+e.message);
@@ -1317,8 +1369,9 @@
         }
 
         // ============================================================
-        // 9. عرض قائمة المستخدمين في صفحة الحماية (بدون تغيير)
+        // 9-14. باقي الدوال (الحماية، السحب، الإيداع، التأكيد التلقائي) بدون تغيير
         // ============================================================
+
         function renderProtectUsers(users) {
             const container = document.getElementById('usersProtectList');
             if (!users.length) {
@@ -1409,9 +1462,6 @@
             }).join('');
         }
 
-        // ============================================================
-        // 10. تغيير حالة المستخدم (بدون تغيير)
-        // ============================================================
         function changeUserStatus(docId, uid, displayName, newStatus, actionName) {
             const statusLabels = {
                 'active': 'نشط',
@@ -1453,9 +1503,6 @@
             });
         }
 
-        // ============================================================
-        // 11. عرض قوائم السحب والإيداع (بدون تغيير)
-        // ============================================================
         function renderPendingWithdrawals(list) {
             const container = document.getElementById('adminWithdrawalsList');
             if (!list.length) {
@@ -1555,9 +1602,6 @@
             });
         }
 
-        // ============================================================
-        // 12. عمليات السحب (بدون تغيير)
-        // ============================================================
         function approveWithdrawal(userDocId, withdrawalId, uid, displayName, amount, fee) {
             showConfirmDialog({
                 title: 'تأكيد السحب',
@@ -1616,9 +1660,6 @@
             });
         }
 
-        // ============================================================
-        // 13. عمليات الإيداع (بدون تغيير)
-        // ============================================================
         async function confirmDepositDirect(userDocId, depositId, uid, displayName, amount) {
             try {
                 const userRef = db.collection('users').doc(userDocId);
@@ -1689,9 +1730,6 @@
             });
         }
 
-        // ============================================================
-        // 14. تأكيد إيداع تلقائي مع حفظ للمطابقة (بدون تغيير)
-        // ============================================================
         async function autoConfirmDeposit() {
             const txId = document.getElementById('autoTxId').value.trim();
             const amount = parseFloat(document.getElementById('autoAmount').value);
@@ -1745,7 +1783,6 @@
                     return;
                 }
 
-                // حفظ للمطابقة
                 const matchData = {
                     transactionId: txId,
                     amount: amount,
@@ -1842,7 +1879,7 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة - متوافقة مع هيكل الاستثمارات الجديد');
+        console.log('🚀 لوحة الإدارة - صفحة استثمارات متكاملة (الرصيد الحقيقي، الباقات، نسبة الأرباح)');
         console.log('✅ لإضافة أدمن: أنشئ مستنداً في مجموعة admins باسم الـ telegramId');
     </script>
 </body>
