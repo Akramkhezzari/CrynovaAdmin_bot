@@ -112,10 +112,10 @@
 
         .copy-btn {
             background: var(--accent); color: white; border: none;
-            padding: 6px 14px; border-radius: var(--radius-sm);
-            font-size: 13px; font-weight: 600; cursor: pointer;
+            padding: 4px 10px; border-radius: var(--radius-sm);
+            font-size: 12px; font-weight: 600; cursor: pointer;
             transition: var(--transition); font-family: inherit;
-            display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;
+            display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;
         }
         .copy-btn:hover { background: var(--accent-light); transform: scale(1.02); }
         .copy-btn:active { transform: scale(0.95); }
@@ -152,6 +152,7 @@
         .admin-request-card:hover { border-color: var(--accent-light); }
         .admin-request-card .user-info { font-weight: 700; color: var(--accent); }
         .admin-request-card .details { font-size: 14px; color: var(--text-secondary); margin: 6px 0; }
+        .admin-request-card .details .copy-btn { margin-right: 4px; }
         .admin-request-card .actions { display: flex; gap: 8px; margin-top: 10px; }
         .admin-request-card .actions .btn { padding: 8px 16px; font-size: 13px; width: auto; flex: 1; }
         .admin-empty { text-align: center; padding: 30px 0; color: var(--text-muted); }
@@ -581,7 +582,7 @@
         }
 
         // ============================================================
-        // 6. عرض القوائم (تم إزالة أرقام الطلبات)
+        // 6. عرض القوائم (مع أزرار نسخ للمبلغ والعنوان في السحب)
         // ============================================================
         function renderPendingWithdrawals(list) {
             const container = document.getElementById('adminWithdrawalsList');
@@ -601,10 +602,22 @@
                         <span class="status status-pending">قيد الانتظار</span>
                     </div>
                     <div class="details">
-                        <strong>${w.amount} ${w.currency || 'DZD'}</strong> | رسوم: ${w.fee || 0}
-                        <br><small>التاريخ: ${formatDateTime(w.createdAt)}</small>
-                        ${w.recipientAddress ? `<br><small>العنوان: ${w.recipientAddress}</small>` : ''}
-                        <!-- تم إزالة رقم الطلب -->
+                        <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-bottom:4px;">
+                            <strong>${w.amount} ${w.currency || 'DZD'}</strong>
+                            <button class="copy-btn" onclick="copyText('${w.amount}')" title="نسخ المبلغ">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <span style="margin-left:8px;">| رسوم: ${w.fee || 0}</span>
+                        </div>
+                        <small>التاريخ: ${formatDateTime(w.createdAt)}</small>
+                        ${w.recipientAddress ? `
+                            <br><small style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:4px;">
+                                <span>العنوان: ${w.recipientAddress}</span>
+                                <button class="copy-btn" onclick="copyText('${w.recipientAddress}')" title="نسخ العنوان">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </small>
+                        ` : ''}
                     </div>
                     <div class="actions">
                         <button class="btn btn-success btn-sm" onclick="approveWithdrawal('${w.docId}','${w.withdrawalId}','${w.uid}')">
@@ -639,7 +652,6 @@
                         <strong>${d.amount} ${d.currency || 'DZD'}</strong>
                         <br><small>التاريخ: ${formatDateTime(d.createdAt)}</small>
                         ${d.transactionId ? `<br><small>رقم العملية: ${d.transactionId}</small>` : ''}
-                        <!-- تم إزالة رقم الإيداع -->
                     </div>
                     <div class="actions">
                         <button class="btn btn-success btn-sm" onclick="confirmDeposit('${d.docId}','${d.depositId}','${d.uid}',${d.amount})">
@@ -846,7 +858,7 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة مع شريط تنقل سفلي (تم إزالة أرقام الطلبات)');
+        console.log('🚀 لوحة الإدارة مع أزرار نسخ للمبلغ والعنوان في السحب');
         console.log('✅ لإضافة أدمن: أنشئ مستنداً في مجموعة admins باسم الـ telegramId');
     </script>
 </body>
