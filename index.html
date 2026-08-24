@@ -457,15 +457,11 @@
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
                     <i class="fas fa-home text-accent"></i> الرئيسية
                 </h2>
-                <!-- تأكيد إيداع تلقائي (معدل) -->
+                <!-- تأكيد إيداع تلقائي (تم إزالة رقم المستخدم) -->
                 <div class="card" style="border:2px solid var(--info);">
                     <div class="card-header">
                         <div class="card-title"><i class="fas fa-bolt text-info"></i> تأكيد إيداع تلقائي (DZD)</div>
                         <span class="status status-info">أتمتة</span>
-                    </div>
-                    <div class="input-group">
-                        <label>رقم المستخدم <span class="required">*</span></label>
-                        <input type="text" id="autoUserId" placeholder="أدخل رقم المستخدم (Telegram ID)">
                     </div>
                     <div class="input-group">
                         <label>رقم العملية <span class="required">*</span></label>
@@ -479,7 +475,7 @@
                         <i class="fas fa-check-circle"></i> تأكيد تلقائي
                     </button>
                     <div style="font-size:12px;color:var(--text-muted);margin-top:8px;">
-                        <i class="fas fa-info-circle"></i> سيتم البحث عن طلب إيداع معلق بنفس البيانات. إذا لم يوجد، سيتم إنشاؤه تلقائياً للمستخدم المحدد.
+                        <i class="fas fa-info-circle"></i> سيتم البحث عن طلب إيداع معلق بنفس رقم العملية والمبلغ (DZD) وتأكيده.
                     </div>
                 </div>
             </div>
@@ -1215,115 +1211,70 @@
         }
 
         // ============================================================
-        // 11. تأكيد إيداع تلقائي (معدل)
+        // 11. تأكيد إيداع تلقائي (بحث بين جميع المستخدمين)
         // ============================================================
         async function autoConfirmDeposit() {
-            const userId = document.getElementById('autoUserId').value.trim();
             const txId = document.getElementById('autoTxId').value.trim();
             const amount = parseFloat(document.getElementById('autoAmount').value);
 
-            if (!userId) { showToast('⚠️ أدخل رقم المستخدم'); return; }
             if (!txId) { showToast('⚠️ أدخل رقم العملية'); return; }
             if (!amount || amount <= 0) { showToast('⚠️ أدخل مبلغاً صحيحاً'); return; }
 
             try {
-                // 1. التحقق من وجود المستخدم
-                let userDoc = await db.collection('users').doc(userId).get();
-                if (!userDoc.exists) {
-                    // إنشاء المستخدم تلقائياً إذا لم يكن موجوداً
-                    await db.collection('users').doc(userId).set({
-                        telegramId: userId,
-                        displayName: `مستخدم ${userId}`,
-                        joinDate: firebase.firestore.FieldValue.serverTimestamp(),
-                        wallets: {
-                            dzd: 0,
-                            dzdLocked: 0,
-                            dzdReferral: 0,
-                            dzdReward: 0,
-                            locked: 0,
-                            main: 0,
-                            referral: 0,
-                            reward: 0
-                        },
-                        miningData: {
-                            currentPackage: null,
-                            totalMined: 0,
-                            totalMinedDZD: 0,
-                            totalReferrals: 0,
-                            miningHistory: {
-                                today: 0, todayDZD: 0,
-                                thisWeek: 0, thisWeekDZD: 0,
-                                thisMonth: 0, thisMonthDZD: 0
-                            }
-                        },
-                        transactions: [],
-                        referrals: [],
-                        deposits: [],
-                        withdrawals: []
-                    });
-                    userDoc = await db.collection('users').doc(userId).get();
+                // جلب جميع المستخدمين
+                const usersSnap = await db.collection('users').get();
+                let targetData = null;
+                let targetDocId = null;
+
+                // البحث عن طلب إيداع معلق مطابق بين جميع المستخدمين
+                for (const doc of usersSnap.docs) {
+                    const data = doc.data();
+                    const deposits = data.deposits || [];
+                    const target = deposits.find(d =>
+                        d.transactionId === txId &&
+                        d.amount === amount &&
+                        d.currency === 'DZD' &&
+                        d.status === 'pending'
+                    );
+                    if (target) {
+                        targetData = {
+                            ...target,
+                            uid: data.uid || doc.id,
+                            displayName: data.displayName || doc.id
+                        };
+                        targetDocId = doc.id;
+                        break;
+                    }
                 }
 
-                const userData = userDoc.data();
-                const displayName = userData.displayName || userId;
-
-                // 2. البحث عن طلب إيداع معلق مطابق
-                const deposits = userData.deposits || [];
-                let existingDeposit = deposits.find(d =>
-                    d.transactionId === txId &&
-                    d.amount === amount &&
-                    d.currency === 'DZD' &&
-                    d.status === 'pending'
-                );
-
-                let targetDepositId = null;
-                let isNewDeposit = false;
-
-                if (existingDeposit) {
-                    targetDepositId = existingDeposit.depositId;
-                } else {
-                    // 3. إنشاء طلب إيداع جديد
-                    const newDepositId = `dep_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
-                    const newDeposit = {
-                        depositId: newDepositId,
-                        transactionId: txId,
-                        amount: amount,
-                        currency: 'DZD',
-                        status: 'pending',
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        uid: userId
-                    };
-                    await db.collection('users').doc(userId).update({
-                        deposits: firebase.firestore.FieldValue.arrayUnion(newDeposit)
-                    });
-                    targetDepositId = newDepositId;
-                    isNewDeposit = true;
+                if (!targetData) {
+                    showToast('❌ لم يتم العثور على طلب إيداع معلق بهذه البيانات');
+                    return;
                 }
 
-                // 4. عرض نافذة التأكيد مع تفاصيل العملية
-                const details = [
-                    { label: 'المستخدم', value: displayName, highlight: true },
-                    { label: 'المبلغ', value: `${amount} DZD`, highlight: true },
-                    { label: 'رقم العملية', value: txId },
-                    { label: 'رقم المستخدم', value: userId },
-                    { label: 'الحالة', value: isNewDeposit ? '✅ سيتم إنشاء طلب جديد وتأكيده' : '✅ سيتم تأكيد الطلب الموجود' }
-                ];
-
+                // عرض نافذة تأكيد متطورة
                 showConfirmDialog({
-                    title: isNewDeposit ? 'إنشاء وتأكيد إيداع جديد' : 'تأكيد إيداع موجود',
+                    title: 'تأكيد تلقائي للإيداع',
                     icon: 'fa-bolt',
                     type: 'success',
-                    details: details,
+                    details: [
+                        { label: 'المستخدم', value: targetData.displayName, highlight: true },
+                        { label: 'المبلغ', value: `${targetData.amount} DZD`, highlight: true },
+                        { label: 'رقم العملية', value: targetData.transactionId },
+                        { label: 'رقم المستخدم', value: targetData.uid }
+                    ],
                     confirmText: 'تأكيد تلقائي',
                     onConfirm: async () => {
-                        // تأكيد الإيداع (شحن الرصيد)
-                        await confirmDepositDirect(userId, targetDepositId, userId, displayName, amount);
-                        document.getElementById('autoUserId').value = '';
-                        document.getElementById('autoTxId').value = '';
-                        document.getElementById('autoAmount').value = '';
+                        try {
+                            await confirmDepositDirect(targetDocId, targetData.depositId, targetData.uid, targetData.displayName, targetData.amount);
+                            document.getElementById('autoTxId').value = '';
+                            document.getElementById('autoAmount').value = '';
+                        } catch(e) {
+                            console.error(e);
+                            showToast('❌ خطأ: '+e.message);
+                        }
                     }
                 });
-
             } catch(e) {
                 console.error(e);
                 showToast('❌ خطأ: '+e.message);
@@ -1393,7 +1344,7 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة مع إنشاء طلب إيداع تلقائياً عند عدم التطابق');
+        console.log('🚀 لوحة الإدارة - تأكيد تلقائي بدون رقم مستخدم');
         console.log('✅ لإضافة أدمن: أنشئ مستنداً في مجموعة admins باسم الـ telegramId');
     </script>
 </body>
