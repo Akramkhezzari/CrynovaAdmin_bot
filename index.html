@@ -32,6 +32,8 @@
             --warning: #fdcb6e; --warning-light: rgba(253,203,110,0.12);
             --danger: #e17055; --danger-light: rgba(225,112,85,0.12);
             --info: #0984e3; --info-light: rgba(9,132,227,0.12);
+            --purple: #8e44ad; --purple-light: rgba(142,68,173,0.12);
+            --orange: #e67e22; --orange-light: rgba(230,126,34,0.12);
             --dzd-color: #e17055; --dzd-light: rgba(225,112,85,0.12);
             --border: #e2e8f0; --border-light: #f0f4f8;
             --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
@@ -158,19 +160,24 @@
         .btn-info:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(9,132,227,0.35); }
         .btn-warning { background: var(--warning); color: #7d6608; }
         .btn-warning:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(253,203,110,0.35); }
+        .btn-purple { background: var(--purple); color: white; }
+        .btn-purple:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(142,68,173,0.35); }
+        .btn-orange { background: var(--orange); color: white; }
+        .btn-orange:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(230,126,34,0.35); }
         .btn-sm { padding: 10px 16px; font-size: 14px; }
-        .btn-xs { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
+        .btn-xs { padding: 4px 10px; font-size: 11px; border-radius: 6px; }
 
         .copy-btn {
-            background: var(--accent); color: white; border: none;
-            padding: 4px 10px; border-radius: var(--radius-sm);
-            font-size: 12px; font-weight: 600; cursor: pointer;
+            background: var(--bg-input); color: var(--text-secondary); border: none;
+            padding: 2px 6px; border-radius: var(--radius-sm);
+            font-size: 11px; font-weight: 600; cursor: pointer;
             transition: var(--transition); font-family: inherit;
-            display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;
+            display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0;
+            border: 1px solid var(--border);
         }
-        .copy-btn:hover { background: var(--accent-light); transform: scale(1.02); }
+        .copy-btn:hover { background: var(--accent); color: white; border-color: var(--accent); transform: scale(1.05); }
         .copy-btn:active { transform: scale(0.95); }
-        .copy-btn.copied { background: var(--success); }
+        .copy-btn.copied { background: var(--success); color: white; border-color: var(--success); }
 
         .input-group { margin-bottom: 16px; }
         .input-group label { display: block; color: var(--text-secondary); font-size: 14px; margin-bottom: 6px; font-weight: 600; }
@@ -196,6 +203,8 @@
         .status-info { background: var(--info-light); color: var(--info); }
         .status-banned { background: var(--danger-light); color: var(--danger); }
         .status-active { background: var(--success-light); color: var(--success); }
+        .status-restricted { background: var(--orange-light); color: var(--orange); }
+        .status-frozen { background: var(--purple-light); color: var(--purple); }
 
         .admin-request-card {
             background: var(--bg-card); border-radius: var(--radius-sm);
@@ -341,6 +350,8 @@
         .modal-header .icon.success { background: var(--success-light); color: var(--success); }
         .modal-header .icon.danger { background: var(--danger-light); color: var(--danger); }
         .modal-header .icon.warning { background: var(--warning-light); color: #b7950b; }
+        .modal-header .icon.purple { background: var(--purple-light); color: var(--purple); }
+        .modal-header .icon.orange { background: var(--orange-light); color: var(--orange); }
         .modal-header .title {
             font-size: 18px;
             font-weight: 800;
@@ -405,6 +416,20 @@
         .modal-footer .btn-confirm-danger:hover {
             background: #c0392b;
         }
+        .modal-footer .btn-confirm-purple {
+            background: var(--purple);
+            color: white;
+        }
+        .modal-footer .btn-confirm-purple:hover {
+            background: #7d3c98;
+        }
+        .modal-footer .btn-confirm-orange {
+            background: var(--orange);
+            color: white;
+        }
+        .modal-footer .btn-confirm-orange:hover {
+            background: #d35400;
+        }
 
         /* ===== أنماط صفحة الاستثمارات مع أزرار التحكم ===== */
         .invest-card {
@@ -430,7 +455,7 @@
             color: var(--info);
         }
 
-        /* ===== أنماط صفحة الحماية ===== */
+        /* ===== أنماط صفحة الحماية (معدلة) ===== */
         .user-protect-card {
             background: var(--bg-card);
             border-radius: var(--radius-sm);
@@ -442,8 +467,25 @@
         .user-protect-card:hover { border-color: var(--accent-light); }
         .user-protect-card .user-name { font-weight: 700; color: var(--accent); }
         .user-protect-card .user-details { font-size: 14px; color: var(--text-secondary); margin: 4px 0; }
-        .user-protect-card .user-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
-        .user-protect-card .user-actions .btn { padding: 6px 14px; font-size: 12px; width: auto; }
+        .user-protect-card .user-details .id-wrapper {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--bg-input);
+            padding: 2px 8px 2px 4px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            direction: ltr;
+        }
+        .user-protect-card .user-details .id-wrapper .id-text {
+            font-family: monospace;
+            letter-spacing: 0.5px;
+        }
+        .user-protect-card .user-actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+        .user-protect-card .user-actions .btn { padding: 5px 12px; font-size: 11px; width: auto; }
     </style>
 </head>
 <body>
@@ -499,7 +541,7 @@
                 </div>
             </div>
 
-            <!-- تبويب الحماية -->
+            <!-- تبويب الحماية (معدل) -->
             <div id="tab-protect" class="tab-content">
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
                     <i class="fas fa-shield-alt text-danger"></i> الحماية وإدارة المستخدمين
@@ -512,7 +554,7 @@
                 </div>
             </div>
 
-            <!-- تبويب الاستثمارات (مع أزرار تحكم) -->
+            <!-- تبويب الاستثمارات -->
             <div id="tab-investments" class="tab-content">
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
                     <i class="fas fa-chart-line text-accent"></i> الاستثمارات
@@ -704,7 +746,9 @@
             const iconMap = {
                 'success': { class: 'success', icon: 'fa-check-circle' },
                 'danger': { class: 'danger', icon: 'fa-times-circle' },
-                'warning': { class: 'warning', icon: 'fa-exclamation-triangle' }
+                'warning': { class: 'warning', icon: 'fa-exclamation-triangle' },
+                'purple': { class: 'purple', icon: 'fa-snowflake' },
+                'orange': { class: 'orange', icon: 'fa-lock' }
             };
             const iconData = iconMap[opts.type] || iconMap['warning'];
             document.getElementById('modalIcon').className = `icon ${iconData.class}`;
@@ -1099,7 +1143,6 @@
         }
 
         function adjustMining(docId, uid, displayName, currentMined) {
-            // نافذة مخصصة لإدخال المبلغ المراد إضافته أو خصمه
             const modal = document.getElementById('confirmModal');
             const body = document.getElementById('modalBody');
             const header = document.querySelector('.modal-header .title');
@@ -1143,7 +1186,6 @@
                     return;
                 }
                 modal.classList.remove('active');
-                // تنفيذ التعديل
                 performAdjustMining(docId, uid, displayName, currentMined, amount);
             };
 
@@ -1174,7 +1216,7 @@
         }
 
         // ============================================================
-        // 9. عرض قائمة المستخدمين في صفحة الحماية
+        // 9. عرض قائمة المستخدمين في صفحة الحماية (معدلة)
         // ============================================================
         function renderProtectUsers(users) {
             const container = document.getElementById('usersProtectList');
@@ -1182,62 +1224,129 @@
                 container.innerHTML = `<div class="admin-empty"><i class="fas fa-users-slash text-muted"></i><div>لا يوجد مستخدمون</div></div>`;
                 return;
             }
-            container.innerHTML = users.map(u => `
-                <div class="user-protect-card">
-                    <div class="flex-between">
-                        <span class="user-name">
-                            👤 <strong>${u.displayName}</strong>
-                            <button class="copy-btn" onclick="copyText('${u.uid}')" style="padding:2px 8px;font-size:11px;background:var(--bg-input);color:var(--text-secondary);">
-                                <i class="fas fa-copy"></i>
-                            </button>
-                        </span>
-                        <span class="status ${u.status === 'active' ? 'status-active' : 'status-banned'}">
-                            ${u.status === 'active' ? '✅ نشط' : '⛔ محظور'}
-                        </span>
-                    </div>
-                    <div class="user-details">
-                        الرصيد: <strong>${u.dzd.toFixed(2)} DZD</strong>
-                        <br><small>المعرف: ${u.uid}</small>
-                    </div>
-                    <div class="user-actions">
-                        ${u.status === 'active' 
-                            ? `<button class="btn btn-danger btn-xs" onclick="toggleUserStatus('${u.docId}','${u.uid}','${u.displayName}','banned')">
-                                <i class="fas fa-ban"></i> تعطيل
-                               </button>`
-                            : `<button class="btn btn-success btn-xs" onclick="toggleUserStatus('${u.docId}','${u.uid}','${u.displayName}','active')">
-                                <i class="fas fa-check-circle"></i> تفعيل
-                               </button>`
-                        }
-                        <button class="btn btn-info btn-xs" onclick="copyText('${u.uid}')">
-                            <i class="fas fa-copy"></i> نسخ المعرف
+
+            // ترتيب المستخدمين: النشطاء أولاً، ثم المقيدين، ثم المجمدين، ثم المحظورين
+            const statusOrder = { 'active': 0, 'restricted': 1, 'frozen': 2, 'banned': 3 };
+            users.sort((a, b) => (statusOrder[a.status] || 0) - (statusOrder[b.status] || 0));
+
+            container.innerHTML = users.map(u => {
+                // تحديد أيقونة واسم الحالة
+                const statusMap = {
+                    'active': { label: '✅ نشط', class: 'status-active' },
+                    'banned': { label: '⛔ محظور', class: 'status-banned' },
+                    'restricted': { label: '🔒 مقيد', class: 'status-restricted' },
+                    'frozen': { label: '❄️ مجمد', class: 'status-frozen' }
+                };
+                const statusInfo = statusMap[u.status] || statusMap['active'];
+
+                // تحديد الأزرار حسب الحالة
+                let buttons = '';
+                if (u.status === 'active') {
+                    buttons = `
+                        <button class="btn btn-danger btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','banned','حظر')">
+                            <i class="fas fa-ban"></i> تعطيل
                         </button>
+                        <button class="btn btn-orange btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','restricted','تقييد')">
+                            <i class="fas fa-lock"></i> تقيد
+                        </button>
+                        <button class="btn btn-purple btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','frozen','تجميد')">
+                            <i class="fas fa-snowflake"></i> تجميد
+                        </button>
+                    `;
+                } else if (u.status === 'banned') {
+                    buttons = `
+                        <button class="btn btn-success btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','active','تفعيل')">
+                            <i class="fas fa-check-circle"></i> تفعيل
+                        </button>
+                    `;
+                } else if (u.status === 'restricted') {
+                    buttons = `
+                        <button class="btn btn-success btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','active','تفعيل')">
+                            <i class="fas fa-check-circle"></i> تفعيل
+                        </button>
+                        <button class="btn btn-danger btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','banned','حظر')">
+                            <i class="fas fa-ban"></i> تعطيل
+                        </button>
+                        <button class="btn btn-purple btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','frozen','تجميد')">
+                            <i class="fas fa-snowflake"></i> تجميد
+                        </button>
+                    `;
+                } else if (u.status === 'frozen') {
+                    buttons = `
+                        <button class="btn btn-success btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','active','تفعيل')">
+                            <i class="fas fa-check-circle"></i> تفعيل
+                        </button>
+                        <button class="btn btn-danger btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','banned','حظر')">
+                            <i class="fas fa-ban"></i> تعطيل
+                        </button>
+                        <button class="btn btn-orange btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','restricted','تقييد')">
+                            <i class="fas fa-lock"></i> تقيد
+                        </button>
+                    `;
+                }
+
+                return `
+                    <div class="user-protect-card">
+                        <div class="flex-between">
+                            <span class="user-name">
+                                👤 <strong>${u.displayName}</strong>
+                            </span>
+                            <span class="status ${statusInfo.class}">${statusInfo.label}</span>
+                        </div>
+                        <div class="user-details">
+                            الرصيد: <strong>${u.dzd.toFixed(2)} DZD</strong>
+                            <br>
+                            <span class="id-wrapper">
+                                <span class="id-text">${u.uid}</span>
+                                <button class="copy-btn" onclick="copyText('${u.uid}')" title="نسخ المعرف">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </span>
+                        </div>
+                        <div class="user-actions">
+                            ${buttons}
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         // ============================================================
-        // 10. تبديل حالة المستخدم (تعطيل/تفعيل)
+        // 10. تغيير حالة المستخدم (دالة موحدة)
         // ============================================================
-        function toggleUserStatus(docId, uid, displayName, newStatus) {
-            const action = newStatus === 'active' ? 'تفعيل' : 'تعطيل';
-            const msg = `هل أنت متأكد من ${action} المستخدم ${displayName} (${uid})؟`;
+        function changeUserStatus(docId, uid, displayName, newStatus, actionName) {
+            const statusLabels = {
+                'active': 'نشط',
+                'banned': 'محظور',
+                'restricted': 'مقيد',
+                'frozen': 'مجمد'
+            };
+
+            const iconMap = {
+                'active': { icon: 'fa-check-circle', type: 'success' },
+                'banned': { icon: 'fa-ban', type: 'danger' },
+                'restricted': { icon: 'fa-lock', type: 'orange' },
+                'frozen': { icon: 'fa-snowflake', type: 'purple' }
+            };
+
+            const iconData = iconMap[newStatus] || iconMap['active'];
+
             showConfirmDialog({
-                title: `${action} المستخدم`,
-                icon: 'fa-user-cog',
-                type: newStatus === 'active' ? 'success' : 'danger',
+                title: `${actionName} المستخدم`,
+                icon: iconData.icon,
+                type: iconData.type,
                 details: [
                     { label: 'المستخدم', value: displayName, highlight: true },
                     { label: 'المعرف', value: uid },
-                    { label: 'الإجراء', value: action }
+                    { label: 'الحالة الجديدة', value: statusLabels[newStatus] || newStatus }
                 ],
-                confirmText: action,
+                confirmText: actionName,
                 onConfirm: async () => {
                     try {
                         await db.collection('users').doc(docId).update({
                             status: newStatus
                         });
-                        showToast(`✅ تم ${action} المستخدم ${displayName}`);
+                        showToast(`✅ تم ${actionName} المستخدم ${displayName} (${statusLabels[newStatus]})`);
                     } catch(e) {
                         console.error(e);
                         showToast('❌ خطأ: '+e.message);
@@ -1628,7 +1737,7 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة مع تحكم كامل في الاستثمارات');
+        console.log('🚀 لوحة الإدارة مع صفحة حماية متطورة (تقيد + تجميد)');
         console.log('✅ لإضافة أدمن: أنشئ مستنداً في مجموعة admins باسم الـ telegramId');
     </script>
 </body>
