@@ -20,7 +20,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
-        /* ===== جميع الأنماط (بدون تغيير) ===== */
+        /* ===== جميع الأنماط الأساسية ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --bg-primary: #f0f4f8; --bg-secondary: #ffffff; --bg-card: #ffffff;
@@ -77,6 +77,54 @@
             display: flex; align-items: center; justify-content: center;
         }
         .app-header .header-actions button:hover { transform: scale(1.05); box-shadow: var(--shadow-md); }
+
+        /* ===== شريط الإحصائيات الجديد (ثابت) ===== */
+        .stats-bar {
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            backdrop-filter: blur(4px);
+            transition: var(--transition);
+        }
+        .stats-bar .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+        .stats-bar .stat-item .stat-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .stats-bar .stat-item .stat-label i {
+            font-size: 12px;
+        }
+        .stats-bar .stat-item .stat-value {
+            font-size: 18px;
+            font-weight: 900;
+            color: var(--text-primary);
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .stats-bar .stat-divider {
+            width: 1px;
+            height: 30px;
+            background: var(--border);
+        }
 
         .card {
             background: var(--bg-card); border-radius: var(--radius-md);
@@ -371,6 +419,19 @@
         <div id="adminPanel">
             <!-- تبويب الرئيسية -->
             <div id="tab-home" class="tab-content active">
+                <!-- شريط الإحصائيات الثابت -->
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <span class="stat-label"><i class="fas fa-users"></i> عدد المستخدمين</span>
+                        <span class="stat-value" id="totalUsers">0</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-label"><i class="fas fa-wallet"></i> إجمالي الرصيد (DZD)</span>
+                        <span class="stat-value" id="totalPlatformBalance">0</span>
+                    </div>
+                </div>
+
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
                     <i class="fas fa-home text-accent"></i> الرئيسية
                 </h2>
@@ -693,13 +754,25 @@
         }
 
         // ============================================================
-        // 6. الاستماع الفوري وجلب الطلبات
+        // 6. الاستماع الفوري وجلب الطلبات + تحديث الإحصائيات
         // ============================================================
         function listenToUsers() {
             if (unsubscribeUsers) unsubscribeUsers();
 
             unsubscribeUsers = db.collection('users')
                 .onSnapshot((snapshot) => {
+                    // ---- تحديث الإحصائيات ----
+                    let totalUsers = 0;
+                    let totalBalance = 0;
+                    snapshot.forEach(doc => {
+                        totalUsers++;
+                        const data = doc.data();
+                        totalBalance += data.wallets?.dzd || 0;
+                    });
+                    document.getElementById('totalUsers').textContent = totalUsers;
+                    document.getElementById('totalPlatformBalance').textContent = totalBalance.toFixed(2);
+
+                    // ---- معالجة الطلبات المعلقة ----
                     const pendingWithdrawals = [];
                     const pendingDeposits = [];
 
@@ -755,6 +828,17 @@
         async function loadFallback() {
             try {
                 const snap = await db.collection('users').get();
+                // تحديث الإحصائيات
+                let totalUsers = 0;
+                let totalBalance = 0;
+                snap.forEach(doc => {
+                    totalUsers++;
+                    totalBalance += doc.data().wallets?.dzd || 0;
+                });
+                document.getElementById('totalUsers').textContent = totalUsers;
+                document.getElementById('totalPlatformBalance').textContent = totalBalance.toFixed(2);
+
+                // معالجة الطلبات
                 const pendingWithdrawals = [];
                 const pendingDeposits = [];
                 snap.forEach(doc => {
@@ -880,7 +964,7 @@
         }
 
         // ============================================================
-        // 8. عمليات السحب (تأكيد / رفض) مع نافذة متطورة
+        // 8. عمليات السحب (تأكيد / رفض)
         // ============================================================
         function approveWithdrawal(userDocId, withdrawalId, uid, displayName, amount, fee) {
             showConfirmDialog({
@@ -941,7 +1025,7 @@
         }
 
         // ============================================================
-        // 9. عمليات الإيداع (تأكيد / رفض) مع نافذة متطورة
+        // 9. عمليات الإيداع (تأكيد / رفض)
         // ============================================================
         function confirmDeposit(userDocId, depositId, uid, displayName, amount) {
             showConfirmDialog({
@@ -1010,7 +1094,7 @@
         }
 
         // ============================================================
-        // 10. تأكيد إيداع تلقائي (من الصفحة الرئيسية)
+        // 10. تأكيد إيداع تلقائي
         // ============================================================
         async function autoConfirmDeposit() {
             const txId = document.getElementById('autoTxId').value.trim();
@@ -1134,7 +1218,7 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة - تم تغيير "العنوان" إلى "رقم الحساب البريدي"');
+        console.log('🚀 لوحة الإدارة مع شريط إحصائيات ثابت (عدد المستخدمين + إجمالي الرصيد)');
         console.log('✅ لإضافة أدمن: أنشئ مستنداً في مجموعة admins باسم الـ telegramId');
     </script>
 </body>
