@@ -747,12 +747,24 @@
                 </div>
             </div>
 
-            <!-- تبويب المطابقات (بدون زر تحديث) -->
+            <!-- تبويب المطابقات (مع شريط بحث) -->
             <div id="tab-matches" class="tab-content">
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
                     <i class="fas fa-link text-orange"></i> طلبات المطابقة المحفوظة
                     <span id="pendingMatchesCount" class="status status-match">0</span>
                 </h2>
+
+                <!-- ===== شريط البحث ===== -->
+                <div class="search-bar">
+                    <input type="text" id="matchesSearchInput" placeholder="بحث برقم العملية..." aria-label="بحث عن طلبات مطابقة">
+                    <button class="btn btn-primary btn-sm" onclick="searchMatches()">
+                        <i class="fas fa-search"></i> بحث
+                    </button>
+                    <button class="btn btn-sm btn-clear" onclick="clearMatchesSearch()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
                 <div id="pendingMatchesList">
                     <div class="admin-empty">
                         <i class="fas fa-inbox text-muted"></i>
@@ -860,6 +872,10 @@
         // متغيرات خاصة بالبحث في صفحة الحماية
         let allProtectUsers = [];
         let protectFilter = '';
+
+        // متغيرات خاصة بالبحث في المطابقات
+        let allMatches = [];
+        let matchesFilter = '';
 
         // ============================================================
         // 3. دوال مساعدة
@@ -1140,7 +1156,10 @@
                             const db2 = b.createdAt?.toDate?.() || new Date(0);
                             return db2 - da;
                         });
-                        renderPendingMatches(matches);
+                        // تخزين القائمة الكاملة للبحث
+                        allMatches = matches;
+                        // عرض مع تطبيق الفلتر الحالي
+                        renderMatchesWithFilter();
                         document.getElementById('matchesBadge').textContent = matches.length;
                         document.getElementById('pendingMatchesCount').textContent = matches.length;
                         if (matches.length === 0) {
@@ -1152,13 +1171,16 @@
                     }, (error) => {
                         console.error('❌ خطأ في الاستماع لطلبات المطابقة:', error);
                         lastError = error;
-                        renderPendingMatches([]);
+                        allMatches = [];
+                        renderMatchesWithFilter();
                         showMatchError(error);
                         showToast('❌ خطأ في تحميل طلبات المطابقة: ' + error.message, true);
                     });
             } catch (error) {
                 console.error('❌ خطأ غير متوقع:', error);
                 lastError = error;
+                allMatches = [];
+                renderMatchesWithFilter();
                 showMatchError(error);
                 showToast('❌ خطأ غير متوقع: ' + error.message, true);
             }
@@ -1172,14 +1194,42 @@
         }
 
         // ============================================================
-        // 7. عرض طلبات المطابقة
+        // 7. عرض طلبات المطابقة مع فلتر
+        // ============================================================
+        function renderMatchesWithFilter() {
+            let filtered = allMatches;
+            if (matchesFilter.trim() !== '') {
+                const filterLower = matchesFilter.trim().toLowerCase();
+                filtered = allMatches.filter(m =>
+                    m.transactionId.toLowerCase().includes(filterLower) ||
+                    m.amount.toString().includes(filterLower)
+                );
+            }
+            renderPendingMatches(filtered);
+        }
+
+        // دوال البحث في المطابقات
+        function searchMatches() {
+            const input = document.getElementById('matchesSearchInput');
+            matchesFilter = input.value;
+            renderMatchesWithFilter();
+        }
+
+        function clearMatchesSearch() {
+            document.getElementById('matchesSearchInput').value = '';
+            matchesFilter = '';
+            renderMatchesWithFilter();
+        }
+
+        // ============================================================
+        // 8. عرض طلبات المطابقة (الدالة الأساسية)
         // ============================================================
         function renderPendingMatches(matches) {
             const container = document.getElementById('pendingMatchesList');
             const count = document.getElementById('pendingMatchesCount');
             count.textContent = matches.length;
 
-            if (lastError && matches.length === 0) {
+            if (lastError && matches.length === 0 && allMatches.length === 0) {
                 showMatchError(lastError);
                 return;
             }
@@ -1188,7 +1238,7 @@
                 container.innerHTML = `
                     <div class="admin-empty">
                         <i class="fas fa-inbox text-muted"></i>
-                        <div>لا توجد طلبات مطابقة محفوظة</div>
+                        <div>لا توجد طلبات مطابقة محفوظة${matchesFilter ? ' مطابقة للبحث' : ''}</div>
                     </div>
                 `;
                 return;
@@ -1220,7 +1270,7 @@
         }
 
         // ============================================================
-        // 8. تعديل طلب المطابقة
+        // 9. تعديل طلب المطابقة
         // ============================================================
         function editMatch(matchId, currentTxId, currentAmount) {
             const modal = document.getElementById('confirmModal');
@@ -1282,7 +1332,7 @@
         }
 
         // ============================================================
-        // 9. حذف طلب المطابقة
+        // 10. حذف طلب المطابقة
         // ============================================================
         function deleteMatch(matchId) {
             showConfirmDialog({
@@ -1307,7 +1357,7 @@
         }
 
         // ============================================================
-        // 10. الاستماع للمستخدمين
+        // 11. الاستماع للمستخدمين
         // ============================================================
         function listenToUsers() {
             if (unsubscribeUsers) unsubscribeUsers();
@@ -1591,6 +1641,14 @@
                     }
                 });
             }
+            const searchMatchesInput = document.getElementById('matchesSearchInput');
+            if (searchMatchesInput) {
+                searchMatchesInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        searchMatches();
+                    }
+                });
+            }
         });
 
         async function loadFallback() {
@@ -1697,7 +1755,7 @@
         }
 
         // ============================================================
-        // 11. عرض قوائم الإيداع والسحب
+        // 12. عرض قوائم الإيداع والسحب
         // ============================================================
         function renderPendingWithdrawals(list) {
             const container = document.getElementById('adminWithdrawalsList');
@@ -1799,7 +1857,7 @@
         }
 
         // ============================================================
-        // 12. باقي الدوال
+        // 13. باقي الدوال
         // ============================================================
         function renderInvestors(list) {
             const container = document.getElementById('investorsList');
@@ -2214,7 +2272,7 @@
         }
 
         // ============================================================
-        // 13. تأكيد إيداع تلقائي
+        // 14. تأكيد إيداع تلقائي
         // ============================================================
         async function autoConfirmDeposit() {
             const txId = document.getElementById('autoTxId').value.trim();
@@ -2305,7 +2363,7 @@
         }
 
         // ============================================================
-        // 14. التبديل بين التبويبات
+        // 15. التبديل بين التبويبات
         // ============================================================
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -2322,7 +2380,7 @@
         }
 
         // ============================================================
-        // 15. الوضع المظلم
+        // 16. الوضع المظلم
         // ============================================================
         let isDarkTheme = false;
         function toggleTheme() {
@@ -2361,7 +2419,7 @@
         }
 
         // ============================================================
-        // 16. INIT
+        // 17. INIT
         // ============================================================
         document.addEventListener('DOMContentLoaded', function() {
             authAdmin();
@@ -2371,8 +2429,8 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة - تم إضافة محرك البحث في صفحة الحماية');
-        console.log('✅ يمكن البحث عن المستخدمين باستخدام UID.');
+        console.log('🚀 لوحة الإدارة - تم إضافة محرك البحث في صفحة المطابقات');
+        console.log('✅ يمكن البحث في طلبات المطابقة برقم العملية أو المبلغ.');
     </script>
 </body>
 </html>
