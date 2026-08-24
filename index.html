@@ -457,7 +457,7 @@
             background: #d35400;
         }
 
-        /* ===== أنماط صفحة الاستثمارات (معدلة) ===== */
+        /* ===== أنماط صفحة الاستثمارات ===== */
         .invest-card {
             background: var(--bg-card);
             border-radius: var(--radius-sm);
@@ -598,7 +598,7 @@
                     </div>
                     <div class="stat-divider"></div>
                     <div class="stat-item">
-                        <span class="stat-label"><i class="fas fa-coins"></i> إجمالي التعدين (DZD)</span>
+                        <span class="stat-label"><i class="fas fa-coins"></i> إجمالي الأرباح (DZD)</span>
                         <span class="stat-value" id="totalMinedInvest">0</span>
                     </div>
                 </div>
@@ -726,7 +726,6 @@
             return date.toLocaleDateString('ar-EG', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
         }
 
-        // دالة النسخ التفاعلية
         function copyText(text, buttonElement) {
             if (!text) { showToast('لا يوجد نص للنسخ'); return; }
             if (navigator.clipboard) {
@@ -991,18 +990,43 @@
                         const investments = data.investments || [];
                         const hasInvestment = (investments && investments.length > 0) || (mining.totalInvested && mining.totalInvested > 0);
                         if (hasInvestment) {
-                            const level = mining.level || 1;
-                            // تسمية الباقة حسب المستوى (يمكن تعديلها)
-                            const packageNames = {
-                                1: 'الباقة الفضية',
-                                2: 'الباقة الذهبية',
-                                3: 'الباقة البلاتينية',
-                                4: 'الباقة الماسية'
+                            // ---- استخراج planId من أول استثمار نشط أو الأول ----
+                            let planId = null;
+                            let activeInvestment = investments.find(inv => inv.status === 'active');
+                            if (activeInvestment) {
+                                planId = activeInvestment.planId || null;
+                            } else if (investments.length > 0) {
+                                planId = investments[0].planId || null;
+                            }
+
+                            // ---- ترجمة planId إلى اسم عربي ----
+                            const planMap = {
+                                'plan_basic': 'الباقة الأساسية',
+                                'plan_advanced': 'الباقة المتقدمة',
+                                'plan_premium': 'الباقة المميزة',
+                                'plan_pro': 'الباقة الاحترافية',
+                                'plan_pro_plus': 'الباقة الاحترافية بلس'
                             };
-                            const packageName = packageNames[level] || `المستوى ${level}`;
+                            let packageName = planMap[planId] || (planId ? `الخطة: ${planId}` : 'بدون خطة');
+
+                            // إذا لم نجد planId نستخدم level كحل احتياطي
+                            if (!planId) {
+                                const level = mining.level || 0;
+                                if (level > 0) {
+                                    const levelMap = {
+                                        1: 'الباقة الفضية',
+                                        2: 'الباقة الذهبية',
+                                        3: 'الباقة البلاتينية',
+                                        4: 'الباقة الماسية'
+                                    };
+                                    packageName = levelMap[level] || `المستوى ${level}`;
+                                } else {
+                                    packageName = 'مستثمر';
+                                }
+                            }
+
                             const totalInvested = mining.totalInvested || 0;
                             const totalReturns = mining.totalInvestmentReturns || mining.totalMinedDZD || 0;
-                            // حساب نسبة الأرباح
                             let profitRatio = 0;
                             if (totalInvested > 0) {
                                 profitRatio = (totalReturns / totalInvested) * 100;
@@ -1011,6 +1035,7 @@
                                 uid: uid,
                                 displayName: displayName,
                                 package: packageName,
+                                planId: planId,
                                 totalInvested: totalInvested,
                                 totalReturns: totalReturns,
                                 profitRatio: profitRatio,
@@ -1130,14 +1155,38 @@
                     const investments = data.investments || [];
                     const hasInvestment = (investments && investments.length > 0) || (mining.totalInvested && mining.totalInvested > 0);
                     if (hasInvestment) {
-                        const level = mining.level || 1;
-                        const packageNames = {
-                            1: 'الباقة الفضية',
-                            2: 'الباقة الذهبية',
-                            3: 'الباقة البلاتينية',
-                            4: 'الباقة الماسية'
+                        let planId = null;
+                        let activeInvestment = investments.find(inv => inv.status === 'active');
+                        if (activeInvestment) {
+                            planId = activeInvestment.planId || null;
+                        } else if (investments.length > 0) {
+                            planId = investments[0].planId || null;
+                        }
+
+                        const planMap = {
+                            'plan_basic': 'الباقة الأساسية',
+                            'plan_advanced': 'الباقة المتقدمة',
+                            'plan_premium': 'الباقة المميزة',
+                            'plan_pro': 'الباقة الاحترافية',
+                            'plan_pro_plus': 'الباقة الاحترافية بلس'
                         };
-                        const packageName = packageNames[level] || `المستوى ${level}`;
+                        let packageName = planMap[planId] || (planId ? `الخطة: ${planId}` : 'بدون خطة');
+
+                        if (!planId) {
+                            const level = mining.level || 0;
+                            if (level > 0) {
+                                const levelMap = {
+                                    1: 'الباقة الفضية',
+                                    2: 'الباقة الذهبية',
+                                    3: 'الباقة البلاتينية',
+                                    4: 'الباقة الماسية'
+                                };
+                                packageName = levelMap[level] || `المستوى ${level}`;
+                            } else {
+                                packageName = 'مستثمر';
+                            }
+                        }
+
                         const totalInvested = mining.totalInvested || 0;
                         const totalReturns = mining.totalInvestmentReturns || mining.totalMinedDZD || 0;
                         let profitRatio = 0;
@@ -1148,6 +1197,7 @@
                             uid: uid,
                             displayName: displayName,
                             package: packageName,
+                            planId: planId,
                             totalInvested: totalInvested,
                             totalReturns: totalReturns,
                             profitRatio: profitRatio,
@@ -1197,7 +1247,7 @@
         }
 
         // ============================================================
-        // 7. عرض قائمة المستثمرين (معدل لعرض التفاصيل الكاملة)
+        // 7. عرض قائمة المستثمرين (معدل)
         // ============================================================
         function renderInvestors(list) {
             const container = document.getElementById('investorsList');
@@ -1237,6 +1287,12 @@
                         <div class="detail-row">
                             <span class="label">عدد الاستثمارات</span>
                             <span class="value">${inv.investments.length}</span>
+                        </div>
+                        ` : ''}
+                        ${inv.planId ? `
+                        <div class="detail-row">
+                            <span class="label">معرف الخطة</span>
+                            <span class="value" style="font-size:12px;font-family:monospace;">${inv.planId}</span>
                         </div>
                         ` : ''}
                     </div>
@@ -1879,7 +1935,7 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة - صفحة استثمارات متكاملة (الرصيد الحقيقي، الباقات، نسبة الأرباح)');
+        console.log('🚀 لوحة الإدارة - عرض الباقات بناءً على planId من الاستثمارات');
         console.log('✅ لإضافة أدمن: أنشئ مستنداً في مجموعة admins باسم الـ telegramId');
     </script>
 </body>
