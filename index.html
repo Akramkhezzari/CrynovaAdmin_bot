@@ -533,6 +533,46 @@
             text-decoration: underline;
             cursor: pointer;
         }
+
+        /* تنسيق محرك البحث في الاستثمارات */
+        .search-box {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            align-items: center;
+        }
+        .search-box input {
+            flex: 1;
+            padding: 10px 14px;
+            background: var(--bg-input);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 15px;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--accent-glow);
+            background: var(--bg-card);
+        }
+        .search-box .btn {
+            width: auto;
+            padding: 10px 20px;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .search-box .btn-clear {
+            background: var(--bg-input);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            padding: 10px 14px;
+        }
+        .search-box .btn-clear:hover {
+            background: var(--border);
+        }
     </style>
 </head>
 <body>
@@ -601,7 +641,7 @@
                 </div>
             </div>
 
-            <!-- تبويب الاستثمارات -->
+            <!-- تبويب الاستثمارات (مع محرك بحث) -->
             <div id="tab-investments" class="tab-content">
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
                     <i class="fas fa-chart-line text-accent"></i> الاستثمارات
@@ -617,6 +657,18 @@
                         <span class="stat-value" id="totalMinedInvest">0</span>
                     </div>
                 </div>
+
+                <!-- محرك البحث برقم المستخدم -->
+                <div class="search-box">
+                    <input type="text" id="investorSearchInput" placeholder="ابحث برقم المستخدم (UID)" dir="ltr">
+                    <button class="btn btn-info" onclick="searchInvestor()" style="width:auto;padding:10px 16px;">
+                        <i class="fas fa-search"></i> بحث
+                    </button>
+                    <button class="btn btn-clear" onclick="clearSearch()" style="width:auto;padding:10px 14px;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
                 <div id="investorsList">
                     <div class="admin-empty">
                         <i class="fas fa-chart-pie text-muted"></i>
@@ -653,7 +705,7 @@
                 </div>
             </div>
 
-            <!-- تبويب المطابقات (بدون زر تحديث) -->
+            <!-- تبويب المطابقات -->
             <div id="tab-matches" class="tab-content">
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
                     <i class="fas fa-link text-orange"></i> طلبات المطابقة المحفوظة
@@ -750,6 +802,10 @@
         let unsubscribeMatches = null;
         let modalCallback = null;
         let lastError = null;
+
+        // متغير لتخزين قائمة المستثمرين الكاملة للبحث
+        let allInvestors = [];
+        let currentSearchUid = '';
 
         // ============================================================
         // 3. دوال مساعدة
@@ -1008,7 +1064,7 @@
         }
 
         // ============================================================
-        // 6. الاستماع لطلبات المطابقة (بدون orderBy)
+        // 6. الاستماع لطلبات المطابقة
         // ============================================================
         function listenToMatches() {
             if (unsubscribeMatches) unsubscribeMatches();
@@ -1054,9 +1110,7 @@
             }
         }
 
-        // دالة التحديث (تُستدعى بعد حفظ أو حذف طلب)
         function refreshMatches() {
-            // إعادة تشغيل المستمع لتحديث البيانات
             if (unsubscribeMatches) unsubscribeMatches();
             listenToMatches();
         }
@@ -1109,9 +1163,6 @@
             `).join('');
         }
 
-        // ============================================================
-        // 8. تعديل طلب المطابقة
-        // ============================================================
         function editMatch(matchId, currentTxId, currentAmount) {
             const modal = document.getElementById('confirmModal');
             const body = document.getElementById('modalBody');
@@ -1171,9 +1222,6 @@
             cancelBtn.onclick = handleCancel;
         }
 
-        // ============================================================
-        // 9. حذف طلب المطابقة
-        // ============================================================
         function deleteMatch(matchId) {
             showConfirmDialog({
                 title: 'إلغاء طلب المطابقة',
@@ -1197,7 +1245,7 @@
         }
 
         // ============================================================
-        // 10. الاستماع للمستخدمين
+        // 8. الاستماع للمستخدمين (مع تخزين المستثمرين للبحث)
         // ============================================================
         function listenToUsers() {
             if (unsubscribeUsers) unsubscribeUsers();
@@ -1249,7 +1297,7 @@
                                 planName = planMap[first.planId] || (first.planId ? `الخطة: ${first.planId}` : 'مستثمر');
                             }
                             let profitRatio = totalInvested > 0 ? (totalReturns / totalInvested) * 100 : 0;
-                            investors.push({
+                            const investorObj = {
                                 uid: uid,
                                 displayName: displayName,
                                 package: planName,
@@ -1260,18 +1308,24 @@
                                 docId: doc.id,
                                 investments: investments,
                                 miningData: data.miningData || {}
-                            });
+                            };
+                            investors.push(investorObj);
                             totalMinedSum += totalReturns;
                         }
                     });
+
+                    // تخزين قائمة المستثمرين الكاملة للبحث
+                    allInvestors = investors;
 
                     document.getElementById('totalUsers').textContent = totalUsers;
                     document.getElementById('totalPlatformBalance').textContent = totalBalance.toFixed(2);
                     document.getElementById('totalInvestors').textContent = investors.length;
                     document.getElementById('totalMinedInvest').textContent = totalMinedSum.toFixed(2);
-                    renderInvestors(investors);
-                    renderProtectUsers(allUsers);
 
+                    // عرض المستثمرين مع تطبيق البحث الحالي
+                    renderInvestorsWithSearch();
+
+                    // معالجة طلبات الإيداع والسحب
                     const pendingDeposits = [];
                     const pendingWithdrawals = [];
 
@@ -1412,12 +1466,14 @@
                     }
                 });
 
+                allInvestors = investors;
+
                 document.getElementById('totalUsers').textContent = totalUsers;
                 document.getElementById('totalPlatformBalance').textContent = totalBalance.toFixed(2);
                 document.getElementById('totalInvestors').textContent = investors.length;
                 document.getElementById('totalMinedInvest').textContent = totalMinedSum.toFixed(2);
-                renderInvestors(investors);
-                renderProtectUsers(allUsers);
+
+                renderInvestorsWithSearch();
 
                 const pendingWithdrawals = [];
                 const pendingDeposits = [];
@@ -1449,7 +1505,38 @@
         }
 
         // ============================================================
-        // 11. عرض قوائم الإيداع والسحب
+        // 9. محرك البحث في صفحة الاستثمارات
+        // ============================================================
+        function searchInvestor() {
+            const input = document.getElementById('investorSearchInput');
+            const uid = input.value.trim();
+            currentSearchUid = uid;
+            renderInvestorsWithSearch();
+            if (uid) {
+                showToast(`🔍 البحث عن المستخدم: ${uid}`);
+            } else {
+                showToast('📋 عرض جميع المستثمرين');
+            }
+        }
+
+        function clearSearch() {
+            document.getElementById('investorSearchInput').value = '';
+            currentSearchUid = '';
+            renderInvestorsWithSearch();
+            showToast('📋 عرض جميع المستثمرين');
+        }
+
+        // دالة عرض المستثمرين مع تطبيق الفلترة
+        function renderInvestorsWithSearch() {
+            let filtered = allInvestors;
+            if (currentSearchUid) {
+                filtered = allInvestors.filter(inv => inv.uid === currentSearchUid);
+            }
+            renderInvestors(filtered);
+        }
+
+        // ============================================================
+        // 10. عرض قوائم الإيداع والسحب
         // ============================================================
         function renderPendingWithdrawals(list) {
             const container = document.getElementById('adminWithdrawalsList');
@@ -1551,14 +1638,21 @@
         }
 
         // ============================================================
-        // 12. باقي الدوال
+        // 11. دوال عرض المستثمرين (مع إمكانية التصفية)
         // ============================================================
         function renderInvestors(list) {
             const container = document.getElementById('investorsList');
             if (!list.length) {
-                container.innerHTML = `<div class="admin-empty"><i class="fas fa-chart-pie text-muted"></i><div>لا يوجد مستثمرون حتى الآن</div></div>`;
+                const msg = currentSearchUid ? `لا يوجد مستثمر برقم المستخدم: ${currentSearchUid}` : 'لا يوجد مستثمرون حتى الآن';
+                container.innerHTML = `
+                    <div class="admin-empty">
+                        <i class="fas fa-chart-pie text-muted"></i>
+                        <div>${msg}</div>
+                    </div>
+                `;
                 return;
             }
+
             container.innerHTML = list.map(inv => `
                 <div class="invest-card">
                     <div class="flex-between">
@@ -1606,6 +1700,9 @@
             `).join('');
         }
 
+        // ============================================================
+        // 12. دوال التحكم في الاستثمارات
+        // ============================================================
         function cancelInvestment(docId, uid, displayName) {
             showConfirmDialog({
                 title: 'إلغاء باقة التعدين',
@@ -1726,6 +1823,9 @@
             }
         }
 
+        // ============================================================
+        // 13. دوال الحماية
+        // ============================================================
         function renderProtectUsers(users) {
             const container = document.getElementById('usersProtectList');
             if (!users.length) {
@@ -1837,6 +1937,9 @@
             });
         }
 
+        // ============================================================
+        // 14. دوال السحب والإيداع
+        // ============================================================
         function approveWithdrawal(userDocId, withdrawalId, uid, displayName, amount, fee) {
             showConfirmDialog({
                 title: 'تأكيد السحب',
@@ -1966,7 +2069,7 @@
         }
 
         // ============================================================
-        // 13. تأكيد إيداع تلقائي
+        // 15. تأكيد إيداع تلقائي
         // ============================================================
         async function autoConfirmDeposit() {
             const txId = document.getElementById('autoTxId').value.trim();
@@ -2057,7 +2160,7 @@
         }
 
         // ============================================================
-        // 14. التبديل بين التبويبات
+        // 16. التبديل بين التبويبات
         // ============================================================
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -2071,10 +2174,14 @@
             if (tabId === 'tab-matches') {
                 refreshMatches();
             }
+            if (tabId === 'tab-investments') {
+                // إعادة عرض المستثمرين عند الدخول للتبويب
+                renderInvestorsWithSearch();
+            }
         }
 
         // ============================================================
-        // 15. الوضع المظلم
+        // 17. الوضع المظلم
         // ============================================================
         let isDarkTheme = false;
         function toggleTheme() {
@@ -2113,7 +2220,7 @@
         }
 
         // ============================================================
-        // 16. INIT
+        // 18. INIT
         // ============================================================
         document.addEventListener('DOMContentLoaded', function() {
             authAdmin();
@@ -2121,10 +2228,17 @@
                 window.Telegram.WebApp.BackButton.hide();
             }
             switchTab('tab-home');
+
+            // دعم الضغط على Enter في حقل البحث
+            document.getElementById('investorSearchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchInvestor();
+                }
+            });
         });
 
-        console.log('🚀 لوحة الإدارة - تم إزالة زر التحديث من المطابقات');
-        console.log('✅ القائمة تُحدث نفسها تلقائياً عند إضافة أو حذف طلب.');
+        console.log('🚀 لوحة الإدارة - تم إضافة محرك بحث في الاستثمارات');
+        console.log('✅ يمكنك البحث برقم المستخدم (UID)');
     </script>
 </body>
 </html>
