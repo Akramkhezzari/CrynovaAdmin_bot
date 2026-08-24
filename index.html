@@ -20,7 +20,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
-        /* ===== جميع الأنماط السابقة ===== */
+        /* ===== جميع الأنماط السابقة مع تحديث زر النسخ ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --bg-primary: #f0f4f8; --bg-secondary: #ffffff; --bg-card: #ffffff;
@@ -167,17 +167,43 @@
         .btn-sm { padding: 10px 16px; font-size: 14px; }
         .btn-xs { padding: 4px 10px; font-size: 11px; border-radius: 6px; }
 
+        /* ===== زر النسخ التفاعلي (Interactive Icon Action Button) ===== */
         .copy-btn {
-            background: var(--bg-input); color: var(--text-secondary); border: none;
-            padding: 2px 6px; border-radius: var(--radius-sm);
-            font-size: 11px; font-weight: 600; cursor: pointer;
-            transition: var(--transition); font-family: inherit;
-            display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0;
+            background: var(--bg-input);
+            color: var(--text-secondary);
             border: 1px solid var(--border);
+            padding: 2px 8px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+            min-width: 28px;
+            justify-content: center;
         }
-        .copy-btn:hover { background: var(--accent); color: white; border-color: var(--accent); transform: scale(1.05); }
-        .copy-btn:active { transform: scale(0.95); }
-        .copy-btn.copied { background: var(--success); color: white; border-color: var(--success); }
+        .copy-btn:hover {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+            transform: scale(1.05);
+        }
+        .copy-btn:active {
+            transform: scale(0.92);
+        }
+        .copy-btn.copied {
+            background: var(--success) !important;
+            color: white !important;
+            border-color: var(--success) !important;
+            transform: scale(0.95);
+        }
+        .copy-btn .icon-text {
+            transition: all 0.2s ease;
+        }
 
         .input-group { margin-bottom: 16px; }
         .input-group label { display: block; color: var(--text-secondary); font-size: 14px; margin-bottom: 6px; font-weight: 600; }
@@ -686,7 +712,7 @@
         let modalCallback = null;
 
         // ============================================================
-        // 3. دوال مساعدة
+        // 3. دوال مساعدة (مع زر نسخ تفاعلي)
         // ============================================================
         function formatDateTime(timestamp) {
             if (!timestamp) return '--';
@@ -694,38 +720,98 @@
             return date.toLocaleDateString('ar-EG', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
         }
 
-        function copyText(text) {
+        // دالة النسخ التفاعلية - تستقبل النص والعنصر (الزر)
+        function copyText(text, buttonElement) {
             if (!text) { showToast('لا يوجد نص للنسخ'); return; }
+
+            // نسخ النص
             if (navigator.clipboard) {
-                navigator.clipboard.writeText(text).then(() => showToast('تم النسخ'));
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('تم النسخ');
+                    animateCopyButton(buttonElement);
+                }).catch(() => {
+                    fallbackCopy(text, buttonElement);
+                });
             } else {
-                const ta = document.createElement('textarea');
-                ta.value = text;
-                document.body.appendChild(ta);
-                ta.select();
-                document.execCommand('copy');
-                ta.remove();
-                showToast('تم النسخ');
+                fallbackCopy(text, buttonElement);
             }
         }
 
-        function showToast(msg) {
-            const t = document.createElement('div');
-            t.style.cssText = `
-                position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
-                background: var(--accent); color: #fff; padding: 12px 24px;
-                border-radius: 30px; font-weight: 700; z-index: 9999;
-                box-shadow: var(--shadow-lg); font-family: 'Cairo', sans-serif;
-                max-width: 90%; text-align: center;
-            `;
-            t.textContent = msg;
-            document.body.appendChild(t);
-            setTimeout(() => {
-                t.style.opacity = '0';
-                t.style.transition = 'opacity 0.3s';
-                setTimeout(() => t.remove(), 300);
-            }, 3000);
+        // طريقة احتياطية للنسخ
+        function fallbackCopy(text, buttonElement) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+                document.execCommand('copy');
+                showToast('تم النسخ');
+                animateCopyButton(buttonElement);
+            } catch (e) {
+                showToast('فشل النسخ');
+            }
+            ta.remove();
         }
+
+        // تأثير تفاعلي على الزر بعد النسخ
+        function animateCopyButton(button) {
+            if (!button) return;
+            // حفظ النص الأصلي إذا وجد
+            const originalHTML = button.innerHTML;
+            // تغيير المظهر
+            button.classList.add('copied');
+            // تغيير الأيقونة إلى ✔
+            const icon = button.querySelector('i');
+            if (icon) {
+                icon.className = 'fas fa-check';
+            }
+            // تغيير النص إذا كان هناك نص بجانب الأيقونة (في بعض الأزرار)
+            const textSpan = button.querySelector('.icon-text');
+            if (textSpan) {
+                textSpan.textContent = 'تم';
+            }
+
+            // العودة إلى الحالة الأصلية بعد 1.5 ثانية
+            setTimeout(() => {
+                button.classList.remove('copied');
+                if (icon) {
+                    icon.className = 'fas fa-copy';
+                }
+                if (textSpan) {
+                    textSpan.textContent = 'نسخ';
+                }
+                // استعادة HTML الأصلي إذا كان مختلفاً (للمرونة)
+                // لكننا سنستخدم الطريقة الأكثر أماناً: إعادة تعيين المحتوى إذا كان مخزناً
+                if (button.dataset.originalHtml) {
+                    button.innerHTML = button.dataset.originalHtml;
+                } else {
+                    // نحاول استعادة النص الأصلي
+                    const originalText = button.dataset.originalText || 'نسخ';
+                    if (icon) {
+                        button.innerHTML = `<i class="fas fa-copy"></i> <span class="icon-text">${originalText}</span>`;
+                    } else {
+                        button.textContent = originalText;
+                    }
+                }
+            }, 1500);
+        }
+
+        // دالة مساعدة لإنشاء زر نسخ تفاعلي مع حفظ البيانات
+        function createCopyButton(text, label = 'نسخ') {
+            const btn = document.createElement('button');
+            btn.className = 'copy-btn';
+            btn.dataset.originalText = label;
+            btn.dataset.originalHtml = `<i class="fas fa-copy"></i> <span class="icon-text">${label}</span>`;
+            btn.innerHTML = `<i class="fas fa-copy"></i> <span class="icon-text">${label}</span>`;
+            btn.onclick = function(e) {
+                e.stopPropagation();
+                copyText(text, this);
+            };
+            return btn;
+        }
+
+        // نسخة مبسطة للاستخدام في الـ HTML المضمن (لن نستخدمها هنا لأننا سنبني الأزرار يدوياً)
+        // لكننا سنستخدم onclick مع تمرير this
 
         // ============================================================
         // 4. نافذة التأكيد المتطورة
@@ -801,6 +887,24 @@
                 modalCallback.onCancel();
             }
             closeModal();
+        }
+
+        function showToast(msg) {
+            const t = document.createElement('div');
+            t.style.cssText = `
+                position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+                background: var(--accent); color: #fff; padding: 12px 24px;
+                border-radius: 30px; font-weight: 700; z-index: 9999;
+                box-shadow: var(--shadow-lg); font-family: 'Cairo', sans-serif;
+                max-width: 90%; text-align: center;
+            `;
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(() => {
+                t.style.opacity = '0';
+                t.style.transition = 'opacity 0.3s';
+                setTimeout(() => t.remove(), 300);
+            }, 3000);
         }
 
         // ============================================================
@@ -1077,7 +1181,7 @@
         }
 
         // ============================================================
-        // 7. عرض قائمة المستثمرين
+        // 7. عرض قائمة المستثمرين (مع أزرار نسخ تفاعلية)
         // ============================================================
         function renderInvestors(list) {
             const container = document.getElementById('investorsList');
@@ -1090,8 +1194,8 @@
                     <div class="flex-between">
                         <span class="invest-user">
                             👤 <strong>${inv.displayName}</strong>
-                            <button class="copy-btn" onclick="copyText('${inv.uid}')" style="padding:2px 8px;font-size:11px;background:var(--bg-input);color:var(--text-secondary);">
-                                <i class="fas fa-copy"></i>
+                            <button class="copy-btn" onclick="copyText('${inv.uid}', this)" title="نسخ المعرف">
+                                <i class="fas fa-copy"></i> <span class="icon-text">نسخ</span>
                             </button>
                         </span>
                         <span class="invest-badge">${inv.package}</span>
@@ -1216,7 +1320,7 @@
         }
 
         // ============================================================
-        // 9. عرض قائمة المستخدمين في صفحة الحماية
+        // 9. عرض قائمة المستخدمين في صفحة الحماية (مع أزرار نسخ تفاعلية)
         // ============================================================
         function renderProtectUsers(users) {
             const container = document.getElementById('usersProtectList');
@@ -1295,8 +1399,8 @@
                             <br>
                             <span class="id-wrapper">
                                 <span class="id-text">${u.uid}</span>
-                                <button class="copy-btn" onclick="copyText('${u.uid}')" title="نسخ المعرف">
-                                    <i class="fas fa-copy"></i>
+                                <button class="copy-btn" onclick="copyText('${u.uid}', this)" title="نسخ المعرف">
+                                    <i class="fas fa-copy"></i> <span class="icon-text">نسخ</span>
                                 </button>
                             </span>
                         </div>
@@ -1353,7 +1457,7 @@
         }
 
         // ============================================================
-        // 11. عرض قوائم السحب والإيداع (مع زر نسخ لرقم العملية في الإيداع)
+        // 11. عرض قوائم السحب والإيداع (مع أزرار نسخ تفاعلية)
         // ============================================================
         function renderPendingWithdrawals(list) {
             const container = document.getElementById('adminWithdrawalsList');
@@ -1366,8 +1470,8 @@
                     <div class="flex-between">
                         <span class="user-info">
                             👤 <strong>${w.userDisplayName}</strong>
-                            <button class="copy-btn" onclick="copyText('${w.uid}')" style="padding:2px 8px;font-size:11px;background:var(--bg-input);color:var(--text-secondary);">
-                                <i class="fas fa-copy"></i>
+                            <button class="copy-btn" onclick="copyText('${w.uid}', this)" title="نسخ المعرف">
+                                <i class="fas fa-copy"></i> <span class="icon-text">نسخ</span>
                             </button>
                         </span>
                         <span class="status status-pending">قيد الانتظار</span>
@@ -1375,8 +1479,8 @@
                     <div class="details">
                         <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-bottom:4px;">
                             <strong>${w.amount} ${w.currency || 'DZD'}</strong>
-                            <button class="copy-btn" onclick="copyText('${w.amount}')" title="نسخ المبلغ">
-                                <i class="fas fa-copy"></i>
+                            <button class="copy-btn" onclick="copyText('${w.amount}', this)" title="نسخ المبلغ">
+                                <i class="fas fa-copy"></i> <span class="icon-text">نسخ</span>
                             </button>
                             <span style="margin-left:8px;">| رسوم: ${w.fee || 0}</span>
                         </div>
@@ -1384,8 +1488,8 @@
                         ${w.recipientAddress ? `
                             <br><small style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:4px;">
                                 <span>رقم الحساب البريدي: ${w.recipientAddress}</span>
-                                <button class="copy-btn" onclick="copyText('${w.recipientAddress}')" title="نسخ رقم الحساب البريدي">
-                                    <i class="fas fa-copy"></i>
+                                <button class="copy-btn" onclick="copyText('${w.recipientAddress}', this)" title="نسخ رقم الحساب البريدي">
+                                    <i class="fas fa-copy"></i> <span class="icon-text">نسخ</span>
                                 </button>
                             </small>
                         ` : ''}
@@ -1413,8 +1517,8 @@
                     <div class="flex-between">
                         <span class="user-info">
                             👤 <strong>${d.userDisplayName}</strong>
-                            <button class="copy-btn" onclick="copyText('${d.uid}')" style="padding:2px 8px;font-size:11px;background:var(--bg-input);color:var(--text-secondary);">
-                                <i class="fas fa-copy"></i>
+                            <button class="copy-btn" onclick="copyText('${d.uid}', this)" title="نسخ المعرف">
+                                <i class="fas fa-copy"></i> <span class="icon-text">نسخ</span>
                             </button>
                         </span>
                         <span class="status status-pending">قيد الانتظار</span>
@@ -1425,8 +1529,8 @@
                         ${d.transactionId ? `
                             <br><small style="display:inline-flex;align-items:center;gap:4px;margin-top:4px;">
                                 <span>رقم العملية: <strong>${d.transactionId}</strong></span>
-                                <button class="copy-btn" onclick="copyText('${d.transactionId}')" title="نسخ رقم العملية" style="padding:0 6px;font-size:11px;">
-                                    <i class="fas fa-copy"></i>
+                                <button class="copy-btn" onclick="copyText('${d.transactionId}', this)" title="نسخ رقم العملية">
+                                    <i class="fas fa-copy"></i> <span class="icon-text">نسخ</span>
                                 </button>
                             </small>
                         ` : ''}
@@ -1741,7 +1845,7 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة مع زر نسخ لرقم العملية في طلبات الإيداع');
+        console.log('🚀 لوحة الإدارة مع أزرار نسخ تفاعلية (Interactive Icon Action Buttons)');
         console.log('✅ لإضافة أدمن: أنشئ مستنداً في مجموعة admins باسم الـ telegramId');
     </script>
 </body>
