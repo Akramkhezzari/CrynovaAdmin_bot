@@ -20,7 +20,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
-        /* ===== جميع الأنماط السابقة (بدون تغيير) ===== */
+        /* ===== نفس الأنماط السابقة ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --bg-primary: #f0f4f8; --bg-secondary: #ffffff; --bg-card: #ffffff;
@@ -712,7 +712,7 @@
         }
 
         // ============================================================
-        // 8. عمليات الإيداع (تأكيد / رفض)
+        // 8. عمليات الإيداع (تأكيد / رفض) - تم إصلاح الخطأ
         // ============================================================
         async function confirmDeposit(userDocId, depositId, uid, amount) {
             if (!confirm(`تأكيد إيداع ${amount} DZD للمستخدم ${uid}؟`)) return;
@@ -722,24 +722,34 @@
                 if (!userDoc.exists) throw new Error('المستخدم غير موجود');
                 const data = userDoc.data();
                 const currentDzd = data.wallets?.dzd || 0;
+
+                // تحديث المحفظة
                 await userRef.update({ 'wallets.dzd': currentDzd + amount });
-                const updated = (data.deposits || []).map(d =>
+
+                // تحديث حالة الإيداع
+                const updatedDeposits = (data.deposits || []).map(d =>
                     d.depositId === depositId ? { ...d, status: 'confirmed' } : d
                 );
-                await userRef.update({ deposits: updated });
+                await userRef.update({ deposits: updatedDeposits });
+
+                // إضافة معاملة جديدة (تم استبدال serverTimestamp بـ new Date())
                 await userRef.update({
                     transactions: firebase.firestore.FieldValue.arrayUnion({
                         type: 'deposit',
                         amount: amount,
                         currency: 'DZD',
                         description: `تأكيد إيداع ${amount} DZD`,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                        timestamp: new Date(),  // ✅ تم التعديل هنا
                         status: 'confirmed',
                         depositId: depositId
                     })
                 });
+
                 showToast(`✅ تم تأكيد إيداع ${amount} DZD`);
-            } catch(e) { console.error(e); showToast('❌ خطأ: '+e.message); }
+            } catch(e) {
+                console.error(e);
+                showToast('❌ خطأ: '+e.message);
+            }
         }
 
         async function rejectDeposit(userDocId, depositId, uid) {
@@ -858,7 +868,7 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة مع أزرار نسخ للمبلغ والعنوان في السحب');
+        console.log('🚀 لوحة الإدارة مع أزرار نسخ وبدون أرقام الطلبات (تم إصلاح خطأ serverTimestamp)');
         console.log('✅ لإضافة أدمن: أنشئ مستنداً في مجموعة admins باسم الـ telegramId');
     </script>
 </body>
