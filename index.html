@@ -457,7 +457,7 @@
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
                     <i class="fas fa-home text-accent"></i> الرئيسية
                 </h2>
-                <!-- تأكيد إيداع تلقائي (تم إزالة رقم المستخدم) -->
+                <!-- تأكيد إيداع تلقائي (معدل) -->
                 <div class="card" style="border:2px solid var(--info);">
                     <div class="card-header">
                         <div class="card-title"><i class="fas fa-bolt text-info"></i> تأكيد إيداع تلقائي (DZD)</div>
@@ -475,7 +475,7 @@
                         <i class="fas fa-check-circle"></i> تأكيد تلقائي
                     </button>
                     <div style="font-size:12px;color:var(--text-muted);margin-top:8px;">
-                        <i class="fas fa-info-circle"></i> سيتم البحث عن طلب إيداع معلق بنفس رقم العملية والمبلغ (DZD) وتأكيده.
+                        <i class="fas fa-info-circle"></i> سيتم البحث عن طلب إيداع معلق. إذا لم يوجد، سيتم حفظ البيانات للمطابقة المستقبلية.
                     </div>
                 </div>
             </div>
@@ -804,13 +804,13 @@
         }
 
         // ============================================================
-        // 6. الاستماع الفوري وجلب الطلبات + تحديث الإحصائيات
+        // 6. الاستماع الفوري وجلب الطلبات + تحديث الإحصائيات + المطابقة التلقائية
         // ============================================================
         function listenToUsers() {
             if (unsubscribeUsers) unsubscribeUsers();
 
             unsubscribeUsers = db.collection('users')
-                .onSnapshot((snapshot) => {
+                .onSnapshot(async (snapshot) => {
                     // ---- تحديث الإحصائيات العامة ----
                     let totalUsers = 0;
                     let totalBalance = 0;
@@ -844,11 +844,24 @@
                     const pendingWithdrawals = [];
                     const pendingDeposits = [];
 
+                    // المطابقة التلقائية: نتحقق من طلبات الإيداع الجديدة مع pending_deposit_matches
+                    const pendingMatchesSnap = await db.collection('pending_deposit_matches')
+                        .where('status', '==', 'pending')
+                        .get();
+                    const pendingMatches = [];
+                    pendingMatchesSnap.forEach(doc => {
+                        pendingMatches.push({ id: doc.id, ...doc.data() });
+                    });
+
+                    // قائمة لتخزين معرفات المطابقات التي تمت معالجتها
+                    const processedMatches = [];
+
                     snapshot.forEach(doc => {
                         const data = doc.data();
                         const uid = doc.id;
                         const displayName = data.displayName || uid;
 
+                        // معالجة السحوبات
                         if (data.withdrawals && Array.isArray(data.withdrawals)) {
                             data.withdrawals.forEach(w => {
                                 if (w.status === 'pending') {
@@ -862,6 +875,7 @@
                             });
                         }
 
+                        // معالجة الإيداعات والتحقق من المطابقات
                         if (data.deposits && Array.isArray(data.deposits)) {
                             data.deposits.forEach(d => {
                                 if (d.status === 'pending') {
@@ -871,11 +885,31 @@
                                         userDisplayName: displayName,
                                         docId: doc.id
                                     });
+
+                                    // التحقق من المطابقة التلقائية
+                                    const match = pendingMatches.find(m =>
+                                        m.transactionId === d.transactionId &&
+                                        m.amount === d.amount &&
+                                        m.currency === d.currency &&
+                                        m.status === 'pending'
+                                    );
+                                    if (match) {
+                                        // نجد تطابقاً → نؤكد الإيداع فوراً
+                                        processedMatches.push(match.id);
+                                        // تأكيد الإيداع
+                                        confirmDepositDirect(doc.id, d.depositId, uid, displayName, d.amount);
+                                        // حذف المطابقة بعد استخدامها
+                                        db.collection('pending_deposit_matches').doc(match.id).delete();
+                                    }
                                 }
                             });
                         }
                     });
 
+                    // حذف أي مطابقة لم تتم معالجتها (للتأكد من عدم بقاء مطابقات قديمة)
+                    // لكننا نتركها pending حتى يتم مطابقتها مستقبلاً
+
+                    // ترتيب الطلبات
                     const sortByDate = (a, b) => {
                         const da = a.createdAt?.toDate?.() || new Date(0);
                         const db2 = b.createdAt?.toDate?.() || new Date(0);
@@ -1163,7 +1197,7 @@
                         depositId: depositId
                     })
                 });
-                showToast(`✅ تم تأكيد إيداع ${amount} DZD`);
+                showToast(`✅ تم تأكيد إيداع ${amount} DZD للمستخدم ${displayName}`);
             } catch(e) { console.error(e); showToast('❌ خطأ: '+e.message); }
         }
 
@@ -1211,7 +1245,7 @@
         }
 
         // ============================================================
-        // 11. تأكيد إيداع تلقائي (بحث بين جميع المستخدمين)
+        // 11. تأكيد إيداع تلقائي (معدل - يحفظ إذا لم يجد طلب)
         // ============================================================
         async function autoConfirmDeposit() {
             const txId = document.getElementById('autoTxId').value.trim();
@@ -1221,12 +1255,11 @@
             if (!amount || amount <= 0) { showToast('⚠️ أدخل مبلغاً صحيحاً'); return; }
 
             try {
-                // جلب جميع المستخدمين
+                // 1. البحث عن طلب موجود
                 const usersSnap = await db.collection('users').get();
                 let targetData = null;
                 let targetDocId = null;
 
-                // البحث عن طلب إيداع معلق مطابق بين جميع المستخدمين
                 for (const doc of usersSnap.docs) {
                     const data = doc.data();
                     const deposits = data.deposits || [];
@@ -1247,34 +1280,58 @@
                     }
                 }
 
-                if (!targetData) {
-                    showToast('❌ لم يتم العثور على طلب إيداع معلق بهذه البيانات');
-                    return;
-                }
-
-                // عرض نافذة تأكيد متطورة
-                showConfirmDialog({
-                    title: 'تأكيد تلقائي للإيداع',
-                    icon: 'fa-bolt',
-                    type: 'success',
-                    details: [
-                        { label: 'المستخدم', value: targetData.displayName, highlight: true },
-                        { label: 'المبلغ', value: `${targetData.amount} DZD`, highlight: true },
-                        { label: 'رقم العملية', value: targetData.transactionId },
-                        { label: 'رقم المستخدم', value: targetData.uid }
-                    ],
-                    confirmText: 'تأكيد تلقائي',
-                    onConfirm: async () => {
-                        try {
+                // 2. إذا وجد طلب → تأكيد مباشر
+                if (targetData) {
+                    showConfirmDialog({
+                        title: 'تأكيد تلقائي للإيداع',
+                        icon: 'fa-bolt',
+                        type: 'success',
+                        details: [
+                            { label: 'المستخدم', value: targetData.displayName, highlight: true },
+                            { label: 'المبلغ', value: `${targetData.amount} DZD`, highlight: true },
+                            { label: 'رقم العملية', value: targetData.transactionId },
+                            { label: 'رقم المستخدم', value: targetData.uid }
+                        ],
+                        confirmText: 'تأكيد تلقائي',
+                        onConfirm: async () => {
                             await confirmDepositDirect(targetDocId, targetData.depositId, targetData.uid, targetData.displayName, targetData.amount);
                             document.getElementById('autoTxId').value = '';
                             document.getElementById('autoAmount').value = '';
-                        } catch(e) {
-                            console.error(e);
-                            showToast('❌ خطأ: '+e.message);
                         }
-                    }
+                    });
+                    return;
+                }
+
+                // 3. إذا لم يوجد طلب → حفظ البيانات في pending_deposit_matches
+                const matchData = {
+                    transactionId: txId,
+                    amount: amount,
+                    currency: 'DZD',
+                    status: 'pending',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                await db.collection('pending_deposit_matches').add(matchData);
+
+                // عرض رسالة نجاح
+                showToast(`✅ تم حفظ رقم العملية ${txId} والمبلغ ${amount} DZD للمطابقة المستقبلية. سيتم تأكيد الإيداع تلقائياً عند تقديم المستخدم للطلب.`);
+                document.getElementById('autoTxId').value = '';
+                document.getElementById('autoAmount').value = '';
+
+                // (اختياري) عرض نافذة تأكيد توضح أنه تم الحفظ
+                showConfirmDialog({
+                    title: 'تم حفظ الطلب للمطابقة',
+                    icon: 'fa-save',
+                    type: 'success',
+                    details: [
+                        { label: 'رقم العملية', value: txId, highlight: true },
+                        { label: 'المبلغ', value: `${amount} DZD`, highlight: true },
+                        { label: 'الحالة', value: 'في انتظار طلب المستخدم' }
+                    ],
+                    confirmText: 'حسناً',
+                    onConfirm: () => {}
                 });
+
             } catch(e) {
                 console.error(e);
                 showToast('❌ خطأ: '+e.message);
@@ -1344,7 +1401,7 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة - تأكيد تلقائي بدون رقم مستخدم');
+        console.log('🚀 لوحة الإدارة - حفظ الطلبات للمطابقة التلقائية');
         console.log('✅ لإضافة أدمن: أنشئ مستنداً في مجموعة admins باسم الـ telegramId');
     </script>
 </body>
