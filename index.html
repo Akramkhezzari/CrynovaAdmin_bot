@@ -20,7 +20,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
-        /* ===== جميع الأنماط السابقة (بدون تغيير) ===== */
+        /* ===== جميع الأنماط السابقة مع إضافات ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --bg-primary: #f0f4f8; --bg-secondary: #ffffff; --bg-card: #ffffff;
@@ -156,7 +156,10 @@
         .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(225,112,85,0.35); }
         .btn-info { background: var(--info); color: white; }
         .btn-info:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(9,132,227,0.35); }
+        .btn-warning { background: var(--warning); color: #7d6608; }
+        .btn-warning:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(253,203,110,0.35); }
         .btn-sm { padding: 10px 16px; font-size: 14px; }
+        .btn-xs { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
 
         .copy-btn {
             background: var(--accent); color: white; border: none;
@@ -191,6 +194,8 @@
         .status-pending { background: var(--warning-light); color: #b7950b; }
         .status-danger { background: var(--danger-light); color: var(--danger); }
         .status-info { background: var(--info-light); color: var(--info); }
+        .status-banned { background: var(--danger-light); color: var(--danger); }
+        .status-active { background: var(--success-light); color: var(--success); }
 
         .admin-request-card {
             background: var(--bg-card); border-radius: var(--radius-sm);
@@ -206,7 +211,7 @@
         .admin-empty { text-align: center; padding: 30px 0; color: var(--text-muted); }
         .admin-empty i { font-size: 48px; display: block; margin-bottom: 10px; }
 
-        /* ===== شريط التنقل السفلي ===== */
+        /* ===== شريط التنقل السفلي (5 أزرار) ===== */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0;
             max-width: 480px; margin: 0 auto;
@@ -218,7 +223,7 @@
             justify-content: space-around;
             box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
             z-index: 1000;
-            padding: 0 4px;
+            padding: 0 2px;
         }
         .bottom-nav .nav-item {
             flex: 1;
@@ -231,7 +236,7 @@
             border: none;
             background: transparent;
             color: var(--text-muted);
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
             cursor: pointer;
             transition: var(--transition);
@@ -240,7 +245,7 @@
             border-radius: 12px;
         }
         .bottom-nav .nav-item i {
-            font-size: 20px;
+            font-size: 18px;
             transition: var(--transition);
         }
         .bottom-nav .nav-item.active {
@@ -254,16 +259,16 @@
             position: absolute;
             top: 2px;
             right: 50%;
-            transform: translateX(calc(50% + 16px));
+            transform: translateX(calc(50% + 14px));
             background: var(--danger);
             color: white;
-            font-size: 9px;
-            padding: 1px 6px;
+            font-size: 8px;
+            padding: 1px 5px;
             border-radius: 20px;
             font-weight: 700;
-            min-width: 16px;
+            min-width: 14px;
             text-align: center;
-            line-height: 14px;
+            line-height: 12px;
         }
         .bottom-nav .nav-item .badge.hidden { display: none; }
 
@@ -422,6 +427,21 @@
             background: var(--info-light);
             color: var(--info);
         }
+
+        /* ===== أنماط صفحة الحماية ===== */
+        .user-protect-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-sm);
+            padding: 14px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+        .user-protect-card:hover { border-color: var(--accent-light); }
+        .user-protect-card .user-name { font-weight: 700; color: var(--accent); }
+        .user-protect-card .user-details { font-size: 14px; color: var(--text-secondary); margin: 4px 0; }
+        .user-protect-card .user-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+        .user-protect-card .user-actions .btn { padding: 6px 14px; font-size: 12px; width: auto; }
     </style>
 </head>
 <body>
@@ -457,7 +477,7 @@
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
                     <i class="fas fa-home text-accent"></i> الرئيسية
                 </h2>
-                <!-- تأكيد إيداع تلقائي (معدل) -->
+                <!-- تأكيد إيداع تلقائي -->
                 <div class="card" style="border:2px solid var(--info);">
                     <div class="card-header">
                         <div class="card-title"><i class="fas fa-bolt text-info"></i> تأكيد إيداع تلقائي (DZD)</div>
@@ -476,6 +496,19 @@
                     </button>
                     <div style="font-size:12px;color:var(--text-muted);margin-top:8px;">
                         <i class="fas fa-info-circle"></i> سيتم البحث عن طلب إيداع معلق. إذا لم يوجد، سيتم حفظ البيانات للمطابقة المستقبلية.
+                    </div>
+                </div>
+            </div>
+
+            <!-- تبويب الحماية (جديد) -->
+            <div id="tab-protect" class="tab-content">
+                <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
+                    <i class="fas fa-shield-alt text-danger"></i> الحماية وإدارة المستخدمين
+                </h2>
+                <div id="usersProtectList">
+                    <div class="admin-empty">
+                        <i class="fas fa-users-slash text-muted"></i>
+                        <div>جاري تحميل المستخدمين...</div>
                     </div>
                 </div>
             </div>
@@ -544,11 +577,15 @@
         </div>
     </div>
 
-    <!-- ===== شريط التنقل السفلي ===== -->
+    <!-- ===== شريط التنقل السفلي (5 أزرار) ===== -->
     <nav class="bottom-nav" id="bottomNav">
         <button class="nav-item active" data-tab="tab-home" onclick="switchTab('tab-home')">
             <i class="fas fa-home"></i>
             <span>الرئيسية</span>
+        </button>
+        <button class="nav-item" data-tab="tab-protect" onclick="switchTab('tab-protect')">
+            <i class="fas fa-shield-alt"></i>
+            <span>الحماية</span>
         </button>
         <button class="nav-item" data-tab="tab-investments" onclick="switchTab('tab-investments')">
             <i class="fas fa-chart-line"></i>
@@ -752,6 +789,7 @@
                         telegramId: uid,
                         displayName: displayName || 'مستخدم',
                         joinDate: firebase.firestore.FieldValue.serverTimestamp(),
+                        status: 'active',
                         wallets: {
                             dzd: 0,
                             dzdLocked: 0,
@@ -804,7 +842,7 @@
         }
 
         // ============================================================
-        // 6. الاستماع الفوري وجلب الطلبات + تحديث الإحصائيات + المطابقة التلقائية
+        // 6. الاستماع الفوري وجلب جميع البيانات
         // ============================================================
         function listenToUsers() {
             if (unsubscribeUsers) unsubscribeUsers();
@@ -816,17 +854,27 @@
                     let totalBalance = 0;
                     let investors = [];
                     let totalMinedSum = 0;
+                    const allUsers = [];
 
                     snapshot.forEach(doc => {
                         const data = doc.data();
+                        const uid = doc.id;
+                        const displayName = data.displayName || uid;
                         totalUsers++;
                         totalBalance += data.wallets?.dzd || 0;
+                        allUsers.push({
+                            uid: uid,
+                            displayName: displayName,
+                            status: data.status || 'active',
+                            dzd: data.wallets?.dzd || 0,
+                            docId: doc.id
+                        });
 
                         const mining = data.miningData || {};
                         if (mining.currentPackage) {
                             investors.push({
-                                uid: doc.id,
-                                displayName: data.displayName || doc.id,
+                                uid: uid,
+                                displayName: displayName,
                                 package: mining.currentPackage,
                                 totalMined: mining.totalMinedDZD || mining.totalMined || 0
                             });
@@ -839,12 +887,13 @@
                     document.getElementById('totalInvestors').textContent = investors.length;
                     document.getElementById('totalMinedInvest').textContent = totalMinedSum.toFixed(2);
                     renderInvestors(investors);
+                    renderProtectUsers(allUsers);
 
                     // ---- معالجة الطلبات المعلقة ----
                     const pendingWithdrawals = [];
                     const pendingDeposits = [];
 
-                    // المطابقة التلقائية: نتحقق من طلبات الإيداع الجديدة مع pending_deposit_matches
+                    // المطابقة التلقائية
                     const pendingMatchesSnap = await db.collection('pending_deposit_matches')
                         .where('status', '==', 'pending')
                         .get();
@@ -853,15 +902,11 @@
                         pendingMatches.push({ id: doc.id, ...doc.data() });
                     });
 
-                    // قائمة لتخزين معرفات المطابقات التي تمت معالجتها
-                    const processedMatches = [];
-
                     snapshot.forEach(doc => {
                         const data = doc.data();
                         const uid = doc.id;
                         const displayName = data.displayName || uid;
 
-                        // معالجة السحوبات
                         if (data.withdrawals && Array.isArray(data.withdrawals)) {
                             data.withdrawals.forEach(w => {
                                 if (w.status === 'pending') {
@@ -875,7 +920,6 @@
                             });
                         }
 
-                        // معالجة الإيداعات والتحقق من المطابقات
                         if (data.deposits && Array.isArray(data.deposits)) {
                             data.deposits.forEach(d => {
                                 if (d.status === 'pending') {
@@ -886,7 +930,6 @@
                                         docId: doc.id
                                     });
 
-                                    // التحقق من المطابقة التلقائية
                                     const match = pendingMatches.find(m =>
                                         m.transactionId === d.transactionId &&
                                         m.amount === d.amount &&
@@ -894,11 +937,7 @@
                                         m.status === 'pending'
                                     );
                                     if (match) {
-                                        // نجد تطابقاً → نؤكد الإيداع فوراً
-                                        processedMatches.push(match.id);
-                                        // تأكيد الإيداع
                                         confirmDepositDirect(doc.id, d.depositId, uid, displayName, d.amount);
-                                        // حذف المطابقة بعد استخدامها
                                         db.collection('pending_deposit_matches').doc(match.id).delete();
                                     }
                                 }
@@ -906,10 +945,6 @@
                         }
                     });
 
-                    // حذف أي مطابقة لم تتم معالجتها (للتأكد من عدم بقاء مطابقات قديمة)
-                    // لكننا نتركها pending حتى يتم مطابقتها مستقبلاً
-
-                    // ترتيب الطلبات
                     const sortByDate = (a, b) => {
                         const da = a.createdAt?.toDate?.() || new Date(0);
                         const db2 = b.createdAt?.toDate?.() || new Date(0);
@@ -930,21 +965,30 @@
         async function loadFallback() {
             try {
                 const snap = await db.collection('users').get();
-                // تحديث الإحصائيات
                 let totalUsers = 0;
                 let totalBalance = 0;
                 let investors = [];
                 let totalMinedSum = 0;
+                const allUsers = [];
 
                 snap.forEach(doc => {
                     const data = doc.data();
+                    const uid = doc.id;
+                    const displayName = data.displayName || uid;
                     totalUsers++;
                     totalBalance += data.wallets?.dzd || 0;
+                    allUsers.push({
+                        uid: uid,
+                        displayName: displayName,
+                        status: data.status || 'active',
+                        dzd: data.wallets?.dzd || 0,
+                        docId: doc.id
+                    });
                     const mining = data.miningData || {};
                     if (mining.currentPackage) {
                         investors.push({
-                            uid: doc.id,
-                            displayName: data.displayName || doc.id,
+                            uid: uid,
+                            displayName: displayName,
                             package: mining.currentPackage,
                             totalMined: mining.totalMinedDZD || mining.totalMined || 0
                         });
@@ -957,8 +1001,8 @@
                 document.getElementById('totalInvestors').textContent = investors.length;
                 document.getElementById('totalMinedInvest').textContent = totalMinedSum.toFixed(2);
                 renderInvestors(investors);
+                renderProtectUsers(allUsers);
 
-                // معالجة الطلبات
                 const pendingWithdrawals = [];
                 const pendingDeposits = [];
                 snap.forEach(doc => {
@@ -1016,7 +1060,80 @@
         }
 
         // ============================================================
-        // 8. عرض القوائم (السحب والإيداع)
+        // 8. عرض قائمة المستخدمين في صفحة الحماية
+        // ============================================================
+        function renderProtectUsers(users) {
+            const container = document.getElementById('usersProtectList');
+            if (!users.length) {
+                container.innerHTML = `<div class="admin-empty"><i class="fas fa-users-slash text-muted"></i><div>لا يوجد مستخدمون</div></div>`;
+                return;
+            }
+            container.innerHTML = users.map(u => `
+                <div class="user-protect-card">
+                    <div class="flex-between">
+                        <span class="user-name">
+                            👤 <strong>${u.displayName}</strong>
+                            <button class="copy-btn" onclick="copyText('${u.uid}')" style="padding:2px 8px;font-size:11px;background:var(--bg-input);color:var(--text-secondary);">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </span>
+                        <span class="status ${u.status === 'active' ? 'status-active' : 'status-banned'}">
+                            ${u.status === 'active' ? '✅ نشط' : '⛔ محظور'}
+                        </span>
+                    </div>
+                    <div class="user-details">
+                        الرصيد: <strong>${u.dzd.toFixed(2)} DZD</strong>
+                        <br><small>المعرف: ${u.uid}</small>
+                    </div>
+                    <div class="user-actions">
+                        ${u.status === 'active' 
+                            ? `<button class="btn btn-danger btn-xs" onclick="toggleUserStatus('${u.docId}','${u.uid}','${u.displayName}','banned')">
+                                <i class="fas fa-ban"></i> تعطيل
+                               </button>`
+                            : `<button class="btn btn-success btn-xs" onclick="toggleUserStatus('${u.docId}','${u.uid}','${u.displayName}','active')">
+                                <i class="fas fa-check-circle"></i> تفعيل
+                               </button>`
+                        }
+                        <button class="btn btn-info btn-xs" onclick="copyText('${u.uid}')">
+                            <i class="fas fa-copy"></i> نسخ المعرف
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ============================================================
+        // 9. تبديل حالة المستخدم (تعطيل/تفعيل)
+        // ============================================================
+        function toggleUserStatus(docId, uid, displayName, newStatus) {
+            const action = newStatus === 'active' ? 'تفعيل' : 'تعطيل';
+            const msg = `هل أنت متأكد من ${action} المستخدم ${displayName} (${uid})؟`;
+            showConfirmDialog({
+                title: `${action} المستخدم`,
+                icon: 'fa-user-cog',
+                type: newStatus === 'active' ? 'success' : 'danger',
+                details: [
+                    { label: 'المستخدم', value: displayName, highlight: true },
+                    { label: 'المعرف', value: uid },
+                    { label: 'الإجراء', value: action }
+                ],
+                confirmText: action,
+                onConfirm: async () => {
+                    try {
+                        await db.collection('users').doc(docId).update({
+                            status: newStatus
+                        });
+                        showToast(`✅ تم ${action} المستخدم ${displayName}`);
+                    } catch(e) {
+                        console.error(e);
+                        showToast('❌ خطأ: '+e.message);
+                    }
+                }
+            });
+        }
+
+        // ============================================================
+        // 10. عرض القوائم (السحب والإيداع)
         // ============================================================
         function renderPendingWithdrawals(list) {
             const container = document.getElementById('adminWithdrawalsList');
@@ -1111,7 +1228,7 @@
         }
 
         // ============================================================
-        // 9. عمليات السحب (تأكيد / رفض)
+        // 11. عمليات السحب (تأكيد / رفض)
         // ============================================================
         function approveWithdrawal(userDocId, withdrawalId, uid, displayName, amount, fee) {
             showConfirmDialog({
@@ -1172,7 +1289,7 @@
         }
 
         // ============================================================
-        // 10. عمليات الإيداع (تأكيد / رفض)
+        // 12. عمليات الإيداع (تأكيد / رفض)
         // ============================================================
         async function confirmDepositDirect(userDocId, depositId, uid, displayName, amount) {
             try {
@@ -1245,7 +1362,7 @@
         }
 
         // ============================================================
-        // 11. تأكيد إيداع تلقائي (معدل - يحفظ إذا لم يجد طلب)
+        // 13. تأكيد إيداع تلقائي مع حفظ للمطابقة
         // ============================================================
         async function autoConfirmDeposit() {
             const txId = document.getElementById('autoTxId').value.trim();
@@ -1255,7 +1372,6 @@
             if (!amount || amount <= 0) { showToast('⚠️ أدخل مبلغاً صحيحاً'); return; }
 
             try {
-                // 1. البحث عن طلب موجود
                 const usersSnap = await db.collection('users').get();
                 let targetData = null;
                 let targetDocId = null;
@@ -1280,7 +1396,6 @@
                     }
                 }
 
-                // 2. إذا وجد طلب → تأكيد مباشر
                 if (targetData) {
                     showConfirmDialog({
                         title: 'تأكيد تلقائي للإيداع',
@@ -1302,7 +1417,7 @@
                     return;
                 }
 
-                // 3. إذا لم يوجد طلب → حفظ البيانات في pending_deposit_matches
+                // حفظ للمطابقة
                 const matchData = {
                     transactionId: txId,
                     amount: amount,
@@ -1313,12 +1428,10 @@
 
                 await db.collection('pending_deposit_matches').add(matchData);
 
-                // عرض رسالة نجاح
-                showToast(`✅ تم حفظ رقم العملية ${txId} والمبلغ ${amount} DZD للمطابقة المستقبلية. سيتم تأكيد الإيداع تلقائياً عند تقديم المستخدم للطلب.`);
+                showToast(`✅ تم حفظ رقم العملية ${txId} والمبلغ ${amount} DZD للمطابقة المستقبلية.`);
                 document.getElementById('autoTxId').value = '';
                 document.getElementById('autoAmount').value = '';
 
-                // (اختياري) عرض نافذة تأكيد توضح أنه تم الحفظ
                 showConfirmDialog({
                     title: 'تم حفظ الطلب للمطابقة',
                     icon: 'fa-save',
@@ -1339,7 +1452,7 @@
         }
 
         // ============================================================
-        // 12. التبديل بين التبويبات
+        // 14. التبديل بين التبويبات
         // ============================================================
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -1352,7 +1465,7 @@
         }
 
         // ============================================================
-        // 13. الوضع المظلم
+        // 15. الوضع المظلم
         // ============================================================
         let isDarkTheme = false;
         function toggleTheme() {
@@ -1391,7 +1504,7 @@
         }
 
         // ============================================================
-        // 14. INIT
+        // 16. INIT
         // ============================================================
         document.addEventListener('DOMContentLoaded', function() {
             authAdmin();
@@ -1401,7 +1514,7 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة - حفظ الطلبات للمطابقة التلقائية');
+        console.log('🚀 لوحة الإدارة مع صفحة الحماية وإدارة المستخدمين');
         console.log('✅ لإضافة أدمن: أنشئ مستنداً في مجموعة admins باسم الـ telegramId');
     </script>
 </body>
