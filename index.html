@@ -655,10 +655,15 @@
 
             <!-- تبويب المطابقات (جديد) -->
             <div id="tab-matches" class="tab-content">
-                <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
-                    <i class="fas fa-link text-orange"></i> طلبات المطابقة المحفوظة
-                    <span id="pendingMatchesCount" class="status status-match" style="margin-right:8px;">0</span>
-                </h2>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <h2 style="font-size:22px;font-weight:900;display:flex;align-items:center;gap:10px;">
+                        <i class="fas fa-link text-orange"></i> طلبات المطابقة المحفوظة
+                        <span id="pendingMatchesCount" class="status status-match">0</span>
+                    </h2>
+                    <button class="btn btn-info btn-sm" onclick="refreshMatches()" style="width:auto;padding:8px 16px;">
+                        <i class="fas fa-sync-alt"></i> تحديث
+                    </button>
+                </div>
                 <div id="pendingMatchesList">
                     <div class="admin-empty">
                         <i class="fas fa-inbox text-muted"></i>
@@ -975,7 +980,7 @@
                     userData.telegramId = uid;
 
                     listenToUsers();
-                    listenToMatches();
+                    listenToMatches(); // استدعاء مستمع المطابقات
                     document.getElementById('unauthorizedMessage').style.display = 'none';
                     document.getElementById('adminPanel').style.display = 'block';
                     document.getElementById('bottomNav').style.display = 'flex';
@@ -1002,13 +1007,16 @@
                 .where('status', '==', 'pending')
                 .orderBy('createdAt', 'desc')
                 .onSnapshot((snapshot) => {
+                    console.log(`📦 تم استلام ${snapshot.size} طلب مطابقة`);
                     const matches = [];
                     snapshot.forEach(doc => {
                         matches.push({ id: doc.id, ...doc.data() });
+                        console.log('📄 المستند:', doc.id, doc.data());
                     });
                     renderPendingMatches(matches);
                     // تحديث البادج في شريط التنقل
                     document.getElementById('matchesBadge').textContent = matches.length;
+                    document.getElementById('pendingMatchesCount').textContent = matches.length;
                     if (matches.length === 0) {
                         document.getElementById('matchesBadge').classList.add('hidden');
                     } else {
@@ -1018,6 +1026,13 @@
                     console.error('❌ خطأ في الاستماع لطلبات المطابقة:', error);
                     renderPendingMatches([]);
                 });
+        }
+
+        // دالة تحديث يدوي
+        function refreshMatches() {
+            if (unsubscribeMatches) unsubscribeMatches();
+            listenToMatches();
+            showToast('🔄 جاري تحديث طلبات المطابقة...');
         }
 
         // ============================================================
@@ -1506,10 +1521,6 @@
         // ============================================================
         // 12. باقي الدوال (الحماية، الاستثمارات، السحب، الإيداع، التأكيد التلقائي)
         // ============================================================
-        // (تم تضمينها كاملة من الكود السابق، ولكن اختصاراً للطول سنضعها كما هي)
-        // لكننا سنضمن أن دالة autoConfirmDeposit تقوم بحفظ المطابقة في مجموعة pending_deposit_matches
-        // (وهي موجودة بالفعل في الكود السابق، وسنتركها كما هي)
-
         // دالة عرض المستثمرين
         function renderInvestors(list) {
             const container = document.getElementById('investorsList');
@@ -1927,7 +1938,7 @@
         }
 
         // ============================================================
-        // 13. تأكيد إيداع تلقائي مع حفظ المطابقة
+        // 13. تأكيد إيداع تلقائي مع حفظ المطابقة (معدل)
         // ============================================================
         async function autoConfirmDeposit() {
             const txId = document.getElementById('autoTxId').value.trim();
@@ -1977,6 +1988,7 @@
                             await confirmDepositDirect(targetDocId, targetData.depositId, targetData.uid, targetData.displayName, targetData.amount);
                             document.getElementById('autoTxId').value = '';
                             document.getElementById('autoAmount').value = '';
+                            refreshMatches();
                         }
                     });
                     return;
@@ -1992,8 +2004,9 @@
                 };
 
                 await db.collection('pending_deposit_matches').add(matchData);
+                showToast(`✅ تم حفظ طلب المطابقة (رقم: ${txId})`);
+                refreshMatches(); // تحديث فوري
 
-                showToast(`✅ تم حفظ رقم العملية ${txId} والمبلغ ${amount} DZD للمطابقة المستقبلية.`);
                 document.getElementById('autoTxId').value = '';
                 document.getElementById('autoAmount').value = '';
 
