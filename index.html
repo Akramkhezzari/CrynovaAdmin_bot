@@ -406,7 +406,7 @@
             background: #c0392b;
         }
 
-        /* ===== أنماط صفحة الاستثمارات ===== */
+        /* ===== أنماط صفحة الاستثمارات مع أزرار التحكم ===== */
         .invest-card {
             background: var(--bg-card);
             border-radius: var(--radius-sm);
@@ -418,6 +418,8 @@
         .invest-card:hover { border-color: var(--accent-light); }
         .invest-card .invest-user { font-weight: 700; color: var(--accent); }
         .invest-card .invest-details { font-size: 14px; color: var(--text-secondary); margin: 4px 0; }
+        .invest-card .invest-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+        .invest-card .invest-actions .btn { padding: 6px 14px; font-size: 12px; width: auto; }
         .invest-badge {
             display: inline-block;
             padding: 2px 12px;
@@ -461,7 +463,6 @@
         <div id="adminPanel">
             <!-- تبويب الرئيسية -->
             <div id="tab-home" class="tab-content active">
-                <!-- شريط الإحصائيات الثابت -->
                 <div class="stats-bar">
                     <div class="stat-item">
                         <span class="stat-label"><i class="fas fa-users"></i> عدد المستخدمين</span>
@@ -473,11 +474,9 @@
                         <span class="stat-value" id="totalPlatformBalance">0</span>
                     </div>
                 </div>
-
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
                     <i class="fas fa-home text-accent"></i> الرئيسية
                 </h2>
-                <!-- تأكيد إيداع تلقائي -->
                 <div class="card" style="border:2px solid var(--info);">
                     <div class="card-header">
                         <div class="card-title"><i class="fas fa-bolt text-info"></i> تأكيد إيداع تلقائي (DZD)</div>
@@ -500,7 +499,7 @@
                 </div>
             </div>
 
-            <!-- تبويب الحماية (جديد) -->
+            <!-- تبويب الحماية -->
             <div id="tab-protect" class="tab-content">
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
                     <i class="fas fa-shield-alt text-danger"></i> الحماية وإدارة المستخدمين
@@ -513,7 +512,7 @@
                 </div>
             </div>
 
-            <!-- تبويب الاستثمارات -->
+            <!-- تبويب الاستثمارات (مع أزرار تحكم) -->
             <div id="tab-investments" class="tab-content">
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
                     <i class="fas fa-chart-line text-accent"></i> الاستثمارات
@@ -876,7 +875,8 @@
                                 uid: uid,
                                 displayName: displayName,
                                 package: mining.currentPackage,
-                                totalMined: mining.totalMinedDZD || mining.totalMined || 0
+                                totalMined: mining.totalMinedDZD || mining.totalMined || 0,
+                                docId: doc.id
                             });
                             totalMinedSum += mining.totalMinedDZD || mining.totalMined || 0;
                         }
@@ -893,7 +893,6 @@
                     const pendingWithdrawals = [];
                     const pendingDeposits = [];
 
-                    // المطابقة التلقائية
                     const pendingMatchesSnap = await db.collection('pending_deposit_matches')
                         .where('status', '==', 'pending')
                         .get();
@@ -990,7 +989,8 @@
                             uid: uid,
                             displayName: displayName,
                             package: mining.currentPackage,
-                            totalMined: mining.totalMinedDZD || mining.totalMined || 0
+                            totalMined: mining.totalMinedDZD || mining.totalMined || 0,
+                            docId: doc.id
                         });
                         totalMinedSum += mining.totalMinedDZD || mining.totalMined || 0;
                     }
@@ -1033,7 +1033,7 @@
         }
 
         // ============================================================
-        // 7. عرض قائمة المستثمرين
+        // 7. عرض قائمة المستثمرين مع أزرار التحكم
         // ============================================================
         function renderInvestors(list) {
             const container = document.getElementById('investorsList');
@@ -1054,13 +1054,127 @@
                     </div>
                     <div class="invest-details">
                         إجمالي التعدين: <strong>${inv.totalMined.toFixed(2)} DZD</strong>
+                        <br><small>المعرف: ${inv.uid}</small>
+                    </div>
+                    <div class="invest-actions">
+                        <button class="btn btn-danger btn-xs" onclick="cancelInvestment('${inv.docId}','${inv.uid}','${inv.displayName}')">
+                            <i class="fas fa-times-circle"></i> إلغاء الباقة
+                        </button>
+                        <button class="btn btn-success btn-xs" onclick="adjustMining('${inv.docId}','${inv.uid}','${inv.displayName}',${inv.totalMined})">
+                            <i class="fas fa-edit"></i> تعديل التعدين
+                        </button>
                     </div>
                 </div>
             `).join('');
         }
 
         // ============================================================
-        // 8. عرض قائمة المستخدمين في صفحة الحماية
+        // 8. دوال التحكم في الاستثمارات
+        // ============================================================
+        function cancelInvestment(docId, uid, displayName) {
+            showConfirmDialog({
+                title: 'إلغاء باقة التعدين',
+                icon: 'fa-times-circle',
+                type: 'danger',
+                details: [
+                    { label: 'المستخدم', value: displayName, highlight: true },
+                    { label: 'المعرف', value: uid },
+                    { label: 'الإجراء', value: 'سيتم إلغاء الباقة وإعادة التعدين إلى 0' }
+                ],
+                confirmText: 'إلغاء الباقة',
+                onConfirm: async () => {
+                    try {
+                        await db.collection('users').doc(docId).update({
+                            'miningData.currentPackage': null,
+                            'miningData.totalMined': 0,
+                            'miningData.totalMinedDZD': 0
+                        });
+                        showToast(`✅ تم إلغاء باقة التعدين للمستخدم ${displayName}`);
+                    } catch(e) {
+                        console.error(e);
+                        showToast('❌ خطأ: '+e.message);
+                    }
+                }
+            });
+        }
+
+        function adjustMining(docId, uid, displayName, currentMined) {
+            // نافذة مخصصة لإدخال المبلغ المراد إضافته أو خصمه
+            const modal = document.getElementById('confirmModal');
+            const body = document.getElementById('modalBody');
+            const header = document.querySelector('.modal-header .title');
+            const icon = document.getElementById('modalIcon');
+            const confirmBtn = document.getElementById('confirmBtn');
+            const cancelBtn = document.querySelector('.modal-footer .btn-cancel');
+
+            icon.className = 'icon warning';
+            icon.innerHTML = '<i class="fas fa-coins"></i>';
+            header.textContent = 'تعديل إجمالي التعدين';
+
+            body.innerHTML = `
+                <div style="text-align:center;margin-bottom:12px;">
+                    <p style="color:var(--text-secondary);font-size:14px;margin-bottom:8px;">
+                        المستخدم: <strong>${displayName}</strong>
+                    </p>
+                    <p style="color:var(--text-secondary);font-size:14px;margin-bottom:16px;">
+                        إجمالي التعدين الحالي: <strong>${currentMined.toFixed(2)} DZD</strong>
+                    </p>
+                    <div class="input-group">
+                        <label>المبلغ (DZD) <span class="required">*</span></label>
+                        <input type="number" id="adjustAmount" placeholder="أدخل المبلغ (موجب للإضافة، سالب للخصم)" step="0.01">
+                    </div>
+                    <div style="font-size:12px;color:var(--text-muted);">
+                        <i class="fas fa-info-circle"></i> استخدم قيمة موجبة للإضافة، قيمة سالبة للخصم
+                    </div>
+                </div>
+            `;
+
+            cancelBtn.textContent = 'إلغاء';
+            confirmBtn.textContent = 'تعديل';
+            confirmBtn.className = 'btn btn-confirm-success';
+
+            modal.classList.add('active');
+
+            const handleConfirm = () => {
+                const input = document.getElementById('adjustAmount');
+                const amount = parseFloat(input.value);
+                if (isNaN(amount) || amount === 0) {
+                    showToast('⚠️ الرجاء إدخال مبلغ صحيح (غير صفر)');
+                    return;
+                }
+                modal.classList.remove('active');
+                // تنفيذ التعديل
+                performAdjustMining(docId, uid, displayName, currentMined, amount);
+            };
+
+            const handleCancel = () => {
+                modal.classList.remove('active');
+            };
+
+            confirmBtn.onclick = handleConfirm;
+            cancelBtn.onclick = handleCancel;
+        }
+
+        async function performAdjustMining(docId, uid, displayName, currentMined, amount) {
+            try {
+                const newTotal = currentMined + amount;
+                if (newTotal < 0) {
+                    showToast('⚠️ لا يمكن أن يكون التعدين أقل من صفر');
+                    return;
+                }
+                await db.collection('users').doc(docId).update({
+                    'miningData.totalMined': newTotal,
+                    'miningData.totalMinedDZD': newTotal
+                });
+                showToast(`✅ تم تعديل إجمالي التعدين للمستخدم ${displayName} إلى ${newTotal.toFixed(2)} DZD`);
+            } catch(e) {
+                console.error(e);
+                showToast('❌ خطأ: '+e.message);
+            }
+        }
+
+        // ============================================================
+        // 9. عرض قائمة المستخدمين في صفحة الحماية
         // ============================================================
         function renderProtectUsers(users) {
             const container = document.getElementById('usersProtectList');
@@ -1103,7 +1217,7 @@
         }
 
         // ============================================================
-        // 9. تبديل حالة المستخدم (تعطيل/تفعيل)
+        // 10. تبديل حالة المستخدم (تعطيل/تفعيل)
         // ============================================================
         function toggleUserStatus(docId, uid, displayName, newStatus) {
             const action = newStatus === 'active' ? 'تفعيل' : 'تعطيل';
@@ -1133,7 +1247,7 @@
         }
 
         // ============================================================
-        // 10. عرض القوائم (السحب والإيداع)
+        // 11. عرض القوائم (السحب والإيداع)
         // ============================================================
         function renderPendingWithdrawals(list) {
             const container = document.getElementById('adminWithdrawalsList');
@@ -1228,7 +1342,7 @@
         }
 
         // ============================================================
-        // 11. عمليات السحب (تأكيد / رفض)
+        // 12. عمليات السحب (تأكيد / رفض)
         // ============================================================
         function approveWithdrawal(userDocId, withdrawalId, uid, displayName, amount, fee) {
             showConfirmDialog({
@@ -1289,7 +1403,7 @@
         }
 
         // ============================================================
-        // 12. عمليات الإيداع (تأكيد / رفض)
+        // 13. عمليات الإيداع (تأكيد / رفض)
         // ============================================================
         async function confirmDepositDirect(userDocId, depositId, uid, displayName, amount) {
             try {
@@ -1362,7 +1476,7 @@
         }
 
         // ============================================================
-        // 13. تأكيد إيداع تلقائي مع حفظ للمطابقة
+        // 14. تأكيد إيداع تلقائي مع حفظ للمطابقة
         // ============================================================
         async function autoConfirmDeposit() {
             const txId = document.getElementById('autoTxId').value.trim();
@@ -1452,7 +1566,7 @@
         }
 
         // ============================================================
-        // 14. التبديل بين التبويبات
+        // 15. التبديل بين التبويبات
         // ============================================================
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -1465,7 +1579,7 @@
         }
 
         // ============================================================
-        // 15. الوضع المظلم
+        // 16. الوضع المظلم
         // ============================================================
         let isDarkTheme = false;
         function toggleTheme() {
@@ -1504,7 +1618,7 @@
         }
 
         // ============================================================
-        // 16. INIT
+        // 17. INIT
         // ============================================================
         document.addEventListener('DOMContentLoaded', function() {
             authAdmin();
@@ -1514,7 +1628,7 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة مع صفحة الحماية وإدارة المستخدمين');
+        console.log('🚀 لوحة الإدارة مع تحكم كامل في الاستثمارات');
         console.log('✅ لإضافة أدمن: أنشئ مستنداً في مجموعة admins باسم الـ telegramId');
     </script>
 </body>
