@@ -1003,6 +1003,7 @@
         function listenToMatches() {
             if (unsubscribeMatches) unsubscribeMatches();
 
+            // استخدام المجموعة الصحيحة: pending_deposit_matches
             unsubscribeMatches = db.collection('pending_deposit_matches')
                 .where('status', '==', 'pending')
                 .orderBy('createdAt', 'desc')
@@ -1948,6 +1949,7 @@
             if (!amount || amount <= 0) { showToast('⚠️ أدخل مبلغاً صحيحاً'); return; }
 
             try {
+                // 1. البحث عن طلب إيداع معلق بنفس الرقم والمبلغ
                 const usersSnap = await db.collection('users').get();
                 let targetData = null;
                 let targetDocId = null;
@@ -1973,6 +1975,7 @@
                 }
 
                 if (targetData) {
+                    // يوجد طلب إيداع مطابق → تأكيد مباشر
                     showConfirmDialog({
                         title: 'تأكيد تلقائي للإيداع',
                         icon: 'fa-bolt',
@@ -1988,13 +1991,13 @@
                             await confirmDepositDirect(targetDocId, targetData.depositId, targetData.uid, targetData.displayName, targetData.amount);
                             document.getElementById('autoTxId').value = '';
                             document.getElementById('autoAmount').value = '';
-                            refreshMatches();
+                            refreshMatches(); // تحديث القائمة
                         }
                     });
                     return;
                 }
 
-                // حفظ للمطابقة
+                // 2. لا يوجد طلب → حفظ للمطابقة المستقبلية في مجموعة pending_deposit_matches
                 const matchData = {
                     transactionId: txId,
                     amount: amount,
@@ -2093,6 +2096,7 @@
         });
 
         console.log('🚀 لوحة الإدارة - صفحة المطابقات المستقلة');
+        console.log('✅ يتم حفظ طلبات المطابقة في مجموعة "pending_deposit_matches"');
         console.log('✅ لإضافة أدمن: أنشئ مستنداً في مجموعة admins باسم الـ telegramId');
     </script>
 </body>
