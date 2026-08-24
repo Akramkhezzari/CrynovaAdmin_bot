@@ -957,7 +957,7 @@
         }
 
         // ============================================================
-        // 6. الاستماع الفوري وجلب جميع البيانات (معدل بالكامل)
+        // 6. الاستماع الفوري وجلب جميع البيانات (معدل)
         // ============================================================
         function listenToUsers() {
             if (unsubscribeUsers) unsubscribeUsers();
@@ -987,9 +987,8 @@
 
                         // ---- قراءة الاستثمارات ----
                         const investments = data.investments || [];
-                        if (investments.length === 0) return; // لا استثمارات
+                        if (investments.length === 0) return;
 
-                        // حساب المبلغ المستثمر (مجموع amount أو amountInDZD)
                         let totalInvested = 0;
                         let totalReturns = 0;
                         let activeInvestment = null;
@@ -997,13 +996,10 @@
                         let planName = '';
 
                         investments.forEach(inv => {
-                            // المبلغ المستثمر
                             const amount = inv.amount || inv.amountInDZD || 0;
                             totalInvested += amount;
-                            // إجمالي الأرباح (totalReturn)
                             const ret = inv.totalReturn || 0;
                             totalReturns += ret;
-                            // إذا كان الاستثمار نشطاً، نأخذ planId و planName
                             if (inv.status === 'active') {
                                 activeInvestment = inv;
                                 planId = inv.planId || null;
@@ -1011,14 +1007,12 @@
                             }
                         });
 
-                        // إذا لم نجد استثماراً نشطاً، نأخذ أول استثمار
                         if (!activeInvestment && investments.length > 0) {
                             const first = investments[0];
                             planId = first.planId || null;
                             planName = first.planName || '';
                         }
 
-                        // ترجمة planId إذا لم يكن هناك planName
                         if (!planName) {
                             const planMap = {
                                 'plan_basic': 'الباقة الأساسية',
@@ -1030,7 +1024,6 @@
                             planName = planMap[planId] || (planId ? `الخطة: ${planId}` : 'بدون خطة');
                         }
 
-                        // إذا لم نجد planId ولا planName، نستخدم level كحل احتياطي
                         if (!planId && !planName) {
                             const level = data.miningData?.level || 0;
                             if (level > 0) {
@@ -1046,7 +1039,6 @@
                             }
                         }
 
-                        // نسبة الأرباح
                         let profitRatio = 0;
                         if (totalInvested > 0) {
                             profitRatio = (totalReturns / totalInvested) * 100;
@@ -1056,7 +1048,6 @@
                             uid: uid,
                             displayName: displayName,
                             package: planName,
-                            planId: planId,
                             totalInvested: totalInvested,
                             totalReturns: totalReturns,
                             profitRatio: profitRatio,
@@ -1233,7 +1224,6 @@
                         uid: uid,
                         displayName: displayName,
                         package: planName,
-                        planId: planId,
                         totalInvested: totalInvested,
                         totalReturns: totalReturns,
                         profitRatio: profitRatio,
@@ -1282,7 +1272,7 @@
         }
 
         // ============================================================
-        // 7. عرض قائمة المستثمرين (معدل)
+        // 7. عرض قائمة المستثمرين (تم إزالة معرف الخطة)
         // ============================================================
         function renderInvestors(list) {
             const container = document.getElementById('investorsList');
@@ -1324,12 +1314,6 @@
                             <span class="value">${inv.investments.length}</span>
                         </div>
                         ` : ''}
-                        ${inv.planId ? `
-                        <div class="detail-row">
-                            <span class="label">معرف الخطة</span>
-                            <span class="value" style="font-size:12px;font-family:monospace;">${inv.planId}</span>
-                        </div>
-                        ` : ''}
                     </div>
                     <div class="invest-actions">
                         <button class="btn btn-danger btn-xs" onclick="cancelInvestment('${inv.docId}','${inv.uid}','${inv.displayName}')">
@@ -1344,7 +1328,7 @@
         }
 
         // ============================================================
-        // 8. دوال التحكم في الاستثمارات (معدلة للتعامل مع investments)
+        // 8. دوال التحكم في الاستثمارات
         // ============================================================
         function cancelInvestment(docId, uid, displayName) {
             showConfirmDialog({
@@ -1359,7 +1343,6 @@
                 confirmText: 'إلغاء الباقة',
                 onConfirm: async () => {
                     try {
-                        // تحديث حالة جميع الاستثمارات إلى 'cancelled' أو حذفها
                         const userRef = db.collection('users').doc(docId);
                         const userDoc = await userRef.get();
                         const data = userDoc.data();
@@ -1450,7 +1433,6 @@
                 const userDoc = await userRef.get();
                 const data = userDoc.data();
                 const investments = data.investments || [];
-                // نحدّث totalReturn لأول استثمار نشط أو الأول
                 let updated = false;
                 const updatedInvestments = investments.map(inv => {
                     if (!updated && (inv.status === 'active' || inv.status === 'pending' || !inv.status)) {
@@ -1459,7 +1441,6 @@
                     }
                     return inv;
                 });
-                // إذا لم نجد استثماراً، نضيف واحداً جديداً
                 if (!updated && investments.length === 0) {
                     // لا نضيف، فقط نحدّث miningData
                 }
@@ -1986,7 +1967,7 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة - تم إصلاح المبلغ المستثمر ونسبة الأرباح من مصفوفة investments');
+        console.log('🚀 لوحة الإدارة - تم إزالة معرف الخطة من الاستثمارات');
         console.log('✅ لإضافة أدمن: أنشئ مستنداً في مجموعة admins باسم الـ telegramId');
     </script>
 </body>
