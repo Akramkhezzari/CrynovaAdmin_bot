@@ -20,7 +20,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
-        /* ===== جميع الأنماط السابقة مع تحديث زر النسخ ===== */
+        /* ===== جميع الأنماط السابقة (بدون تغيير) ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --bg-primary: #f0f4f8; --bg-secondary: #ffffff; --bg-card: #ffffff;
@@ -167,7 +167,7 @@
         .btn-sm { padding: 10px 16px; font-size: 14px; }
         .btn-xs { padding: 4px 10px; font-size: 11px; border-radius: 6px; }
 
-        /* ===== زر النسخ التفاعلي (Interactive Icon Action Button) ===== */
+        /* ===== زر النسخ التفاعلي ===== */
         .copy-btn {
             background: var(--bg-input);
             color: var(--text-secondary);
@@ -457,7 +457,7 @@
             background: #d35400;
         }
 
-        /* ===== أنماط صفحة الاستثمارات ===== */
+        /* ===== أنماط صفحة الاستثمارات (معدلة) ===== */
         .invest-card {
             background: var(--bg-card);
             border-radius: var(--radius-sm);
@@ -580,7 +580,7 @@
                 </div>
             </div>
 
-            <!-- تبويب الاستثمارات -->
+            <!-- تبويب الاستثمارات (معدل) -->
             <div id="tab-investments" class="tab-content">
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
                     <i class="fas fa-chart-line text-accent"></i> الاستثمارات
@@ -712,7 +712,7 @@
         let modalCallback = null;
 
         // ============================================================
-        // 3. دوال مساعدة (مع زر نسخ تفاعلي)
+        // 3. دوال مساعدة
         // ============================================================
         function formatDateTime(timestamp) {
             if (!timestamp) return '--';
@@ -720,11 +720,9 @@
             return date.toLocaleDateString('ar-EG', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
         }
 
-        // دالة النسخ التفاعلية - تستقبل النص والعنصر (الزر)
+        // دالة النسخ التفاعلية
         function copyText(text, buttonElement) {
             if (!text) { showToast('لا يوجد نص للنسخ'); return; }
-
-            // نسخ النص
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(text).then(() => {
                     showToast('تم النسخ');
@@ -737,7 +735,6 @@
             }
         }
 
-        // طريقة احتياطية للنسخ
         function fallbackCopy(text, buttonElement) {
             const ta = document.createElement('textarea');
             ta.value = text;
@@ -753,25 +750,17 @@
             ta.remove();
         }
 
-        // تأثير تفاعلي على الزر بعد النسخ
         function animateCopyButton(button) {
             if (!button) return;
-            // حفظ النص الأصلي إذا وجد
-            const originalHTML = button.innerHTML;
-            // تغيير المظهر
             button.classList.add('copied');
-            // تغيير الأيقونة إلى ✔
             const icon = button.querySelector('i');
             if (icon) {
                 icon.className = 'fas fa-check';
             }
-            // تغيير النص إذا كان هناك نص بجانب الأيقونة (في بعض الأزرار)
             const textSpan = button.querySelector('.icon-text');
             if (textSpan) {
                 textSpan.textContent = 'تم';
             }
-
-            // العودة إلى الحالة الأصلية بعد 1.5 ثانية
             setTimeout(() => {
                 button.classList.remove('copied');
                 if (icon) {
@@ -780,38 +769,26 @@
                 if (textSpan) {
                     textSpan.textContent = 'نسخ';
                 }
-                // استعادة HTML الأصلي إذا كان مختلفاً (للمرونة)
-                // لكننا سنستخدم الطريقة الأكثر أماناً: إعادة تعيين المحتوى إذا كان مخزناً
-                if (button.dataset.originalHtml) {
-                    button.innerHTML = button.dataset.originalHtml;
-                } else {
-                    // نحاول استعادة النص الأصلي
-                    const originalText = button.dataset.originalText || 'نسخ';
-                    if (icon) {
-                        button.innerHTML = `<i class="fas fa-copy"></i> <span class="icon-text">${originalText}</span>`;
-                    } else {
-                        button.textContent = originalText;
-                    }
-                }
             }, 1500);
         }
 
-        // دالة مساعدة لإنشاء زر نسخ تفاعلي مع حفظ البيانات
-        function createCopyButton(text, label = 'نسخ') {
-            const btn = document.createElement('button');
-            btn.className = 'copy-btn';
-            btn.dataset.originalText = label;
-            btn.dataset.originalHtml = `<i class="fas fa-copy"></i> <span class="icon-text">${label}</span>`;
-            btn.innerHTML = `<i class="fas fa-copy"></i> <span class="icon-text">${label}</span>`;
-            btn.onclick = function(e) {
-                e.stopPropagation();
-                copyText(text, this);
-            };
-            return btn;
+        function showToast(msg) {
+            const t = document.createElement('div');
+            t.style.cssText = `
+                position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+                background: var(--accent); color: #fff; padding: 12px 24px;
+                border-radius: 30px; font-weight: 700; z-index: 9999;
+                box-shadow: var(--shadow-lg); font-family: 'Cairo', sans-serif;
+                max-width: 90%; text-align: center;
+            `;
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(() => {
+                t.style.opacity = '0';
+                t.style.transition = 'opacity 0.3s';
+                setTimeout(() => t.remove(), 300);
+            }, 3000);
         }
-
-        // نسخة مبسطة للاستخدام في الـ HTML المضمن (لن نستخدمها هنا لأننا سنبني الأزرار يدوياً)
-        // لكننا سنستخدم onclick مع تمرير this
 
         // ============================================================
         // 4. نافذة التأكيد المتطورة
@@ -889,24 +866,6 @@
             closeModal();
         }
 
-        function showToast(msg) {
-            const t = document.createElement('div');
-            t.style.cssText = `
-                position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
-                background: var(--accent); color: #fff; padding: 12px 24px;
-                border-radius: 30px; font-weight: 700; z-index: 9999;
-                box-shadow: var(--shadow-lg); font-family: 'Cairo', sans-serif;
-                max-width: 90%; text-align: center;
-            `;
-            t.textContent = msg;
-            document.body.appendChild(t);
-            setTimeout(() => {
-                t.style.opacity = '0';
-                t.style.transition = 'opacity 0.3s';
-                setTimeout(() => t.remove(), 300);
-            }, 3000);
-        }
-
         // ============================================================
         // 5. التحقق من صلاحية الأدمن
         // ============================================================
@@ -952,6 +911,9 @@
                             totalMined: 0,
                             totalMinedDZD: 0,
                             totalReferrals: 0,
+                            totalInvested: 0,
+                            totalInvestmentReturns: 0,
+                            level: 0,
                             miningHistory: {
                                 today: 0, todayDZD: 0,
                                 thisWeek: 0, thisWeekDZD: 0,
@@ -961,7 +923,8 @@
                         transactions: [],
                         referrals: [],
                         deposits: [],
-                        withdrawals: []
+                        withdrawals: [],
+                        investments: []
                     });
                 }
 
@@ -989,14 +952,13 @@
         }
 
         // ============================================================
-        // 6. الاستماع الفوري وجلب جميع البيانات
+        // 6. الاستماع الفوري وجلب جميع البيانات (معدل للهيكل الجديد)
         // ============================================================
         function listenToUsers() {
             if (unsubscribeUsers) unsubscribeUsers();
 
             unsubscribeUsers = db.collection('users')
                 .onSnapshot(async (snapshot) => {
-                    // ---- تحديث الإحصائيات العامة ----
                     let totalUsers = 0;
                     let totalBalance = 0;
                     let investors = [];
@@ -1017,16 +979,27 @@
                             docId: doc.id
                         });
 
+                        // ---- تحديد المستثمرين بناءً على الهيكل الجديد ----
                         const mining = data.miningData || {};
-                        if (mining.currentPackage) {
+                        const investments = data.investments || [];
+                        // شرط المستثمر: وجود استثمارات أو totalInvested > 0
+                        const hasInvestment = (investments && investments.length > 0) || (mining.totalInvested && mining.totalInvested > 0);
+                        if (hasInvestment) {
+                            // اسم الباقة: نأخذ المستوى أو نضع "استثمار"
+                            const packageName = mining.level ? `المستوى ${mining.level}` : 'استثمار';
+                            // إجمالي التعدين: نأخذ totalMinedDZD إن وجد، وإلا totalInvestmentReturns، وإلا totalInvested
+                            let totalMined = mining.totalMinedDZD || mining.totalInvestmentReturns || mining.totalInvested || 0;
+                            if (typeof totalMined === 'string') totalMined = parseFloat(totalMined) || 0;
                             investors.push({
                                 uid: uid,
                                 displayName: displayName,
-                                package: mining.currentPackage,
-                                totalMined: mining.totalMinedDZD || mining.totalMined || 0,
-                                docId: doc.id
+                                package: packageName,
+                                totalMined: totalMined,
+                                docId: doc.id,
+                                miningData: mining,
+                                investments: investments
                             });
-                            totalMinedSum += mining.totalMinedDZD || mining.totalMined || 0;
+                            totalMinedSum += totalMined;
                         }
                     });
 
@@ -1037,7 +1010,7 @@
                     renderInvestors(investors);
                     renderProtectUsers(allUsers);
 
-                    // ---- معالجة الطلبات المعلقة ----
+                    // ---- معالجة الطلبات المعلقة (بدون تغيير) ----
                     const pendingWithdrawals = [];
                     const pendingDeposits = [];
 
@@ -1131,16 +1104,24 @@
                         dzd: data.wallets?.dzd || 0,
                         docId: doc.id
                     });
+
                     const mining = data.miningData || {};
-                    if (mining.currentPackage) {
+                    const investments = data.investments || [];
+                    const hasInvestment = (investments && investments.length > 0) || (mining.totalInvested && mining.totalInvested > 0);
+                    if (hasInvestment) {
+                        const packageName = mining.level ? `المستوى ${mining.level}` : 'استثمار';
+                        let totalMined = mining.totalMinedDZD || mining.totalInvestmentReturns || mining.totalInvested || 0;
+                        if (typeof totalMined === 'string') totalMined = parseFloat(totalMined) || 0;
                         investors.push({
                             uid: uid,
                             displayName: displayName,
-                            package: mining.currentPackage,
-                            totalMined: mining.totalMinedDZD || mining.totalMined || 0,
-                            docId: doc.id
+                            package: packageName,
+                            totalMined: totalMined,
+                            docId: doc.id,
+                            miningData: mining,
+                            investments: investments
                         });
-                        totalMinedSum += mining.totalMinedDZD || mining.totalMined || 0;
+                        totalMinedSum += totalMined;
                     }
                 });
 
@@ -1181,7 +1162,7 @@
         }
 
         // ============================================================
-        // 7. عرض قائمة المستثمرين (مع أزرار نسخ تفاعلية)
+        // 7. عرض قائمة المستثمرين (معدل)
         // ============================================================
         function renderInvestors(list) {
             const container = document.getElementById('investorsList');
@@ -1203,6 +1184,7 @@
                     <div class="invest-details">
                         إجمالي التعدين: <strong>${inv.totalMined.toFixed(2)} DZD</strong>
                         <br><small>المعرف: ${inv.uid}</small>
+                        ${inv.investments && inv.investments.length > 0 ? `<br><small>عدد الاستثمارات: ${inv.investments.length}</small>` : ''}
                     </div>
                     <div class="invest-actions">
                         <button class="btn btn-danger btn-xs" onclick="cancelInvestment('${inv.docId}','${inv.uid}','${inv.displayName}')">
@@ -1217,7 +1199,7 @@
         }
 
         // ============================================================
-        // 8. دوال التحكم في الاستثمارات
+        // 8. دوال التحكم في الاستثمارات (معدلة)
         // ============================================================
         function cancelInvestment(docId, uid, displayName) {
             showConfirmDialog({
@@ -1233,9 +1215,11 @@
                 onConfirm: async () => {
                     try {
                         await db.collection('users').doc(docId).update({
-                            'miningData.currentPackage': null,
-                            'miningData.totalMined': 0,
-                            'miningData.totalMinedDZD': 0
+                            'miningData.totalInvested': 0,
+                            'miningData.totalInvestmentReturns': 0,
+                            'miningData.totalMinedDZD': 0,
+                            'miningData.level': 0,
+                            investments: []
                         });
                         showToast(`✅ تم إلغاء باقة التعدين للمستخدم ${displayName}`);
                     } catch(e) {
@@ -1308,9 +1292,22 @@
                     showToast('⚠️ لا يمكن أن يكون التعدين أقل من صفر');
                     return;
                 }
-                await db.collection('users').doc(docId).update({
-                    'miningData.totalMined': newTotal,
-                    'miningData.totalMinedDZD': newTotal
+                // نحدّث totalMinedDZD أو totalInvestmentReturns أيهما موجود
+                const userRef = db.collection('users').doc(docId);
+                const userDoc = await userRef.get();
+                const data = userDoc.data();
+                const mining = data.miningData || {};
+                // نختار الحقل المناسب للتحديث
+                let updateField = 'miningData.totalMinedDZD';
+                if (mining.totalMinedDZD !== undefined) {
+                    updateField = 'miningData.totalMinedDZD';
+                } else if (mining.totalInvestmentReturns !== undefined) {
+                    updateField = 'miningData.totalInvestmentReturns';
+                } else {
+                    updateField = 'miningData.totalInvested';
+                }
+                await userRef.update({
+                    [updateField]: newTotal
                 });
                 showToast(`✅ تم تعديل إجمالي التعدين للمستخدم ${displayName} إلى ${newTotal.toFixed(2)} DZD`);
             } catch(e) {
@@ -1320,7 +1317,7 @@
         }
 
         // ============================================================
-        // 9. عرض قائمة المستخدمين في صفحة الحماية (مع أزرار نسخ تفاعلية)
+        // 9. عرض قائمة المستخدمين في صفحة الحماية (بدون تغيير)
         // ============================================================
         function renderProtectUsers(users) {
             const container = document.getElementById('usersProtectList');
@@ -1413,7 +1410,7 @@
         }
 
         // ============================================================
-        // 10. تغيير حالة المستخدم
+        // 10. تغيير حالة المستخدم (بدون تغيير)
         // ============================================================
         function changeUserStatus(docId, uid, displayName, newStatus, actionName) {
             const statusLabels = {
@@ -1457,7 +1454,7 @@
         }
 
         // ============================================================
-        // 11. عرض قوائم السحب والإيداع (مع أزرار نسخ تفاعلية)
+        // 11. عرض قوائم السحب والإيداع (بدون تغيير)
         // ============================================================
         function renderPendingWithdrawals(list) {
             const container = document.getElementById('adminWithdrawalsList');
@@ -1559,7 +1556,7 @@
         }
 
         // ============================================================
-        // 12. عمليات السحب (تأكيد / رفض)
+        // 12. عمليات السحب (بدون تغيير)
         // ============================================================
         function approveWithdrawal(userDocId, withdrawalId, uid, displayName, amount, fee) {
             showConfirmDialog({
@@ -1620,7 +1617,7 @@
         }
 
         // ============================================================
-        // 13. عمليات الإيداع (تأكيد / رفض)
+        // 13. عمليات الإيداع (بدون تغيير)
         // ============================================================
         async function confirmDepositDirect(userDocId, depositId, uid, displayName, amount) {
             try {
@@ -1693,7 +1690,7 @@
         }
 
         // ============================================================
-        // 14. تأكيد إيداع تلقائي مع حفظ للمطابقة
+        // 14. تأكيد إيداع تلقائي مع حفظ للمطابقة (بدون تغيير)
         // ============================================================
         async function autoConfirmDeposit() {
             const txId = document.getElementById('autoTxId').value.trim();
@@ -1845,7 +1842,7 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة مع أزرار نسخ تفاعلية (Interactive Icon Action Buttons)');
+        console.log('🚀 لوحة الإدارة - متوافقة مع هيكل الاستثمارات الجديد');
         console.log('✅ لإضافة أدمن: أنشئ مستنداً في مجموعة admins باسم الـ telegramId');
     </script>
 </body>
