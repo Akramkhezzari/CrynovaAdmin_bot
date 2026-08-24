@@ -634,11 +634,23 @@
                 </div>
             </div>
 
-            <!-- تبويب الحماية -->
+            <!-- تبويب الحماية (مع شريط بحث) -->
             <div id="tab-protect" class="tab-content">
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
                     <i class="fas fa-shield-alt text-danger"></i> الحماية وإدارة المستخدمين
                 </h2>
+
+                <!-- ===== شريط البحث ===== -->
+                <div class="search-bar">
+                    <input type="text" id="protectSearchInput" placeholder="بحث بواسطة UID..." aria-label="بحث عن مستخدمين">
+                    <button class="btn btn-primary btn-sm" onclick="searchProtectUsers()">
+                        <i class="fas fa-search"></i> بحث
+                    </button>
+                    <button class="btn btn-sm btn-clear" onclick="clearProtectSearch()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
                 <div id="usersProtectList">
                     <div class="admin-empty">
                         <i class="fas fa-users-slash text-muted"></i>
@@ -844,6 +856,10 @@
         // متغيرات خاصة بالبحث في طلبات الإيداع
         let allPendingDeposits = [];
         let depositsFilter = '';
+
+        // متغيرات خاصة بالبحث في صفحة الحماية
+        let allProtectUsers = [];
+        let protectFilter = '';
 
         // ============================================================
         // 3. دوال مساعدة
@@ -1393,6 +1409,9 @@
                     // تخزين القائمة الكاملة للمستثمرين
                     allInvestors = investors;
 
+                    // تخزين قائمة المستخدمين الكاملة للبحث في الحماية
+                    allProtectUsers = allUsers;
+
                     // تحديث الإحصائيات
                     document.getElementById('totalUsers').textContent = totalUsers;
                     document.getElementById('totalPlatformBalance').textContent = totalBalance.toFixed(2);
@@ -1402,8 +1421,8 @@
                     // عرض المستثمرين مع تطبيق الفلتر الحالي
                     renderInvestorsWithFilter();
 
-                    // عرض المستخدمين في صفحة الحماية
-                    renderProtectUsers(allUsers);
+                    // عرض المستخدمين في صفحة الحماية مع تطبيق الفلتر الحالي
+                    renderProtectUsersWithFilter();
 
                     // تخزين طلبات السحب والإيداع للبحث
                     pendingWithdrawals.sort((a, b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0));
@@ -1448,6 +1467,28 @@
                     console.error('❌ خطأ في الاستماع للمستخدمين:', error);
                     loadFallback();
                 });
+        }
+
+        // دوال البحث في صفحة الحماية
+        function renderProtectUsersWithFilter() {
+            let filtered = allProtectUsers;
+            if (protectFilter.trim() !== '') {
+                const filterLower = protectFilter.trim().toLowerCase();
+                filtered = allProtectUsers.filter(u => u.uid.toLowerCase().includes(filterLower));
+            }
+            renderProtectUsers(filtered);
+        }
+
+        function searchProtectUsers() {
+            const input = document.getElementById('protectSearchInput');
+            protectFilter = input.value;
+            renderProtectUsersWithFilter();
+        }
+
+        function clearProtectSearch() {
+            document.getElementById('protectSearchInput').value = '';
+            protectFilter = '';
+            renderProtectUsersWithFilter();
         }
 
         // دوال البحث في الاستثمارات
@@ -1518,6 +1559,14 @@
 
         // الاستماع للضغط على Enter في حقول البحث
         document.addEventListener('DOMContentLoaded', function() {
+            const searchProtectInput = document.getElementById('protectSearchInput');
+            if (searchProtectInput) {
+                searchProtectInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        searchProtectUsers();
+                    }
+                });
+            }
             const searchInvestorInput = document.getElementById('investorSearchInput');
             if (searchInvestorInput) {
                 searchInvestorInput.addEventListener('keypress', function(e) {
@@ -1626,12 +1675,14 @@
                 });
 
                 allInvestors = investors;
+                allProtectUsers = allUsers;
+
                 document.getElementById('totalUsers').textContent = totalUsers;
                 document.getElementById('totalPlatformBalance').textContent = totalBalance.toFixed(2);
                 document.getElementById('totalInvestors').textContent = investors.length;
                 document.getElementById('totalMinedInvest').textContent = totalMinedSum.toFixed(2);
                 renderInvestorsWithFilter();
-                renderProtectUsers(allUsers);
+                renderProtectUsersWithFilter();
 
                 pendingWithdrawals.sort((a,b) => (b.createdAt?.toDate?.()||0) - (a.createdAt?.toDate?.()||0));
                 allPendingWithdrawals = pendingWithdrawals;
@@ -1926,7 +1977,7 @@
         function renderProtectUsers(users) {
             const container = document.getElementById('usersProtectList');
             if (!users.length) {
-                container.innerHTML = `<div class="admin-empty"><i class="fas fa-users-slash text-muted"></i><div>لا يوجد مستخدمون</div></div>`;
+                container.innerHTML = `<div class="admin-empty"><i class="fas fa-users-slash text-muted"></i><div>لا يوجد مستخدمون ${protectFilter ? 'مطابقون للبحث' : ''}</div></div>`;
                 return;
             }
             const statusOrder = { 'active': 0, 'restricted': 1, 'frozen': 2, 'banned': 3 };
@@ -2320,8 +2371,8 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة - تم إضافة محرك البحث في صفحة طلبات الإيداع');
-        console.log('✅ يمكن البحث عن طلبات الإيداع باستخدام UID.');
+        console.log('🚀 لوحة الإدارة - تم إضافة محرك البحث في صفحة الحماية');
+        console.log('✅ يمكن البحث عن المستخدمين باستخدام UID.');
     </script>
 </body>
 </html>
