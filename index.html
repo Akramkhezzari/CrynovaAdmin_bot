@@ -247,7 +247,7 @@
         .admin-empty { text-align: center; padding: 30px 0; color: var(--text-muted); }
         .admin-empty i { font-size: 48px; display: block; margin-bottom: 10px; }
 
-        /* ===== شريط التنقل السفلي (5 أزرار) ===== */
+        /* ===== شريط التنقل السفلي (6 أزرار) ===== */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0;
             max-width: 480px; margin: 0 auto;
@@ -272,7 +272,7 @@
             border: none;
             background: transparent;
             color: var(--text-muted);
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 600;
             cursor: pointer;
             transition: var(--transition);
@@ -281,7 +281,7 @@
             border-radius: 12px;
         }
         .bottom-nav .nav-item i {
-            font-size: 18px;
+            font-size: 16px;
             transition: var(--transition);
         }
         .bottom-nav .nav-item.active {
@@ -639,7 +639,7 @@
                 </div>
             </div>
 
-            <!-- تبويب طلبات الإيداع (معدل) -->
+            <!-- تبويب طلبات الإيداع -->
             <div id="tab-deposits" class="tab-content">
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
                     <i class="fas fa-arrow-down text-success"></i> طلبات الإيداع المعلقة
@@ -651,18 +651,18 @@
                         <div>لا توجد طلبات إيداع معلقة</div>
                     </div>
                 </div>
+            </div>
 
-                <!-- طلبات المطابقة المحفوظة -->
-                <div style="margin-top:20px;">
-                    <h3 style="font-size:18px;font-weight:700;margin-bottom:12px;color:var(--orange);">
-                        <i class="fas fa-clock"></i> طلبات المطابقة المحفوظة (في انتظار المستخدم)
-                        <span id="pendingMatchesCount" class="status status-match" style="margin-right:8px;">0</span>
-                    </h3>
-                    <div id="pendingMatchesList">
-                        <div class="admin-empty">
-                            <i class="fas fa-inbox text-muted"></i>
-                            <div>لا توجد طلبات مطابقة محفوظة</div>
-                        </div>
+            <!-- تبويب المطابقات (جديد) -->
+            <div id="tab-matches" class="tab-content">
+                <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
+                    <i class="fas fa-link text-orange"></i> طلبات المطابقة المحفوظة
+                    <span id="pendingMatchesCount" class="status status-match" style="margin-right:8px;">0</span>
+                </h2>
+                <div id="pendingMatchesList">
+                    <div class="admin-empty">
+                        <i class="fas fa-inbox text-muted"></i>
+                        <div>لا توجد طلبات مطابقة محفوظة</div>
                     </div>
                 </div>
             </div>
@@ -679,7 +679,7 @@
         </div>
     </div>
 
-    <!-- ===== شريط التنقل السفلي (5 أزرار) ===== -->
+    <!-- ===== شريط التنقل السفلي (6 أزرار) ===== -->
     <nav class="bottom-nav" id="bottomNav">
         <button class="nav-item active" data-tab="tab-home" onclick="switchTab('tab-home')">
             <i class="fas fa-home"></i>
@@ -702,6 +702,11 @@
             <i class="fas fa-arrow-down"></i>
             <span>الإيداع</span>
             <span class="badge" id="depositsBadge">0</span>
+        </button>
+        <button class="nav-item" data-tab="tab-matches" onclick="switchTab('tab-matches')">
+            <i class="fas fa-link"></i>
+            <span>المطابقات</span>
+            <span class="badge" id="matchesBadge">0</span>
         </button>
     </nav>
 
@@ -970,7 +975,7 @@
                     userData.telegramId = uid;
 
                     listenToUsers();
-                    listenToMatches(); // استماع لطلبات المطابقة
+                    listenToMatches();
                     document.getElementById('unauthorizedMessage').style.display = 'none';
                     document.getElementById('adminPanel').style.display = 'block';
                     document.getElementById('bottomNav').style.display = 'flex';
@@ -1002,6 +1007,13 @@
                         matches.push({ id: doc.id, ...doc.data() });
                     });
                     renderPendingMatches(matches);
+                    // تحديث البادج في شريط التنقل
+                    document.getElementById('matchesBadge').textContent = matches.length;
+                    if (matches.length === 0) {
+                        document.getElementById('matchesBadge').classList.add('hidden');
+                    } else {
+                        document.getElementById('matchesBadge').classList.remove('hidden');
+                    }
                 }, (error) => {
                     console.error('❌ خطأ في الاستماع لطلبات المطابقة:', error);
                     renderPendingMatches([]);
@@ -1055,7 +1067,6 @@
         // 8. تعديل طلب المطابقة
         // ============================================================
         function editMatch(matchId, currentTxId, currentAmount) {
-            // نافذة مخصصة للتعديل
             const modal = document.getElementById('confirmModal');
             const body = document.getElementById('modalBody');
             const header = document.querySelector('.modal-header .title');
@@ -1095,7 +1106,6 @@
                 if (!newTxId) { showToast('⚠️ رقم العملية مطلوب'); return; }
                 if (!newAmount || newAmount <= 0) { showToast('⚠️ أدخل مبلغاً صحيحاً'); return; }
                 modal.classList.remove('active');
-                // تحديث المستند
                 db.collection('pending_deposit_matches').doc(matchId).update({
                     transactionId: newTxId,
                     amount: newAmount
@@ -1392,7 +1402,7 @@
         }
 
         // ============================================================
-        // 11. عرض قوائم الإيداع والسحب (بدون تغيير كبير)
+        // 11. عرض قوائم الإيداع والسحب (بدون تغيير)
         // ============================================================
         function renderPendingWithdrawals(list) {
             const container = document.getElementById('adminWithdrawalsList');
@@ -2069,7 +2079,7 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة - إضافة طلبات المطابقة المحفوظة مع تعديل وإلغاء');
+        console.log('🚀 لوحة الإدارة - صفحة المطابقات المستقلة');
         console.log('✅ لإضافة أدمن: أنشئ مستنداً في مجموعة admins باسم الـ telegramId');
     </script>
 </body>
