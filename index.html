@@ -998,11 +998,12 @@
         }
 
         // ============================================================
-        // 6. الاستماع الفوري لطلبات المطابقة (جديد)
+        // 6. الاستماع الفوري لطلبات المطابقة (مع تصحيح)
         // ============================================================
         function listenToMatches() {
             if (unsubscribeMatches) unsubscribeMatches();
 
+            console.log('🔄 بدء الاستماع لطلبات المطابقة...');
             // استخدام المجموعة الصحيحة: pending_deposit_matches
             unsubscribeMatches = db.collection('pending_deposit_matches')
                 .where('status', '==', 'pending')
@@ -1011,8 +1012,9 @@
                     console.log(`📦 تم استلام ${snapshot.size} طلب مطابقة`);
                     const matches = [];
                     snapshot.forEach(doc => {
-                        matches.push({ id: doc.id, ...doc.data() });
-                        console.log('📄 المستند:', doc.id, doc.data());
+                        const data = doc.data();
+                        console.log('📄 المستند:', doc.id, data);
+                        matches.push({ id: doc.id, ...data });
                     });
                     renderPendingMatches(matches);
                     // تحديث البادج في شريط التنقل
@@ -1026,14 +1028,36 @@
                 }, (error) => {
                     console.error('❌ خطأ في الاستماع لطلبات المطابقة:', error);
                     renderPendingMatches([]);
+                    showToast('❌ خطأ في تحميل طلبات المطابقة');
                 });
         }
 
-        // دالة تحديث يدوي
+        // دالة تحديث يدوي قوية
         function refreshMatches() {
             if (unsubscribeMatches) unsubscribeMatches();
             listenToMatches();
             showToast('🔄 جاري تحديث طلبات المطابقة...');
+            // جلب مباشر للتأكد
+            db.collection('pending_deposit_matches')
+                .where('status', '==', 'pending')
+                .orderBy('createdAt', 'desc')
+                .get()
+                .then(snapshot => {
+                    console.log(`🔍 جلب مباشر: ${snapshot.size} طلب`);
+                    const matches = [];
+                    snapshot.forEach(doc => {
+                        matches.push({ id: doc.id, ...doc.data() });
+                    });
+                    renderPendingMatches(matches);
+                    document.getElementById('matchesBadge').textContent = matches.length;
+                    document.getElementById('pendingMatchesCount').textContent = matches.length;
+                    if (matches.length === 0) {
+                        document.getElementById('matchesBadge').classList.add('hidden');
+                    } else {
+                        document.getElementById('matchesBadge').classList.remove('hidden');
+                    }
+                })
+                .catch(err => console.error('❌ جلب مباشر فشل:', err));
         }
 
         // ============================================================
@@ -1127,6 +1151,7 @@
                     amount: newAmount
                 }).then(() => {
                     showToast('✅ تم تحديث طلب المطابقة بنجاح');
+                    refreshMatches();
                 }).catch(err => {
                     showToast('❌ خطأ: '+err.message);
                 });
@@ -1156,6 +1181,7 @@
                     try {
                         await db.collection('pending_deposit_matches').doc(matchId).delete();
                         showToast('✅ تم حذف طلب المطابقة');
+                        refreshMatches();
                     } catch(e) {
                         console.error(e);
                         showToast('❌ خطأ: '+e.message);
@@ -1294,6 +1320,7 @@
                                     if (match) {
                                         confirmDepositDirect(doc.id, d.depositId, uid, displayName, d.amount);
                                         db.collection('pending_deposit_matches').doc(match.id).delete();
+                                        refreshMatches(); // تحديث بعد الحذف
                                     }
                                 }
                             });
@@ -2043,6 +2070,11 @@
             document.querySelectorAll('.bottom-nav .nav-item').forEach(item => {
                 item.classList.toggle('active', item.dataset.tab === tabId);
             });
+
+            // إذا تم التبديل إلى تبويب المطابقات، قم بتحديث القائمة
+            if (tabId === 'tab-matches') {
+                refreshMatches();
+            }
         }
 
         // ============================================================
@@ -2098,6 +2130,7 @@
         console.log('🚀 لوحة الإدارة - صفحة المطابقات المستقلة');
         console.log('✅ يتم حفظ طلبات المطابقة في مجموعة "pending_deposit_matches"');
         console.log('✅ لإضافة أدمن: أنشئ مستنداً في مجموعة admins باسم الـ telegramId');
+        console.log('✅ في حال عدم ظهور الطلبات، اضغط زر "تحديث" في تبويب المطابقات');
     </script>
 </body>
 </html>
