@@ -20,7 +20,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
-        /* ===== نفس الأنماط السابقة ===== */
+        /* ===== جميع الأنماط السابقة ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --bg-primary: #f0f4f8; --bg-secondary: #ffffff; --bg-card: #ffffff;
@@ -241,6 +241,117 @@
         #unauthorizedMessage i { font-size: 64px; color: var(--danger); }
         #unauthorizedMessage h2 { margin-top: 16px; }
         #unauthorizedMessage p { color: var(--text-secondary); }
+
+        /* ===== نافذة التأكيد المتطورة ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            max-width: 360px;
+            width: 100%;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-header {
+            padding: 20px 24px 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .modal-header .icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+        .modal-header .icon.success { background: var(--success-light); color: var(--success); }
+        .modal-header .icon.danger { background: var(--danger-light); color: var(--danger); }
+        .modal-header .icon.warning { background: var(--warning-light); color: #b7950b; }
+        .modal-header .title {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+        .modal-body {
+            padding: 20px 24px;
+        }
+        .modal-body .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-light);
+            font-size: 15px;
+        }
+        .modal-body .detail-row:last-child {
+            border-bottom: none;
+        }
+        .modal-body .detail-row .label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .modal-body .detail-row .value {
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+        .modal-body .detail-row .value.highlight {
+            color: var(--accent);
+        }
+        .modal-body .detail-row .value.danger {
+            color: var(--danger);
+        }
+        .modal-footer {
+            padding: 12px 24px 20px;
+            display: flex;
+            gap: 12px;
+        }
+        .modal-footer .btn {
+            flex: 1;
+            padding: 12px;
+            font-size: 15px;
+            border-radius: var(--radius-sm);
+        }
+        .modal-footer .btn-cancel {
+            background: var(--bg-input);
+            color: var(--text-primary);
+        }
+        .modal-footer .btn-cancel:hover {
+            background: var(--border);
+        }
+        .modal-footer .btn-confirm-success {
+            background: var(--success);
+            color: white;
+        }
+        .modal-footer .btn-confirm-success:hover {
+            background: #00a381;
+        }
+        .modal-footer .btn-confirm-danger {
+            background: var(--danger);
+            color: white;
+        }
+        .modal-footer .btn-confirm-danger:hover {
+            background: #c0392b;
+        }
     </style>
 </head>
 <body>
@@ -344,6 +455,23 @@
         </button>
     </nav>
 
+    <!-- ===== نافذة التأكيد المتطورة ===== -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div class="icon" id="modalIcon"><i class="fas fa-question-circle"></i></div>
+                <span class="title" id="modalTitle">تأكيد العملية</span>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- يتم ملء التفاصيل ديناميكياً -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="cancelAction()">إلغاء</button>
+                <button class="btn" id="confirmBtn" onclick="confirmAction()">تأكيد</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ============================================================
         // 1. FIREBASE CONFIG
@@ -366,6 +494,7 @@
         let userData = null;
         let isAdmin = false;
         let unsubscribeUsers = null;
+        let modalCallback = null;
 
         // ============================================================
         // 3. دوال مساعدة
@@ -410,7 +539,85 @@
         }
 
         // ============================================================
-        // 4. التحقق من صلاحية الأدمن
+        // 4. نافذة التأكيد المتطورة
+        // ============================================================
+        function showConfirmDialog(options) {
+            // options: { title, icon, type, details, confirmText, cancelText, onConfirm, onCancel }
+            const defaultOptions = {
+                title: 'تأكيد العملية',
+                icon: 'question-circle',
+                type: 'success', // success, danger, warning
+                details: [],
+                confirmText: 'تأكيد',
+                cancelText: 'إلغاء',
+                onConfirm: null,
+                onCancel: null
+            };
+            const opts = { ...defaultOptions, ...options };
+
+            // تعيين الأيقونة واللون
+            const iconMap = {
+                'success': { class: 'success', icon: 'fa-check-circle' },
+                'danger': { class: 'danger', icon: 'fa-times-circle' },
+                'warning': { class: 'warning', icon: 'fa-exclamation-triangle' }
+            };
+            const iconData = iconMap[opts.type] || iconMap['warning'];
+            document.getElementById('modalIcon').className = `icon ${iconData.class}`;
+            document.getElementById('modalIcon').innerHTML = `<i class="fas ${iconData.icon}"></i>`;
+
+            document.getElementById('modalTitle').textContent = opts.title;
+
+            // بناء التفاصيل
+            const body = document.getElementById('modalBody');
+            body.innerHTML = '';
+            opts.details.forEach(detail => {
+                const row = document.createElement('div');
+                row.className = 'detail-row';
+                const label = document.createElement('span');
+                label.className = 'label';
+                label.textContent = detail.label;
+                const value = document.createElement('span');
+                value.className = `value ${detail.highlight ? 'highlight' : ''} ${detail.danger ? 'danger' : ''}`;
+                value.textContent = detail.value;
+                row.appendChild(label);
+                row.appendChild(value);
+                body.appendChild(row);
+            });
+
+            // تعيين أزرار التأكيد والإلغاء
+            const confirmBtn = document.getElementById('confirmBtn');
+            confirmBtn.textContent = opts.confirmText;
+            confirmBtn.className = `btn btn-confirm-${opts.type}`;
+
+            modalCallback = {
+                onConfirm: opts.onConfirm || null,
+                onCancel: opts.onCancel || null
+            };
+
+            document.getElementById('confirmModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('confirmModal').classList.remove('active');
+            modalCallback = null;
+        }
+
+        function confirmAction() {
+            if (modalCallback && modalCallback.onConfirm) {
+                modalCallback.onConfirm();
+            }
+            closeModal();
+        }
+
+        function cancelAction() {
+            if (modalCallback && modalCallback.onCancel) {
+                modalCallback.onCancel();
+            }
+            closeModal();
+        }
+
+        // ============================================================
+        // 5. التحقق من صلاحية الأدمن
         // ============================================================
         function getTelegramUser() {
             if (window.Telegram && window.Telegram.WebApp) {
@@ -490,7 +697,7 @@
         }
 
         // ============================================================
-        // 5. الاستماع الفوري وجلب الطلبات
+        // 6. الاستماع الفوري وجلب الطلبات
         // ============================================================
         function listenToUsers() {
             if (unsubscribeUsers) unsubscribeUsers();
@@ -582,7 +789,7 @@
         }
 
         // ============================================================
-        // 6. عرض القوائم (مع أزرار نسخ للمبلغ والعنوان في السحب)
+        // 7. عرض القوائم
         // ============================================================
         function renderPendingWithdrawals(list) {
             const container = document.getElementById('adminWithdrawalsList');
@@ -620,10 +827,10 @@
                         ` : ''}
                     </div>
                     <div class="actions">
-                        <button class="btn btn-success btn-sm" onclick="approveWithdrawal('${w.docId}','${w.withdrawalId}','${w.uid}')">
+                        <button class="btn btn-success btn-sm" onclick="approveWithdrawal('${w.docId}','${w.withdrawalId}','${w.uid}','${w.userDisplayName}',${w.amount},${w.fee||0})">
                             <i class="fas fa-check"></i> تأكيد
                         </button>
-                        <button class="btn btn-danger btn-sm" onclick="rejectWithdrawal('${w.docId}','${w.withdrawalId}','${w.uid}',${w.amount},'${w.currency||'DZD'}')">
+                        <button class="btn btn-danger btn-sm" onclick="rejectWithdrawal('${w.docId}','${w.withdrawalId}','${w.uid}','${w.userDisplayName}',${w.amount},${w.fee||0})">
                             <i class="fas fa-times"></i> رفض
                         </button>
                     </div>
@@ -654,10 +861,10 @@
                         ${d.transactionId ? `<br><small>رقم العملية: ${d.transactionId}</small>` : ''}
                     </div>
                     <div class="actions">
-                        <button class="btn btn-success btn-sm" onclick="confirmDeposit('${d.docId}','${d.depositId}','${d.uid}',${d.amount})">
+                        <button class="btn btn-success btn-sm" onclick="confirmDeposit('${d.docId}','${d.depositId}','${d.uid}','${d.userDisplayName}',${d.amount})">
                             <i class="fas fa-check"></i> تأكيد
                         </button>
-                        <button class="btn btn-danger btn-sm" onclick="rejectDeposit('${d.docId}','${d.depositId}','${d.uid}')">
+                        <button class="btn btn-danger btn-sm" onclick="rejectDeposit('${d.docId}','${d.depositId}','${d.uid}','${d.userDisplayName}')">
                             <i class="fas fa-times"></i> رفض
                         </button>
                     </div>
@@ -677,109 +884,149 @@
         }
 
         // ============================================================
-        // 7. عمليات السحب (تأكيد / رفض)
+        // 8. عمليات السحب (تأكيد / رفض) مع نافذة متطورة
         // ============================================================
-        async function approveWithdrawal(userDocId, withdrawalId, uid) {
-            if (!confirm(`تأكيد سحب للمستخدم ${uid}؟`)) return;
-            try {
-                const userRef = db.collection('users').doc(userDocId);
-                const userDoc = await userRef.get();
-                if (!userDoc.exists) throw new Error('المستخدم غير موجود');
-                const data = userDoc.data();
-                const updated = (data.withdrawals || []).map(w =>
-                    w.withdrawalId === withdrawalId ? { ...w, status: 'completed' } : w
-                );
-                await userRef.update({ withdrawals: updated });
-                showToast('✅ تم تأكيد السحب');
-            } catch(e) { console.error(e); showToast('❌ خطأ: '+e.message); }
+        function approveWithdrawal(userDocId, withdrawalId, uid, displayName, amount, fee) {
+            showConfirmDialog({
+                title: 'تأكيد السحب',
+                icon: 'fa-check-circle',
+                type: 'success',
+                details: [
+                    { label: 'المستخدم', value: displayName, highlight: true },
+                    { label: 'المبلغ', value: `${amount} DZD`, highlight: true },
+                    { label: 'الرسوم', value: `${fee} DZD` },
+                    { label: 'رقم المستخدم', value: uid }
+                ],
+                confirmText: 'تأكيد السحب',
+                onConfirm: async () => {
+                    try {
+                        const userRef = db.collection('users').doc(userDocId);
+                        const userDoc = await userRef.get();
+                        if (!userDoc.exists) throw new Error('المستخدم غير موجود');
+                        const data = userDoc.data();
+                        const updated = (data.withdrawals || []).map(w =>
+                            w.withdrawalId === withdrawalId ? { ...w, status: 'completed' } : w
+                        );
+                        await userRef.update({ withdrawals: updated });
+                        showToast('✅ تم تأكيد السحب');
+                    } catch(e) { console.error(e); showToast('❌ خطأ: '+e.message); }
+                }
+            });
         }
 
-        async function rejectWithdrawal(userDocId, withdrawalId, uid, amount, currency) {
-            if (!confirm(`رفض سحب وإعادة ${amount} DZD للمستخدم ${uid}؟`)) return;
-            try {
-                const userRef = db.collection('users').doc(userDocId);
-                const userDoc = await userRef.get();
-                if (!userDoc.exists) throw new Error('المستخدم غير موجود');
-                const data = userDoc.data();
-                const currentDzd = data.wallets?.dzd || 0;
-                await userRef.update({ 'wallets.dzd': currentDzd + amount });
-                const updated = (data.withdrawals || []).map(w =>
-                    w.withdrawalId === withdrawalId ? { ...w, status: 'rejected' } : w
-                );
-                await userRef.update({ withdrawals: updated });
-                showToast(`❌ تم رفض السحب وإعادة ${amount} DZD`);
-            } catch(e) { console.error(e); showToast('❌ خطأ: '+e.message); }
-        }
-
-        // ============================================================
-        // 8. عمليات الإيداع (تأكيد / رفض) - تم إصلاح الخطأ
-        // ============================================================
-        async function confirmDeposit(userDocId, depositId, uid, amount) {
-            if (!confirm(`تأكيد إيداع ${amount} DZD للمستخدم ${uid}؟`)) return;
-            try {
-                const userRef = db.collection('users').doc(userDocId);
-                const userDoc = await userRef.get();
-                if (!userDoc.exists) throw new Error('المستخدم غير موجود');
-                const data = userDoc.data();
-                const currentDzd = data.wallets?.dzd || 0;
-
-                // تحديث المحفظة
-                await userRef.update({ 'wallets.dzd': currentDzd + amount });
-
-                // تحديث حالة الإيداع
-                const updatedDeposits = (data.deposits || []).map(d =>
-                    d.depositId === depositId ? { ...d, status: 'confirmed' } : d
-                );
-                await userRef.update({ deposits: updatedDeposits });
-
-                // إضافة معاملة جديدة (تم استبدال serverTimestamp بـ new Date())
-                await userRef.update({
-                    transactions: firebase.firestore.FieldValue.arrayUnion({
-                        type: 'deposit',
-                        amount: amount,
-                        currency: 'DZD',
-                        description: `تأكيد إيداع ${amount} DZD`,
-                        timestamp: new Date(),  // ✅ تم التعديل هنا
-                        status: 'confirmed',
-                        depositId: depositId
-                    })
-                });
-
-                showToast(`✅ تم تأكيد إيداع ${amount} DZD`);
-            } catch(e) {
-                console.error(e);
-                showToast('❌ خطأ: '+e.message);
-            }
-        }
-
-        async function rejectDeposit(userDocId, depositId, uid) {
-            if (!confirm(`رفض طلب الإيداع للمستخدم ${uid}؟`)) return;
-            try {
-                const userRef = db.collection('users').doc(userDocId);
-                const userDoc = await userRef.get();
-                if (!userDoc.exists) throw new Error('المستخدم غير موجود');
-                const data = userDoc.data();
-                const updated = (data.deposits || []).map(d =>
-                    d.depositId === depositId ? { ...d, status: 'rejected' } : d
-                );
-                await userRef.update({ deposits: updated });
-                showToast('❌ تم رفض الإيداع');
-            } catch(e) { console.error(e); showToast('❌ خطأ: '+e.message); }
+        function rejectWithdrawal(userDocId, withdrawalId, uid, displayName, amount, fee) {
+            showConfirmDialog({
+                title: 'رفض السحب وإعادة الرصيد',
+                icon: 'fa-times-circle',
+                type: 'danger',
+                details: [
+                    { label: 'المستخدم', value: displayName, highlight: true },
+                    { label: 'المبلغ المراد إرجاعه', value: `${amount} DZD`, danger: true },
+                    { label: 'الرسوم الملغاة', value: `${fee} DZD` },
+                    { label: 'رقم المستخدم', value: uid }
+                ],
+                confirmText: 'رفض السحب',
+                onConfirm: async () => {
+                    try {
+                        const userRef = db.collection('users').doc(userDocId);
+                        const userDoc = await userRef.get();
+                        if (!userDoc.exists) throw new Error('المستخدم غير موجود');
+                        const data = userDoc.data();
+                        const currentDzd = data.wallets?.dzd || 0;
+                        await userRef.update({ 'wallets.dzd': currentDzd + amount });
+                        const updated = (data.withdrawals || []).map(w =>
+                            w.withdrawalId === withdrawalId ? { ...w, status: 'rejected' } : w
+                        );
+                        await userRef.update({ withdrawals: updated });
+                        showToast(`❌ تم رفض السحب وإعادة ${amount} DZD`);
+                    } catch(e) { console.error(e); showToast('❌ خطأ: '+e.message); }
+                }
+            });
         }
 
         // ============================================================
-        // 9. تأكيد إيداع تلقائي (من الصفحة الرئيسية)
+        // 9. عمليات الإيداع (تأكيد / رفض) مع نافذة متطورة
+        // ============================================================
+        function confirmDeposit(userDocId, depositId, uid, displayName, amount) {
+            showConfirmDialog({
+                title: 'تأكيد الإيداع',
+                icon: 'fa-check-circle',
+                type: 'success',
+                details: [
+                    { label: 'المستخدم', value: displayName, highlight: true },
+                    { label: 'المبلغ', value: `${amount} DZD`, highlight: true },
+                    { label: 'رقم المستخدم', value: uid }
+                ],
+                confirmText: 'تأكيد الإيداع',
+                onConfirm: async () => {
+                    try {
+                        const userRef = db.collection('users').doc(userDocId);
+                        const userDoc = await userRef.get();
+                        if (!userDoc.exists) throw new Error('المستخدم غير موجود');
+                        const data = userDoc.data();
+                        const currentDzd = data.wallets?.dzd || 0;
+                        await userRef.update({ 'wallets.dzd': currentDzd + amount });
+                        const updatedDeposits = (data.deposits || []).map(d =>
+                            d.depositId === depositId ? { ...d, status: 'confirmed' } : d
+                        );
+                        await userRef.update({ deposits: updatedDeposits });
+                        await userRef.update({
+                            transactions: firebase.firestore.FieldValue.arrayUnion({
+                                type: 'deposit',
+                                amount: amount,
+                                currency: 'DZD',
+                                description: `تأكيد إيداع ${amount} DZD`,
+                                timestamp: new Date(),
+                                status: 'confirmed',
+                                depositId: depositId
+                            })
+                        });
+                        showToast(`✅ تم تأكيد إيداع ${amount} DZD`);
+                    } catch(e) { console.error(e); showToast('❌ خطأ: '+e.message); }
+                }
+            });
+        }
+
+        function rejectDeposit(userDocId, depositId, uid, displayName) {
+            showConfirmDialog({
+                title: 'رفض الإيداع',
+                icon: 'fa-times-circle',
+                type: 'danger',
+                details: [
+                    { label: 'المستخدم', value: displayName, highlight: true },
+                    { label: 'رقم المستخدم', value: uid }
+                ],
+                confirmText: 'رفض الإيداع',
+                onConfirm: async () => {
+                    try {
+                        const userRef = db.collection('users').doc(userDocId);
+                        const userDoc = await userRef.get();
+                        if (!userDoc.exists) throw new Error('المستخدم غير موجود');
+                        const data = userDoc.data();
+                        const updated = (data.deposits || []).map(d =>
+                            d.depositId === depositId ? { ...d, status: 'rejected' } : d
+                        );
+                        await userRef.update({ deposits: updated });
+                        showToast('❌ تم رفض الإيداع');
+                    } catch(e) { console.error(e); showToast('❌ خطأ: '+e.message); }
+                }
+            });
+        }
+
+        // ============================================================
+        // 10. تأكيد إيداع تلقائي (من الصفحة الرئيسية)
         // ============================================================
         async function autoConfirmDeposit() {
             const txId = document.getElementById('autoTxId').value.trim();
             const amount = parseFloat(document.getElementById('autoAmount').value);
             if (!txId) { showToast('⚠️ أدخل رقم العملية'); return; }
             if (!amount || amount <= 0) { showToast('⚠️ أدخل مبلغاً صحيحاً'); return; }
-            if (!confirm(`تأكيد تلقائي لإيداع ${amount} DZD برقم العملية ${txId}؟`)) return;
 
+            // نبحث أولاً عن الطلب لعرض تفاصيله في نافذة التأكيد
             try {
                 const usersSnap = await db.collection('users').get();
-                let found = false;
+                let targetData = null;
+                let targetDocId = null;
                 for (const doc of usersSnap.docs) {
                     const data = doc.data();
                     const deposits = data.deposits || [];
@@ -790,23 +1037,47 @@
                         d.status === 'pending'
                     );
                     if (target) {
-                        await confirmDeposit(doc.id, target.depositId, data.uid || doc.id, amount);
-                        found = true;
+                        targetData = { ...target, uid: data.uid || doc.id, displayName: data.displayName || doc.id };
+                        targetDocId = doc.id;
                         break;
                     }
                 }
-                if (!found) {
+
+                if (!targetData) {
                     showToast('❌ لم يتم العثور على طلب إيداع معلق بهذه البيانات');
-                } else {
-                    document.getElementById('autoTxId').value = '';
-                    document.getElementById('autoAmount').value = '';
-                    showToast(`✅ تم تأكيد الإيداع تلقائياً (رقم العملية: ${txId})`);
+                    return;
                 }
-            } catch(e) { console.error(e); showToast('❌ خطأ: '+e.message); }
+
+                showConfirmDialog({
+                    title: 'تأكيد تلقائي للإيداع',
+                    icon: 'fa-bolt',
+                    type: 'success',
+                    details: [
+                        { label: 'المستخدم', value: targetData.displayName, highlight: true },
+                        { label: 'المبلغ', value: `${targetData.amount} DZD`, highlight: true },
+                        { label: 'رقم العملية', value: targetData.transactionId },
+                        { label: 'رقم المستخدم', value: targetData.uid }
+                    ],
+                    confirmText: 'تأكيد تلقائي',
+                    onConfirm: async () => {
+                        try {
+                            await confirmDeposit(targetDocId, targetData.depositId, targetData.uid, targetData.displayName, targetData.amount);
+                            document.getElementById('autoTxId').value = '';
+                            document.getElementById('autoAmount').value = '';
+                        } catch(e) {
+                            console.error(e);
+                            showToast('❌ خطأ: '+e.message);
+                        }
+                    }
+                });
+            } catch(e) {
+                console.error(e);
+                showToast('❌ خطأ: '+e.message);
+            }
         }
 
         // ============================================================
-        // 10. التبديل بين التبويبات
+        // 11. التبديل بين التبويبات
         // ============================================================
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -819,7 +1090,7 @@
         }
 
         // ============================================================
-        // 11. الوضع المظلم
+        // 12. الوضع المظلم
         // ============================================================
         let isDarkTheme = false;
         function toggleTheme() {
@@ -858,7 +1129,7 @@
         }
 
         // ============================================================
-        // 12. INIT
+        // 13. INIT
         // ============================================================
         document.addEventListener('DOMContentLoaded', function() {
             authAdmin();
@@ -868,7 +1139,7 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة مع أزرار نسخ وبدون أرقام الطلبات (تم إصلاح خطأ serverTimestamp)');
+        console.log('🚀 لوحة الإدارة مع نافذة تأكيد متطورة');
         console.log('✅ لإضافة أدمن: أنشئ مستنداً في مجموعة admins باسم الـ telegramId');
     </script>
 </body>
