@@ -683,12 +683,24 @@
                 </div>
             </div>
 
-            <!-- تبويب طلبات السحب -->
+            <!-- تبويب طلبات السحب (مع شريط بحث) -->
             <div id="tab-withdrawals" class="tab-content">
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
                     <i class="fas fa-arrow-up text-danger"></i> طلبات السحب المعلقة
                     <span id="withdrawalsBadgeCount" class="status status-pending" style="margin-right:8px;">0</span>
                 </h2>
+
+                <!-- ===== شريط البحث ===== -->
+                <div class="search-bar">
+                    <input type="text" id="withdrawalSearchInput" placeholder="بحث بواسطة UID..." aria-label="بحث عن طلبات سحب">
+                    <button class="btn btn-primary btn-sm" onclick="searchWithdrawals()">
+                        <i class="fas fa-search"></i> بحث
+                    </button>
+                    <button class="btn btn-sm btn-clear" onclick="clearWithdrawalsSearch()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
                 <div id="adminWithdrawalsList">
                     <div class="admin-empty">
                         <i class="fas fa-check-circle text-success"></i>
@@ -810,8 +822,12 @@
         let lastError = null;
 
         // متغيرات خاصة بالبحث في الاستثمارات
-        let allInvestors = [];      // القائمة الكاملة للمستثمرين
-        let currentFilter = '';     // فلتر البحث الحالي
+        let allInvestors = [];
+        let currentFilter = '';
+
+        // متغيرات خاصة بالبحث في طلبات السحب
+        let allPendingWithdrawals = [];
+        let withdrawalsFilter = '';
 
         // ============================================================
         // 3. دوال مساعدة
@@ -1272,6 +1288,10 @@
                     let totalMinedSum = 0;
                     const allUsers = [];
 
+                    // تجميع قوائم مؤقتة للسحب والإيداع
+                    const pendingWithdrawals = [];
+                    const pendingDeposits = [];
+
                     snapshot.forEach(doc => {
                         const data = doc.data();
                         const uid = doc.id;
@@ -1325,11 +1345,39 @@
                             });
                             totalMinedSum += totalReturns;
                         }
+
+                        // جمع طلبات السحب والإيداع المعلقة
+                        if (data.withdrawals && Array.isArray(data.withdrawals)) {
+                            data.withdrawals.forEach(w => {
+                                if (w.status === 'pending') {
+                                    pendingWithdrawals.push({
+                                        ...w,
+                                        uid: uid,
+                                        userDisplayName: displayName,
+                                        docId: doc.id
+                                    });
+                                }
+                            });
+                        }
+
+                        if (data.deposits && Array.isArray(data.deposits)) {
+                            data.deposits.forEach(d => {
+                                if (d.status === 'pending') {
+                                    pendingDeposits.push({
+                                        ...d,
+                                        uid: uid,
+                                        userDisplayName: displayName,
+                                        docId: doc.id
+                                    });
+                                }
+                            });
+                        }
                     });
 
                     // تخزين القائمة الكاملة للمستثمرين
                     allInvestors = investors;
 
+                    // تحديث الإحصائيات
                     document.getElementById('totalUsers').textContent = totalUsers;
                     document.getElementById('totalPlatformBalance').textContent = totalBalance.toFixed(2);
                     document.getElementById('totalInvestors').textContent = investors.length;
@@ -1338,11 +1386,20 @@
                     // عرض المستثمرين مع تطبيق الفلتر الحالي
                     renderInvestorsWithFilter();
 
+                    // عرض المستخدمين في صفحة الحماية
                     renderProtectUsers(allUsers);
 
-                    const pendingDeposits = [];
-                    const pendingWithdrawals = [];
+                    // تخزين طلبات السحب للبحث
+                    pendingWithdrawals.sort((a, b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0));
+                    allPendingWithdrawals = pendingWithdrawals;
+                    renderWithdrawalsWithFilter();
 
+                    // ترتيب الإيداعات وعرضها
+                    pendingDeposits.sort((a, b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0));
+                    renderPendingDeposits(pendingDeposits);
+                    updateBadges(pendingWithdrawals.length, pendingDeposits.length);
+
+                    // معالجة المطابقات التلقائية (نفس الكود السابق)
                     try {
                         const pendingMatchesSnap = await db.collection('pending_deposit_matches')
                             .where('status', '==', 'pending')
@@ -1352,71 +1409,32 @@
                             pendingMatches.push({ id: doc.id, ...doc.data() });
                         });
 
-                        snapshot.forEach(doc => {
-                            const data = doc.data();
-                            const uid = doc.id;
-                            const displayName = data.displayName || uid;
-
-                            if (data.withdrawals && Array.isArray(data.withdrawals)) {
-                                data.withdrawals.forEach(w => {
-                                    if (w.status === 'pending') {
-                                        pendingWithdrawals.push({
-                                            ...w,
-                                            uid: uid,
-                                            userDisplayName: displayName,
-                                            docId: doc.id
-                                        });
-                                    }
-                                });
-                            }
-
-                            if (data.deposits && Array.isArray(data.deposits)) {
-                                data.deposits.forEach(d => {
-                                    if (d.status === 'pending') {
-                                        pendingDeposits.push({
-                                            ...d,
-                                            uid: uid,
-                                            userDisplayName: displayName,
-                                            docId: doc.id
-                                        });
-
-                                        const match = pendingMatches.find(m =>
-                                            m.transactionId === d.transactionId &&
-                                            m.amount === d.amount &&
-                                            m.currency === d.currency &&
-                                            m.status === 'pending'
-                                        );
-                                        if (match) {
-                                            confirmDepositDirect(doc.id, d.depositId, uid, displayName, d.amount);
-                                            db.collection('pending_deposit_matches').doc(match.id).delete();
-                                            refreshMatches();
-                                        }
-                                    }
-                                });
+                        // البحث عن مطابقات مع طلبات الإيداع المعلقة
+                        // نستخدم pendingDeposits التي جمعناها أعلاه
+                        pendingDeposits.forEach(d => {
+                            const match = pendingMatches.find(m =>
+                                m.transactionId === d.transactionId &&
+                                m.amount === d.amount &&
+                                m.currency === d.currency &&
+                                m.status === 'pending'
+                            );
+                            if (match) {
+                                confirmDepositDirect(d.docId, d.depositId, d.uid, d.userDisplayName, d.amount);
+                                db.collection('pending_deposit_matches').doc(match.id).delete();
+                                refreshMatches();
                             }
                         });
                     } catch (e) {
-                        console.warn('⚠️ خطأ في جلب طلبات المطابقة أثناء معالجة المستخدمين:', e);
+                        console.warn('⚠️ خطأ في جلب طلبات المطابقة:', e);
                     }
 
-                    const sortByDate = (a, b) => {
-                        const da = a.createdAt?.toDate?.() || new Date(0);
-                        const db2 = b.createdAt?.toDate?.() || new Date(0);
-                        return db2 - da;
-                    };
-                    pendingWithdrawals.sort(sortByDate);
-                    pendingDeposits.sort(sortByDate);
-
-                    renderPendingWithdrawals(pendingWithdrawals);
-                    renderPendingDeposits(pendingDeposits);
-                    updateBadges(pendingWithdrawals.length, pendingDeposits.length);
                 }, (error) => {
                     console.error('❌ خطأ في الاستماع للمستخدمين:', error);
                     loadFallback();
                 });
         }
 
-        // دالة لعرض المستثمرين مع تطبيق الفلتر
+        // دوال البحث في الاستثمارات
         function renderInvestorsWithFilter() {
             let filtered = allInvestors;
             if (currentFilter.trim() !== '') {
@@ -1426,7 +1444,6 @@
             renderInvestors(filtered);
         }
 
-        // دوال البحث
         function searchInvestors() {
             const input = document.getElementById('investorSearchInput');
             currentFilter = input.value;
@@ -1439,13 +1456,43 @@
             renderInvestorsWithFilter();
         }
 
-        // الاستماع للضغط على Enter في حقل البحث
+        // دوال البحث في طلبات السحب
+        function renderWithdrawalsWithFilter() {
+            let filtered = allPendingWithdrawals;
+            if (withdrawalsFilter.trim() !== '') {
+                const filterLower = withdrawalsFilter.trim().toLowerCase();
+                filtered = allPendingWithdrawals.filter(w => w.uid.toLowerCase().includes(filterLower));
+            }
+            renderPendingWithdrawals(filtered);
+        }
+
+        function searchWithdrawals() {
+            const input = document.getElementById('withdrawalSearchInput');
+            withdrawalsFilter = input.value;
+            renderWithdrawalsWithFilter();
+        }
+
+        function clearWithdrawalsSearch() {
+            document.getElementById('withdrawalSearchInput').value = '';
+            withdrawalsFilter = '';
+            renderWithdrawalsWithFilter();
+        }
+
+        // الاستماع للضغط على Enter في حقول البحث
         document.addEventListener('DOMContentLoaded', function() {
-            const searchInput = document.getElementById('investorSearchInput');
-            if (searchInput) {
-                searchInput.addEventListener('keypress', function(e) {
+            const searchInvestorInput = document.getElementById('investorSearchInput');
+            if (searchInvestorInput) {
+                searchInvestorInput.addEventListener('keypress', function(e) {
                     if (e.key === 'Enter') {
                         searchInvestors();
+                    }
+                });
+            }
+            const searchWithdrawalInput = document.getElementById('withdrawalSearchInput');
+            if (searchWithdrawalInput) {
+                searchWithdrawalInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        searchWithdrawals();
                     }
                 });
             }
@@ -1459,6 +1506,8 @@
                 let investors = [];
                 let totalMinedSum = 0;
                 const allUsers = [];
+                const pendingWithdrawals = [];
+                const pendingDeposits = [];
 
                 snap.forEach(doc => {
                     const data = doc.data();
@@ -1513,23 +1562,7 @@
                         });
                         totalMinedSum += totalReturns;
                     }
-                });
 
-                allInvestors = investors;
-
-                document.getElementById('totalUsers').textContent = totalUsers;
-                document.getElementById('totalPlatformBalance').textContent = totalBalance.toFixed(2);
-                document.getElementById('totalInvestors').textContent = investors.length;
-                document.getElementById('totalMinedInvest').textContent = totalMinedSum.toFixed(2);
-                renderInvestorsWithFilter();
-                renderProtectUsers(allUsers);
-
-                const pendingWithdrawals = [];
-                const pendingDeposits = [];
-                snap.forEach(doc => {
-                    const data = doc.data();
-                    const uid = doc.id;
-                    const displayName = data.displayName || uid;
                     if (data.withdrawals) {
                         data.withdrawals.forEach(w => {
                             if (w.status === 'pending') {
@@ -1545,9 +1578,20 @@
                         });
                     }
                 });
+
+                allInvestors = investors;
+                document.getElementById('totalUsers').textContent = totalUsers;
+                document.getElementById('totalPlatformBalance').textContent = totalBalance.toFixed(2);
+                document.getElementById('totalInvestors').textContent = investors.length;
+                document.getElementById('totalMinedInvest').textContent = totalMinedSum.toFixed(2);
+                renderInvestorsWithFilter();
+                renderProtectUsers(allUsers);
+
                 pendingWithdrawals.sort((a,b) => (b.createdAt?.toDate?.()||0) - (a.createdAt?.toDate?.()||0));
+                allPendingWithdrawals = pendingWithdrawals;
+                renderWithdrawalsWithFilter();
+
                 pendingDeposits.sort((a,b) => (b.createdAt?.toDate?.()||0) - (a.createdAt?.toDate?.()||0));
-                renderPendingWithdrawals(pendingWithdrawals);
                 renderPendingDeposits(pendingDeposits);
                 updateBadges(pendingWithdrawals.length, pendingDeposits.length);
             } catch(e) { console.error(e); }
@@ -1559,7 +1603,7 @@
         function renderPendingWithdrawals(list) {
             const container = document.getElementById('adminWithdrawalsList');
             if (!list.length) {
-                container.innerHTML = `<div class="admin-empty"><i class="fas fa-check-circle text-success"></i><div>لا توجد طلبات سحب معلقة</div></div>`;
+                container.innerHTML = `<div class="admin-empty"><i class="fas fa-check-circle text-success"></i><div>لا توجد طلبات سحب معلقة${withdrawalsFilter ? ' مطابقة للبحث' : ''}</div></div>`;
                 return;
             }
             container.innerHTML = list.map(w => `
@@ -2228,8 +2272,8 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة - تم إضافة محرك البحث في صفحة الاستثمارات');
-        console.log('✅ يمكن البحث عن المستثمرين باستخدام UID.');
+        console.log('🚀 لوحة الإدارة - تم إضافة محرك البحث في صفحة طلبات السحب');
+        console.log('✅ يمكن البحث عن طلبات السحب باستخدام UID.');
     </script>
 </body>
 </html>
