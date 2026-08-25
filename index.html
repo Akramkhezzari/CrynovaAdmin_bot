@@ -161,7 +161,6 @@
         .btn-orange { background: var(--orange); color: white; }
         .btn-orange:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(230,126,34,0.35); }
         .btn-sm { padding: 10px 16px; font-size: 14px; }
-        /* تم الاحتفاظ بـ btn-xs للأزرار الصغيرة جداً إن لزم، لكننا سنستخدم btn-sm في كل مكان */
         .btn-xs { padding: 4px 10px; font-size: 11px; border-radius: 6px; }
 
         .btn-secondary {
@@ -457,7 +456,6 @@
         .invest-card .invest-details .value.highlight { color: var(--accent); }
         .invest-card .invest-details .value.profit { color: var(--success); }
         .invest-card .invest-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-        /* جعل أزرار الاستثمارات بنفس حجم أزرار الإجراءات الأخرى */
         .invest-card .invest-actions .btn { padding: 8px 16px; font-size: 13px; width: auto; flex: 1; }
         .invest-badge {
             display: inline-block;
@@ -498,10 +496,8 @@
             letter-spacing: 0.5px;
         }
         .user-protect-card .user-actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
-        /* جعل أزرار الحماية بنفس حجم أزرار الإجراءات الأخرى */
         .user-protect-card .user-actions .btn { padding: 8px 16px; font-size: 13px; width: auto; flex: 1; }
 
-        /* ===== تم تعديل class من match-actions إلى actions لتوحيد التنسيق ===== */
         .match-card {
             background: var(--bg-card);
             border-radius: var(--radius-sm);
@@ -547,7 +543,6 @@
             cursor: pointer;
         }
 
-        /* ===== إضافة تنسيق شريط البحث ===== */
         .search-bar {
             display: flex;
             gap: 8px;
@@ -638,13 +633,11 @@
                 </div>
             </div>
 
-            <!-- تبويب الحماية (مع شريط بحث) -->
+            <!-- تبويب الحماية -->
             <div id="tab-protect" class="tab-content">
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
                     <i class="fas fa-shield-alt text-danger"></i> الحماية وإدارة المستخدمين
                 </h2>
-
-                <!-- ===== شريط البحث ===== -->
                 <div class="search-bar">
                     <input type="text" id="protectSearchInput" placeholder="بحث بواسطة UID..." aria-label="بحث عن مستخدمين">
                     <button class="btn btn-primary btn-sm" onclick="searchProtectUsers()">
@@ -654,7 +647,6 @@
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-
                 <div id="usersProtectList">
                     <div class="admin-empty">
                         <i class="fas fa-users-slash text-muted"></i>
@@ -663,7 +655,7 @@
                 </div>
             </div>
 
-            <!-- تبويب الاستثمارات (مع شريط البحث) -->
+            <!-- تبويب الاستثمارات -->
             <div id="tab-investments" class="tab-content">
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
                     <i class="fas fa-chart-line text-accent"></i> الاستثمارات
@@ -679,8 +671,6 @@
                         <span class="stat-value" id="totalMinedInvest">0</span>
                     </div>
                 </div>
-
-                <!-- ===== شريط البحث ===== -->
                 <div class="search-bar">
                     <input type="text" id="investorSearchInput" placeholder="بحث بواسطة UID..." aria-label="بحث عن مستثمر">
                     <button class="btn btn-primary btn-sm" onclick="searchInvestors()">
@@ -690,7 +680,6 @@
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-
                 <div id="investorsList">
                     <div class="admin-empty">
                         <i class="fas fa-chart-pie text-muted"></i>
@@ -699,14 +688,12 @@
                 </div>
             </div>
 
-            <!-- تبويب طلبات السحب (مع شريط بحث) -->
+            <!-- تبويب طلبات السحب -->
             <div id="tab-withdrawals" class="tab-content">
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
                     <i class="fas fa-arrow-up text-danger"></i> طلبات السحب المعلقة
                     <span id="withdrawalsBadgeCount" class="status status-pending" style="margin-right:8px;">0</span>
                 </h2>
-
-                <!-- ===== شريط البحث ===== -->
                 <div class="search-bar">
                     <input type="text" id="withdrawalSearchInput" placeholder="بحث بواسطة UID..." aria-label="بحث عن طلبات سحب">
                     <button class="btn btn-primary btn-sm" onclick="searchWithdrawals()">
@@ -716,7 +703,6 @@
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-
                 <div id="adminWithdrawalsList">
                     <div class="admin-empty">
                         <i class="fas fa-check-circle text-success"></i>
@@ -725,14 +711,12 @@
                 </div>
             </div>
 
-            <!-- تبويب طلبات الإيداع (مع شريط بحث) -->
+            <!-- تبويب طلبات الإيداع -->
             <div id="tab-deposits" class="tab-content">
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
                     <i class="fas fa-arrow-down text-success"></i> طلبات الإيداع المعلقة
                     <span id="depositsBadgeCount" class="status status-pending" style="margin-right:8px;">0</span>
                 </h2>
-
-                <!-- ===== شريط البحث ===== -->
                 <div class="search-bar">
                     <input type="text" id="depositSearchInput" placeholder="بحث بواسطة UID..." aria-label="بحث عن طلبات إيداع">
                     <button class="btn btn-primary btn-sm" onclick="searchDeposits()">
@@ -742,7 +726,6 @@
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-
                 <div id="adminDepositsList">
                     <div class="admin-empty">
                         <i class="fas fa-check-circle text-success"></i>
@@ -751,14 +734,12 @@
                 </div>
             </div>
 
-            <!-- تبويب المطابقات (مع شريط بحث) -->
+            <!-- تبويب المطابقات -->
             <div id="tab-matches" class="tab-content">
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
                     <i class="fas fa-link text-orange"></i> طلبات المطابقة المحفوظة
                     <span id="pendingMatchesCount" class="status status-match">0</span>
                 </h2>
-
-                <!-- ===== شريط البحث ===== -->
                 <div class="search-bar">
                     <input type="text" id="matchesSearchInput" placeholder="بحث برقم العملية..." aria-label="بحث عن طلبات مطابقة">
                     <button class="btn btn-primary btn-sm" onclick="searchMatches()">
@@ -768,7 +749,6 @@
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-
                 <div id="pendingMatchesList">
                     <div class="admin-empty">
                         <i class="fas fa-inbox text-muted"></i>
@@ -789,7 +769,7 @@
         </div>
     </div>
 
-    <!-- ===== شريط التنقل السفلي (6 أزرار) ===== -->
+    <!-- ===== شريط التنقل السفلي ===== -->
     <nav class="bottom-nav" id="bottomNav">
         <button class="nav-item active" data-tab="tab-home" onclick="switchTab('tab-home')">
             <i class="fas fa-home"></i>
@@ -820,7 +800,7 @@
         </button>
     </nav>
 
-    <!-- ===== نافذة التأكيد المتطورة ===== -->
+    <!-- ===== نافذة التأكيد ===== -->
     <div class="modal-overlay" id="confirmModal">
         <div class="modal-box">
             <div class="modal-header">
@@ -861,23 +841,14 @@
         let modalCallback = null;
         let lastError = null;
 
-        // متغيرات خاصة بالبحث في الاستثمارات
         let allInvestors = [];
         let currentFilter = '';
-
-        // متغيرات خاصة بالبحث في طلبات السحب
         let allPendingWithdrawals = [];
         let withdrawalsFilter = '';
-
-        // متغيرات خاصة بالبحث في طلبات الإيداع
         let allPendingDeposits = [];
         let depositsFilter = '';
-
-        // متغيرات خاصة بالبحث في صفحة الحماية
         let allProtectUsers = [];
         let protectFilter = '';
-
-        // متغيرات خاصة بالبحث في المطابقات
         let allMatches = [];
         let matchesFilter = '';
 
@@ -1138,21 +1109,17 @@
         }
 
         // ============================================================
-        // 6. الاستماع لطلبات المطابقة (بدون orderBy)
+        // 6. الاستماع لطلبات المطابقة
         // ============================================================
         function listenToMatches() {
             if (unsubscribeMatches) unsubscribeMatches();
-
-            console.log('🔄 بدء الاستماع لطلبات المطابقة...');
             try {
                 unsubscribeMatches = db.collection('pending_deposit_matches')
                     .where('status', '==', 'pending')
                     .onSnapshot((snapshot) => {
-                        console.log(`📦 تم استلام ${snapshot.size} طلب مطابقة`);
                         const matches = [];
                         snapshot.forEach(doc => {
                             const data = doc.data();
-                            console.log('📄 المستند:', doc.id, data);
                             matches.push({ id: doc.id, ...data });
                         });
                         matches.sort((a, b) => {
@@ -1160,9 +1127,7 @@
                             const db2 = b.createdAt?.toDate?.() || new Date(0);
                             return db2 - da;
                         });
-                        // تخزين القائمة الكاملة للبحث
                         allMatches = matches;
-                        // عرض مع تطبيق الفلتر الحالي
                         renderMatchesWithFilter();
                         document.getElementById('matchesBadge').textContent = matches.length;
                         document.getElementById('pendingMatchesCount').textContent = matches.length;
@@ -1190,16 +1155,11 @@
             }
         }
 
-        // دالة التحديث (تُستدعى بعد حفظ أو حذف طلب)
         function refreshMatches() {
-            // إعادة تشغيل المستمع لتحديث البيانات
             if (unsubscribeMatches) unsubscribeMatches();
             listenToMatches();
         }
 
-        // ============================================================
-        // 7. عرض طلبات المطابقة مع فلتر
-        // ============================================================
         function renderMatchesWithFilter() {
             let filtered = allMatches;
             if (matchesFilter.trim() !== '') {
@@ -1212,7 +1172,6 @@
             renderPendingMatches(filtered);
         }
 
-        // دوال البحث في المطابقات
         function searchMatches() {
             const input = document.getElementById('matchesSearchInput');
             matchesFilter = input.value;
@@ -1225,9 +1184,6 @@
             renderMatchesWithFilter();
         }
 
-        // ============================================================
-        // 8. عرض طلبات المطابقة (الدالة الأساسية) - تم تعديل الأزرار
-        // ============================================================
         function renderPendingMatches(matches) {
             const container = document.getElementById('pendingMatchesList');
             const count = document.getElementById('pendingMatchesCount');
@@ -1261,7 +1217,6 @@
                         <div><strong>المبلغ:</strong> ${m.amount} DZD</div>
                         <div><small>التاريخ: ${formatDateTime(m.createdAt)}</small></div>
                     </div>
-                    <!-- تم تغيير class إلى actions وتغيير حجم الأزرار إلى btn-sm -->
                     <div class="actions">
                         <button class="btn btn-warning btn-sm" onclick="editMatch('${m.id}','${m.transactionId}',${m.amount})">
                             <i class="fas fa-edit"></i> تعديل
@@ -1274,9 +1229,6 @@
             `).join('');
         }
 
-        // ============================================================
-        // 9. تعديل طلب المطابقة
-        // ============================================================
         function editMatch(matchId, currentTxId, currentAmount) {
             const modal = document.getElementById('confirmModal');
             const body = document.getElementById('modalBody');
@@ -1336,9 +1288,6 @@
             cancelBtn.onclick = handleCancel;
         }
 
-        // ============================================================
-        // 10. حذف طلب المطابقة
-        // ============================================================
         function deleteMatch(matchId) {
             showConfirmDialog({
                 title: 'إلغاء طلب المطابقة',
@@ -1362,7 +1311,7 @@
         }
 
         // ============================================================
-        // 11. الاستماع للمستخدمين
+        // 7. الاستماع للمستخدمين
         // ============================================================
         function listenToUsers() {
             if (unsubscribeUsers) unsubscribeUsers();
@@ -1375,7 +1324,6 @@
                     let totalMinedSum = 0;
                     const allUsers = [];
 
-                    // تجميع قوائم مؤقتة للسحب والإيداع
                     const pendingWithdrawals = [];
                     const pendingDeposits = [];
 
@@ -1433,7 +1381,6 @@
                             totalMinedSum += totalReturns;
                         }
 
-                        // جمع طلبات السحب والإيداع المعلقة
                         if (data.withdrawals && Array.isArray(data.withdrawals)) {
                             data.withdrawals.forEach(w => {
                                 if (w.status === 'pending') {
@@ -1461,25 +1408,17 @@
                         }
                     });
 
-                    // تخزين القائمة الكاملة للمستثمرين
                     allInvestors = investors;
-
-                    // تخزين قائمة المستخدمين الكاملة للبحث في الحماية
                     allProtectUsers = allUsers;
 
-                    // تحديث الإحصائيات
                     document.getElementById('totalUsers').textContent = totalUsers;
                     document.getElementById('totalPlatformBalance').textContent = totalBalance.toFixed(2);
                     document.getElementById('totalInvestors').textContent = investors.length;
                     document.getElementById('totalMinedInvest').textContent = totalMinedSum.toFixed(2);
 
-                    // عرض المستثمرين مع تطبيق الفلتر الحالي
                     renderInvestorsWithFilter();
-
-                    // عرض المستخدمين في صفحة الحماية مع تطبيق الفلتر الحالي
                     renderProtectUsersWithFilter();
 
-                    // تخزين طلبات السحب والإيداع للبحث
                     pendingWithdrawals.sort((a, b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0));
                     allPendingWithdrawals = pendingWithdrawals;
                     renderWithdrawalsWithFilter();
@@ -1490,7 +1429,6 @@
 
                     updateBadges(pendingWithdrawals.length, pendingDeposits.length);
 
-                    // معالجة المطابقات التلقائية (نفس الكود السابق)
                     try {
                         const pendingMatchesSnap = await db.collection('pending_deposit_matches')
                             .where('status', '==', 'pending')
@@ -1500,7 +1438,6 @@
                             pendingMatches.push({ id: doc.id, ...doc.data() });
                         });
 
-                        // البحث عن مطابقات مع طلبات الإيداع المعلقة
                         pendingDeposits.forEach(d => {
                             const match = pendingMatches.find(m =>
                                 m.transactionId === d.transactionId &&
@@ -1524,7 +1461,7 @@
                 });
         }
 
-        // دوال البحث في صفحة الحماية
+        // دوال البحث
         function renderProtectUsersWithFilter() {
             let filtered = allProtectUsers;
             if (protectFilter.trim() !== '') {
@@ -1546,7 +1483,6 @@
             renderProtectUsersWithFilter();
         }
 
-        // دوال البحث في الاستثمارات
         function renderInvestorsWithFilter() {
             let filtered = allInvestors;
             if (currentFilter.trim() !== '') {
@@ -1568,7 +1504,6 @@
             renderInvestorsWithFilter();
         }
 
-        // دوال البحث في طلبات السحب
         function renderWithdrawalsWithFilter() {
             let filtered = allPendingWithdrawals;
             if (withdrawalsFilter.trim() !== '') {
@@ -1590,7 +1525,6 @@
             renderWithdrawalsWithFilter();
         }
 
-        // دوال البحث في طلبات الإيداع
         function renderDepositsWithFilter() {
             let filtered = allPendingDeposits;
             if (depositsFilter.trim() !== '') {
@@ -1612,48 +1546,24 @@
             renderDepositsWithFilter();
         }
 
-        // الاستماع للضغط على Enter في حقول البحث
         document.addEventListener('DOMContentLoaded', function() {
-            const searchProtectInput = document.getElementById('protectSearchInput');
-            if (searchProtectInput) {
-                searchProtectInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        searchProtectUsers();
-                    }
-                });
-            }
-            const searchInvestorInput = document.getElementById('investorSearchInput');
-            if (searchInvestorInput) {
-                searchInvestorInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        searchInvestors();
-                    }
-                });
-            }
-            const searchWithdrawalInput = document.getElementById('withdrawalSearchInput');
-            if (searchWithdrawalInput) {
-                searchWithdrawalInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        searchWithdrawals();
-                    }
-                });
-            }
-            const searchDepositInput = document.getElementById('depositSearchInput');
-            if (searchDepositInput) {
-                searchDepositInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        searchDeposits();
-                    }
-                });
-            }
-            const searchMatchesInput = document.getElementById('matchesSearchInput');
-            if (searchMatchesInput) {
-                searchMatchesInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        searchMatches();
-                    }
-                });
-            }
+            ['protectSearchInput','investorSearchInput','withdrawalSearchInput','depositSearchInput','matchesSearchInput'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            const map = {
+                                'protectSearchInput': searchProtectUsers,
+                                'investorSearchInput': searchInvestors,
+                                'withdrawalSearchInput': searchWithdrawals,
+                                'depositSearchInput': searchDeposits,
+                                'matchesSearchInput': searchMatches
+                            };
+                            if (map[id]) map[id]();
+                        }
+                    });
+                }
+            });
         });
 
         async function loadFallback() {
@@ -1760,7 +1670,7 @@
         }
 
         // ============================================================
-        // 12. عرض قوائم الإيداع والسحب
+        // 8. عرض القوائم
         // ============================================================
         function renderPendingWithdrawals(list) {
             const container = document.getElementById('adminWithdrawalsList');
@@ -1862,9 +1772,8 @@
         }
 
         // ============================================================
-        // 13. باقي الدوال
+        // 9. دوال إدارة الاستثمارات (تم تعديل تمرير المعاملات باستخدام encodeURIComponent)
         // ============================================================
-        // ===== تم تعديل أزرار الاستثمارات والحماية لاستخدام btn-sm مع تنسيق موحد =====
         function renderInvestors(list) {
             const container = document.getElementById('investorsList');
             if (!list.length) {
@@ -1907,10 +1816,10 @@
                         ` : ''}
                     </div>
                     <div class="invest-actions">
-                        <button class="btn btn-danger btn-sm" onclick="cancelInvestment('${inv.docId}','${inv.uid}','${inv.displayName}')">
+                        <button class="btn btn-danger btn-sm" onclick="cancelInvestment('${encodeURIComponent(inv.docId)}','${encodeURIComponent(inv.uid)}','${encodeURIComponent(inv.displayName)}')">
                             <i class="fas fa-times-circle"></i> إلغاء الباقة
                         </button>
-                        <button class="btn btn-success btn-sm" onclick="adjustMining('${inv.docId}','${inv.uid}','${inv.displayName}',${inv.totalReturns})">
+                        <button class="btn btn-success btn-sm" onclick="adjustMining('${encodeURIComponent(inv.docId)}','${encodeURIComponent(inv.uid)}','${encodeURIComponent(inv.displayName)}',${inv.totalReturns})">
                             <i class="fas fa-edit"></i> تعديل الأرباح
                         </button>
                     </div>
@@ -1918,6 +1827,147 @@
             `).join('');
         }
 
+        // دالة إلغاء الباقة مع فك الترميز
+        function cancelInvestment(encodedDocId, encodedUid, encodedDisplayName) {
+            const docId = decodeURIComponent(encodedDocId);
+            const uid = decodeURIComponent(encodedUid);
+            const displayName = decodeURIComponent(encodedDisplayName);
+
+            showConfirmDialog({
+                title: 'إلغاء باقة التعدين',
+                icon: 'fa-times-circle',
+                type: 'danger',
+                details: [
+                    { label: 'المستخدم', value: displayName, highlight: true },
+                    { label: 'المعرف', value: uid },
+                    { label: 'الإجراء', value: 'سيتم إلغاء جميع الاستثمارات وإعادة الأرباح إلى 0' }
+                ],
+                confirmText: 'إلغاء الباقة',
+                onConfirm: async () => {
+                    try {
+                        const userRef = db.collection('users').doc(docId);
+                        const userDoc = await userRef.get();
+                        if (!userDoc.exists) {
+                            showToast('❌ المستخدم غير موجود', true);
+                            return;
+                        }
+                        const data = userDoc.data();
+                        const investments = data.investments || [];
+                        const updatedInvestments = investments.map(inv => ({ ...inv, status: 'cancelled' }));
+                        await userRef.update({
+                            investments: updatedInvestments,
+                            'miningData.totalInvested': 0,
+                            'miningData.totalInvestmentReturns': 0,
+                            'miningData.totalMinedDZD': 0,
+                            'miningData.level': 0
+                        });
+                        showToast(`✅ تم إلغاء باقة التعدين للمستخدم ${displayName}`);
+                    } catch(e) {
+                        console.error(e);
+                        showToast('❌ خطأ: '+e.message, true);
+                    }
+                }
+            });
+        }
+
+        // دالة تعديل الأرباح مع فك الترميز
+        function adjustMining(encodedDocId, encodedUid, encodedDisplayName, currentReturns) {
+            const docId = decodeURIComponent(encodedDocId);
+            const uid = decodeURIComponent(encodedUid);
+            const displayName = decodeURIComponent(encodedDisplayName);
+
+            const modal = document.getElementById('confirmModal');
+            const body = document.getElementById('modalBody');
+            const header = document.querySelector('.modal-header .title');
+            const icon = document.getElementById('modalIcon');
+            const confirmBtn = document.getElementById('confirmBtn');
+            const cancelBtn = document.querySelector('.modal-footer .btn-cancel');
+
+            icon.className = 'icon warning';
+            icon.innerHTML = '<i class="fas fa-coins"></i>';
+            header.textContent = 'تعديل إجمالي الأرباح';
+
+            body.innerHTML = `
+                <div style="text-align:center;margin-bottom:12px;">
+                    <p style="color:var(--text-secondary);font-size:14px;margin-bottom:8px;">
+                        المستخدم: <strong>${displayName}</strong>
+                    </p>
+                    <p style="color:var(--text-secondary);font-size:14px;margin-bottom:16px;">
+                        إجمالي الأرباح الحالي: <strong>${currentReturns.toFixed(2)} DZD</strong>
+                    </p>
+                    <div class="input-group">
+                        <label>المبلغ (DZD) <span class="required">*</span></label>
+                        <input type="number" id="adjustAmount" placeholder="أدخل المبلغ (موجب للإضافة، سالب للخصم)" step="0.01">
+                    </div>
+                    <div style="font-size:12px;color:var(--text-muted);">
+                        <i class="fas fa-info-circle"></i> استخدم قيمة موجبة للإضافة، قيمة سالبة للخصم
+                    </div>
+                </div>
+            `;
+
+            cancelBtn.textContent = 'إلغاء';
+            confirmBtn.textContent = 'تعديل';
+            confirmBtn.className = 'btn btn-confirm-success';
+
+            modal.classList.add('active');
+
+            const handleConfirm = () => {
+                const input = document.getElementById('adjustAmount');
+                const amount = parseFloat(input.value);
+                if (isNaN(amount) || amount === 0) {
+                    showToast('⚠️ الرجاء إدخال مبلغ صحيح (غير صفر)');
+                    return;
+                }
+                modal.classList.remove('active');
+                performAdjustMining(docId, uid, displayName, currentReturns, amount);
+            };
+
+            const handleCancel = () => {
+                modal.classList.remove('active');
+            };
+
+            confirmBtn.onclick = handleConfirm;
+            cancelBtn.onclick = handleCancel;
+        }
+
+        async function performAdjustMining(docId, uid, displayName, currentReturns, amount) {
+            try {
+                const newTotal = currentReturns + amount;
+                if (newTotal < 0) {
+                    showToast('⚠️ لا يمكن أن تكون الأرباح أقل من صفر');
+                    return;
+                }
+                const userRef = db.collection('users').doc(docId);
+                const userDoc = await userRef.get();
+                if (!userDoc.exists) {
+                    showToast('❌ المستخدم غير موجود', true);
+                    return;
+                }
+                const data = userDoc.data();
+                const investments = data.investments || [];
+                let updated = false;
+                const updatedInvestments = investments.map(inv => {
+                    if (!updated && (inv.status === 'active' || inv.status === 'pending' || !inv.status)) {
+                        updated = true;
+                        return { ...inv, totalReturn: newTotal };
+                    }
+                    return inv;
+                });
+                await userRef.update({
+                    investments: updatedInvestments,
+                    'miningData.totalInvestmentReturns': newTotal,
+                    'miningData.totalMinedDZD': newTotal
+                });
+                showToast(`✅ تم تعديل الأرباح للمستخدم ${displayName} إلى ${newTotal.toFixed(2)} DZD`);
+            } catch(e) {
+                console.error(e);
+                showToast('❌ خطأ: '+e.message, true);
+            }
+        }
+
+        // ============================================================
+        // 10. دوال الحماية
+        // ============================================================
         function renderProtectUsers(users) {
             const container = document.getElementById('usersProtectList');
             if (!users.length) {
@@ -2029,126 +2079,9 @@
             });
         }
 
-        function cancelInvestment(docId, uid, displayName) {
-            showConfirmDialog({
-                title: 'إلغاء باقة التعدين',
-                icon: 'fa-times-circle',
-                type: 'danger',
-                details: [
-                    { label: 'المستخدم', value: displayName, highlight: true },
-                    { label: 'المعرف', value: uid },
-                    { label: 'الإجراء', value: 'سيتم إلغاء جميع الاستثمارات وإعادة الأرباح إلى 0' }
-                ],
-                confirmText: 'إلغاء الباقة',
-                onConfirm: async () => {
-                    try {
-                        const userRef = db.collection('users').doc(docId);
-                        const userDoc = await userRef.get();
-                        const data = userDoc.data();
-                        const investments = data.investments || [];
-                        const updatedInvestments = investments.map(inv => ({ ...inv, status: 'cancelled' }));
-                        await userRef.update({
-                            investments: updatedInvestments,
-                            'miningData.totalInvested': 0,
-                            'miningData.totalInvestmentReturns': 0,
-                            'miningData.totalMinedDZD': 0,
-                            'miningData.level': 0
-                        });
-                        showToast(`✅ تم إلغاء باقة التعدين للمستخدم ${displayName}`);
-                    } catch(e) {
-                        console.error(e);
-                        showToast('❌ خطأ: '+e.message, true);
-                    }
-                }
-            });
-        }
-
-        function adjustMining(docId, uid, displayName, currentReturns) {
-            const modal = document.getElementById('confirmModal');
-            const body = document.getElementById('modalBody');
-            const header = document.querySelector('.modal-header .title');
-            const icon = document.getElementById('modalIcon');
-            const confirmBtn = document.getElementById('confirmBtn');
-            const cancelBtn = document.querySelector('.modal-footer .btn-cancel');
-
-            icon.className = 'icon warning';
-            icon.innerHTML = '<i class="fas fa-coins"></i>';
-            header.textContent = 'تعديل إجمالي الأرباح';
-
-            body.innerHTML = `
-                <div style="text-align:center;margin-bottom:12px;">
-                    <p style="color:var(--text-secondary);font-size:14px;margin-bottom:8px;">
-                        المستخدم: <strong>${displayName}</strong>
-                    </p>
-                    <p style="color:var(--text-secondary);font-size:14px;margin-bottom:16px;">
-                        إجمالي الأرباح الحالي: <strong>${currentReturns.toFixed(2)} DZD</strong>
-                    </p>
-                    <div class="input-group">
-                        <label>المبلغ (DZD) <span class="required">*</span></label>
-                        <input type="number" id="adjustAmount" placeholder="أدخل المبلغ (موجب للإضافة، سالب للخصم)" step="0.01">
-                    </div>
-                    <div style="font-size:12px;color:var(--text-muted);">
-                        <i class="fas fa-info-circle"></i> استخدم قيمة موجبة للإضافة، قيمة سالبة للخصم
-                    </div>
-                </div>
-            `;
-
-            cancelBtn.textContent = 'إلغاء';
-            confirmBtn.textContent = 'تعديل';
-            confirmBtn.className = 'btn btn-confirm-success';
-
-            modal.classList.add('active');
-
-            const handleConfirm = () => {
-                const input = document.getElementById('adjustAmount');
-                const amount = parseFloat(input.value);
-                if (isNaN(amount) || amount === 0) {
-                    showToast('⚠️ الرجاء إدخال مبلغ صحيح (غير صفر)');
-                    return;
-                }
-                modal.classList.remove('active');
-                performAdjustMining(docId, uid, displayName, currentReturns, amount);
-            };
-
-            const handleCancel = () => {
-                modal.classList.remove('active');
-            };
-
-            confirmBtn.onclick = handleConfirm;
-            cancelBtn.onclick = handleCancel;
-        }
-
-        async function performAdjustMining(docId, uid, displayName, currentReturns, amount) {
-            try {
-                const newTotal = currentReturns + amount;
-                if (newTotal < 0) {
-                    showToast('⚠️ لا يمكن أن تكون الأرباح أقل من صفر');
-                    return;
-                }
-                const userRef = db.collection('users').doc(docId);
-                const userDoc = await userRef.get();
-                const data = userDoc.data();
-                const investments = data.investments || [];
-                let updated = false;
-                const updatedInvestments = investments.map(inv => {
-                    if (!updated && (inv.status === 'active' || inv.status === 'pending' || !inv.status)) {
-                        updated = true;
-                        return { ...inv, totalReturn: newTotal };
-                    }
-                    return inv;
-                });
-                await userRef.update({
-                    investments: updatedInvestments,
-                    'miningData.totalInvestmentReturns': newTotal,
-                    'miningData.totalMinedDZD': newTotal
-                });
-                showToast(`✅ تم تعديل الأرباح للمستخدم ${displayName} إلى ${newTotal.toFixed(2)} DZD`);
-            } catch(e) {
-                console.error(e);
-                showToast('❌ خطأ: '+e.message, true);
-            }
-        }
-
+        // ============================================================
+        // 11. دوال السحب والإيداع
+        // ============================================================
         function approveWithdrawal(userDocId, withdrawalId, uid, displayName, amount, fee) {
             showConfirmDialog({
                 title: 'تأكيد السحب',
@@ -2278,7 +2211,7 @@
         }
 
         // ============================================================
-        // 14. تأكيد إيداع تلقائي
+        // 12. تأكيد إيداع تلقائي
         // ============================================================
         async function autoConfirmDeposit() {
             const txId = document.getElementById('autoTxId').value.trim();
@@ -2369,7 +2302,7 @@
         }
 
         // ============================================================
-        // 15. التبديل بين التبويبات
+        // 13. التبديل بين التبويبات
         // ============================================================
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -2386,7 +2319,7 @@
         }
 
         // ============================================================
-        // 16. الوضع المظلم
+        // 14. الوضع المظلم
         // ============================================================
         let isDarkTheme = false;
         function toggleTheme() {
@@ -2425,7 +2358,7 @@
         }
 
         // ============================================================
-        // 17. INIT
+        // 15. INIT
         // ============================================================
         document.addEventListener('DOMContentLoaded', function() {
             authAdmin();
@@ -2435,7 +2368,7 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة - تم تعديل أزرار الاستثمارات والحماية لتكون بنفس حجم الأزرار الأخرى');
+        console.log('🚀 لوحة الإدارة - تم إصلاح أزرار إلغاء الباقة وتعديل الأرباح باستخدام encodeURIComponent');
     </script>
 </body>
 </html>
