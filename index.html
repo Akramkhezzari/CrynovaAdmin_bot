@@ -1732,171 +1732,43 @@
                         <div><small>التاريخ: ${formatDateTime(m.createdAt)}</small></div>
                     </div>
                     <div class="match-actions">
-                        <button class="btn btn-warning btn-xs" onclick="editMatch('${m.id}','${m.transactionId}',${m.amount})">
+                        <button class="btn btn-warning btn-xs" data-matchid="${m.id}" data-txid="${m.transactionId}" data-amount="${m.amount}" data-action="editMatch">
                             <i class="fas fa-edit"></i> تعديل
                         </button>
-                        <button class="btn btn-danger btn-xs" onclick="deleteMatch('${m.id}')">
+                        <button class="btn btn-danger btn-xs" data-matchid="${m.id}" data-action="deleteMatch">
                             <i class="fas fa-trash"></i> إلغاء
                         </button>
                     </div>
                 </div>
             `).join('');
+
+            // ربط الأحداث لأزرار المطابقات
+            attachMatchButtons();
         }
 
-        function renderInvestorsWithFilter() {
-            let filtered = allInvestors;
-            const q = investorFilter.trim();
-            if (q) {
-                const lower = q.toLowerCase();
-                filtered = allInvestors.filter(inv => inv.uid.toLowerCase().includes(lower));
-            }
-            renderInvestors(filtered);
-        }
-
-        function renderInvestors(list) {
-            const container = document.getElementById('investorsList');
-            if (!list.length) {
-                container.innerHTML =
-                    `<div class="admin-empty"><i class="fas fa-chart-pie text-muted"></i><div>لا يوجد مستثمرون ${investorFilter ? 'مطابقون للبحث' : ''}</div></div>`;
-                return;
-            }
-            container.innerHTML = list.map(inv => `
-                <div class="invest-card">
-                    <div class="flex-between">
-                        <span class="invest-user">
-                            👤 <strong>${inv.displayName}</strong>
-                            <button class="copy-btn" onclick="copyText('${inv.uid}', this)"><i class="fas fa-copy"></i> <span class="icon-text">نسخ</span></button>
-                        </span>
-                        <span class="invest-badge">${inv.package}</span>
-                    </div>
-                    <div class="invest-details">
-                        <div class="detail-row"><span class="label">المبلغ المستثمر</span><span class="value highlight">${inv.totalInvested.toFixed(2)} DZD</span></div>
-                        <div class="detail-row"><span class="label">إجمالي الأرباح</span><span class="value profit">${inv.totalReturns.toFixed(2)} DZD</span></div>
-                        <div class="detail-row"><span class="label">نسبة الأرباح</span><span class="value profit">${inv.profitRatio.toFixed(2)}%</span></div>
-                        ${inv.investments?.length ? `<div class="detail-row"><span class="label">عدد الاستثمارات</span><span class="value">${inv.investments.length}</span></div>` : ''}
-                    </div>
-                    <div class="invest-actions">
-                        <button class="btn btn-danger btn-xs" onclick="cancelInvestment('${inv.docId}','${inv.uid}','${inv.displayName}')">
-                            <i class="fas fa-times-circle"></i> إلغاء الباقة
-                        </button>
-                        <button class="btn btn-success btn-xs" onclick="adjustMining('${inv.docId}','${inv.uid}','${inv.displayName}',${inv.totalReturns})">
-                            <i class="fas fa-edit"></i> تعديل الأرباح
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function renderProtectUsersWithFilter() {
-            let filtered = allProtectUsers;
-            const q = protectFilter.trim();
-            if (q) {
-                const lower = q.toLowerCase();
-                filtered = allProtectUsers.filter(u => u.uid.toLowerCase().includes(lower));
-            }
-            renderProtectUsers(filtered);
-        }
-
-        function renderProtectUsers(users) {
-            const container = document.getElementById('usersProtectList');
-            if (!users.length) {
-                container.innerHTML =
-                    `<div class="admin-empty"><i class="fas fa-users-slash text-muted"></i><div>لا يوجد مستخدمون ${protectFilter ? 'مطابقون للبحث' : ''}</div></div>`;
-                return;
-            }
-            const statusOrder = { active: 0, restricted: 1, frozen: 2, banned: 3 };
-            users.sort((a, b) => (statusOrder[a.status] || 0) - (statusOrder[b.status] || 0));
-
-            container.innerHTML = users.map(u => {
-                const statusMap = {
-                    active: { label: '✅ نشط', class: 'status-active' },
-                    banned: { label: '⛔ محظور', class: 'status-banned' },
-                    restricted: { label: '🔒 مقيد', class: 'status-restricted' },
-                    frozen: { label: '❄️ مجمد', class: 'status-frozen' }
-                };
-                const st = statusMap[u.status] || statusMap.active;
-
-                return `
-                    <div class="user-protect-card">
-                        <div class="flex-between">
-                            <span class="user-name">👤 <strong>${u.displayName}</strong></span>
-                            <span class="status ${st.class}">${st.label}</span>
-                        </div>
-                        <div class="user-details">
-                            الرصيد: <strong>${u.dzd.toFixed(2)} DZD</strong>
-                            <br>
-                            <span class="id-wrapper">
-                                <span class="id-text">${u.uid}</span>
-                                <button class="copy-btn" onclick="copyText('${u.uid}', this)"><i class="fas fa-copy"></i> <span class="icon-text">نسخ</span></button>
-                            </span>
-                        </div>
-                        <div class="user-actions">
-                            ${u.status === 'active' ? `
-                                <button class="btn btn-danger btn-xs" data-docid="${u.docId}" data-uid="${u.uid}" data-displayname="${u.displayName}" data-newstatus="banned" data-action="حظر">
-                                    <i class="fas fa-ban"></i> تعطيل
-                                </button>
-                                <button class="btn btn-orange btn-xs" data-docid="${u.docId}" data-uid="${u.uid}" data-displayname="${u.displayName}" data-newstatus="restricted" data-action="تقييد">
-                                    <i class="fas fa-lock"></i> تقيد
-                                </button>
-                                <button class="btn btn-purple btn-xs" data-docid="${u.docId}" data-uid="${u.uid}" data-displayname="${u.displayName}" data-newstatus="frozen" data-action="تجميد">
-                                    <i class="fas fa-snowflake"></i> تجميد
-                                </button>
-                            ` : u.status === 'banned' ? `
-                                <button class="btn btn-success btn-xs" data-docid="${u.docId}" data-uid="${u.uid}" data-displayname="${u.displayName}" data-newstatus="active" data-action="تفعيل">
-                                    <i class="fas fa-check-circle"></i> تفعيل
-                                </button>
-                            ` : u.status === 'restricted' ? `
-                                <button class="btn btn-success btn-xs" data-docid="${u.docId}" data-uid="${u.uid}" data-displayname="${u.displayName}" data-newstatus="active" data-action="تفعيل">
-                                    <i class="fas fa-check-circle"></i> تفعيل
-                                </button>
-                                <button class="btn btn-danger btn-xs" data-docid="${u.docId}" data-uid="${u.uid}" data-displayname="${u.displayName}" data-newstatus="banned" data-action="حظر">
-                                    <i class="fas fa-ban"></i> تعطيل
-                                </button>
-                                <button class="btn btn-purple btn-xs" data-docid="${u.docId}" data-uid="${u.uid}" data-displayname="${u.displayName}" data-newstatus="frozen" data-action="تجميد">
-                                    <i class="fas fa-snowflake"></i> تجميد
-                                </button>
-                            ` : u.status === 'frozen' ? `
-                                <button class="btn btn-success btn-xs" data-docid="${u.docId}" data-uid="${u.uid}" data-displayname="${u.displayName}" data-newstatus="active" data-action="تفعيل">
-                                    <i class="fas fa-check-circle"></i> تفعيل
-                                </button>
-                                <button class="btn btn-danger btn-xs" data-docid="${u.docId}" data-uid="${u.uid}" data-displayname="${u.displayName}" data-newstatus="banned" data-action="حظر">
-                                    <i class="fas fa-ban"></i> تعطيل
-                                </button>
-                                <button class="btn btn-orange btn-xs" data-docid="${u.docId}" data-uid="${u.uid}" data-displayname="${u.displayName}" data-newstatus="restricted" data-action="تقييد">
-                                    <i class="fas fa-lock"></i> تقيد
-                                </button>
-                            ` : ''}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            // ربط الأحداث بالأزرار بعد الإدراج
-            attachProtectButtons();
-        }
-
-        // دالة ربط الأحداث لأزرار الحماية
-        function attachProtectButtons() {
-            document.querySelectorAll('#usersProtectList .user-actions .btn').forEach(btn => {
-                // إزالة أي مستمع قديم لتجنب التكرار
-                btn.removeEventListener('click', protectClickHandler);
-                btn.addEventListener('click', protectClickHandler);
+        // ربط أحداث المطابقات
+        function attachMatchButtons() {
+            document.querySelectorAll('#pendingMatchesList .match-actions .btn').forEach(btn => {
+                btn.removeEventListener('click', matchClickHandler);
+                btn.addEventListener('click', matchClickHandler);
             });
         }
 
-        function protectClickHandler(e) {
+        function matchClickHandler(e) {
             const btn = e.currentTarget;
-            const docId = btn.dataset.docid;
-            const uid = btn.dataset.uid;
-            const displayName = btn.dataset.displayname;
-            const newStatus = btn.dataset.newstatus;
-            const actionName = btn.dataset.action;
-            if (docId && uid && displayName && newStatus && actionName) {
-                changeUserStatus(docId, uid, displayName, newStatus, actionName);
-            } else {
-                console.warn('بيانات الزر غير مكتملة', btn.dataset);
+            const action = btn.dataset.action;
+            if (action === 'editMatch') {
+                const matchId = btn.dataset.matchid;
+                const txId = btn.dataset.txid;
+                const amount = parseFloat(btn.dataset.amount);
+                editMatch(matchId, txId, amount);
+            } else if (action === 'deleteMatch') {
+                const matchId = btn.dataset.matchid;
+                deleteMatch(matchId);
             }
         }
+
+        // ---- إصلاح أزرار السحب والإيداع ----
 
         function renderWithdrawalsWithFilter() {
             let filtered = allPendingWithdrawals;
@@ -1939,16 +1811,44 @@
                         ` : ''}
                     </div>
                     <div class="actions">
-                        <button class="btn btn-success btn-sm" onclick="approveWithdrawal('${w.docId}','${w.withdrawalId}','${w.uid}','${w.userDisplayName}',${w.amount},${w.fee||0})">
+                        <button class="btn btn-success btn-sm" data-docid="${w.docId}" data-withdrawalid="${w.withdrawalId}" data-uid="${w.uid}" data-displayname="${w.userDisplayName}" data-amount="${w.amount}" data-fee="${w.fee || 0}" data-action="approveWithdrawal">
                             <i class="fas fa-check"></i> تأكيد
                         </button>
-                        <button class="btn btn-danger btn-sm" onclick="rejectWithdrawal('${w.docId}','${w.withdrawalId}','${w.uid}','${w.userDisplayName}',${w.amount},${w.fee||0})">
+                        <button class="btn btn-danger btn-sm" data-docid="${w.docId}" data-withdrawalid="${w.withdrawalId}" data-uid="${w.uid}" data-displayname="${w.userDisplayName}" data-amount="${w.amount}" data-fee="${w.fee || 0}" data-action="rejectWithdrawal">
                             <i class="fas fa-times"></i> رفض
                         </button>
                     </div>
                 </div>
             `).join('');
+
+            attachWithdrawalButtons();
         }
+
+        function attachWithdrawalButtons() {
+            document.querySelectorAll('#adminWithdrawalsList .actions .btn').forEach(btn => {
+                btn.removeEventListener('click', withdrawalClickHandler);
+                btn.addEventListener('click', withdrawalClickHandler);
+            });
+        }
+
+        function withdrawalClickHandler(e) {
+            const btn = e.currentTarget;
+            const action = btn.dataset.action;
+            const docId = btn.dataset.docid;
+            const withdrawalId = btn.dataset.withdrawalid;
+            const uid = btn.dataset.uid;
+            const displayName = btn.dataset.displayname;
+            const amount = parseFloat(btn.dataset.amount);
+            const fee = parseFloat(btn.dataset.fee || 0);
+
+            if (action === 'approveWithdrawal') {
+                approveWithdrawal(docId, withdrawalId, uid, displayName, amount, fee);
+            } else if (action === 'rejectWithdrawal') {
+                rejectWithdrawal(docId, withdrawalId, uid, displayName, amount, fee);
+            }
+        }
+
+        // ---- الإيداع ----
 
         function renderDepositsWithFilter() {
             let filtered = allPendingDeposits;
@@ -1987,26 +1887,40 @@
                         ` : ''}
                     </div>
                     <div class="actions">
-                        <button class="btn btn-success btn-sm" onclick="confirmDeposit('${d.docId}','${d.depositId}','${d.uid}','${d.userDisplayName}',${d.amount})">
+                        <button class="btn btn-success btn-sm" data-docid="${d.docId}" data-depositid="${d.depositId}" data-uid="${d.uid}" data-displayname="${d.userDisplayName}" data-amount="${d.amount}" data-action="confirmDeposit">
                             <i class="fas fa-check"></i> تأكيد
                         </button>
-                        <button class="btn btn-danger btn-sm" onclick="rejectDeposit('${d.docId}','${d.depositId}','${d.uid}','${d.userDisplayName}')">
+                        <button class="btn btn-danger btn-sm" data-docid="${d.docId}" data-depositid="${d.depositId}" data-uid="${d.uid}" data-displayname="${d.userDisplayName}" data-action="rejectDeposit">
                             <i class="fas fa-times"></i> رفض
                         </button>
                     </div>
                 </div>
             `).join('');
+
+            attachDepositButtons();
         }
 
-        function updateBadges(withdrawCount, depositCount) {
-            document.getElementById('withdrawalsBadge').textContent = withdrawCount;
-            document.getElementById('withdrawalsBadgeCount').textContent = withdrawCount;
-            document.getElementById('depositsBadge').textContent = depositCount;
-            document.getElementById('depositsBadgeCount').textContent = depositCount;
-            document.querySelectorAll('.badge').forEach(b => {
-                if (parseInt(b.textContent) === 0) b.classList.add('hidden');
-                else b.classList.remove('hidden');
+        function attachDepositButtons() {
+            document.querySelectorAll('#adminDepositsList .actions .btn').forEach(btn => {
+                btn.removeEventListener('click', depositClickHandler);
+                btn.addEventListener('click', depositClickHandler);
             });
+        }
+
+        function depositClickHandler(e) {
+            const btn = e.currentTarget;
+            const action = btn.dataset.action;
+            const docId = btn.dataset.docid;
+            const depositId = btn.dataset.depositid;
+            const uid = btn.dataset.uid;
+            const displayName = btn.dataset.displayname;
+            const amount = parseFloat(btn.dataset.amount);
+
+            if (action === 'confirmDeposit') {
+                confirmDeposit(docId, depositId, uid, displayName, amount);
+            } else if (action === 'rejectDeposit') {
+                rejectDeposit(docId, depositId, uid, displayName);
+            }
         }
 
         // ================================================================
@@ -2580,7 +2494,7 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة - تم إصلاح أزرار الحماية باستخدام data-attributes وربط الأحداث.');
+        console.log('🚀 لوحة الإدارة - تم إصلاح أزرار السحب والإيداع والمطابقات باستخدام data-attributes.');
     </script>
 </body>
 </html>
