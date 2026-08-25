@@ -1222,7 +1222,7 @@
         }
 
         // ============================================================
-        // 8. عرض طلبات المطابقة (الدالة الأساسية) - تم تعديل حجم الأزرار إلى btn-sm
+        // 8. عرض طلبات المطابقة (الدالة الأساسية)
         // ============================================================
         function renderPendingMatches(matches) {
             const container = document.getElementById('pendingMatchesList');
@@ -1258,10 +1258,10 @@
                         <div><small>التاريخ: ${formatDateTime(m.createdAt)}</small></div>
                     </div>
                     <div class="match-actions">
-                        <button class="btn btn-warning btn-sm" onclick="editMatch('${m.id}','${m.transactionId}',${m.amount})">
+                        <button class="btn btn-warning btn-xs" onclick="editMatch('${m.id}','${m.transactionId}',${m.amount})">
                             <i class="fas fa-edit"></i> تعديل
                         </button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteMatch('${m.id}')">
+                        <button class="btn btn-danger btn-xs" onclick="deleteMatch('${m.id}')">
                             <i class="fas fa-trash"></i> إلغاء
                         </button>
                     </div>
@@ -2429,7 +2429,8 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة - تم تعديل حجم أزرار المطابقات إلى btn-sm');
+        console.log('🚀 لوحة الإدارة - تم إضافة محرك البحث في صفحة المطابقات');
+        console.log('✅ يمكن البحث في طلبات المطابقة برقم العملية أو المبلغ.');
     </script>
 </body>
 </html>
