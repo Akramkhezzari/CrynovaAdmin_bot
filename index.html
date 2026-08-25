@@ -1773,7 +1773,6 @@
                         <div class="detail-row"><span class="label">المبلغ المستثمر</span><span class="value highlight">${inv.totalInvested.toFixed(2)} DZD</span></div>
                         <div class="detail-row"><span class="label">إجمالي الأرباح</span><span class="value profit">${inv.totalReturns.toFixed(2)} DZD</span></div>
                         <div class="detail-row"><span class="label">نسبة الأرباح</span><span class="value profit">${inv.profitRatio.toFixed(2)}%</span></div>
-                        <div class="detail-row"><span class="label">الرصيد الحالي</span><span class="value">${inv.currentBalance.toFixed(2)} DZD</span></div>
                         ${inv.investments?.length ? `<div class="detail-row"><span class="label">عدد الاستثمارات</span><span class="value">${inv.investments.length}</span></div>` : ''}
                     </div>
                     <div class="invest-actions">
@@ -2543,8 +2542,7 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة - تم تحسين الكود وإضافة محرك البحث.');
-        console.log('✅ جميع الوظائف محفوظة.');
+        console.log('🚀 لوحة الإدارة - تم إزالة "الرصيد الحالي" من صفحة الاستثمارات.');
     </script>
 </body>
 </html>
