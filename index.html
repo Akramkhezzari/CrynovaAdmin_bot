@@ -1,84 +1,175 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Crynova Admin</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>لوحة إدارة Crynova</title>
 
     <!-- Telegram WebApp SDK -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js">
+    </script>
 
     <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js">
+    </script>
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Google Fonts (Cairo) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet" />
 
     <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
+        /* ===== RESET & VARIABLES ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         :root {
-            --bg-primary: #f0f4f8; --bg-secondary: #ffffff; --bg-card: #ffffff;
-            --bg-card-hover: #f8faff; --bg-input: #f0f4f8; --bg-nav: #ffffff;
-            --text-primary: #1a1a2e; --text-secondary: #4a4a6a; --text-muted: #8a8aaa;
-            --text-white: #ffffff; --accent: #6c5ce7; --accent-light: #a29bfe;
-            --accent-glow: rgba(108,92,231,0.15); --accent-gradient: linear-gradient(135deg, #6c5ce7, #a29bfe);
-            --success: #00b894; --success-light: rgba(0,184,148,0.12);
-            --warning: #fdcb6e; --warning-light: rgba(253,203,110,0.12);
-            --danger: #e17055; --danger-light: rgba(225,112,85,0.12);
-            --info: #0984e3; --info-light: rgba(9,132,227,0.12);
-            --purple: #8e44ad; --purple-light: rgba(142,68,173,0.12);
-            --orange: #e67e22; --orange-light: rgba(230,126,34,0.12);
-            --dzd-color: #e17055; --dzd-light: rgba(225,112,85,0.12);
-            --border: #e2e8f0; --border-light: #f0f4f8;
-            --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
-            --shadow-md: 0 8px 32px rgba(0,0,0,0.08);
-            --shadow-lg: 0 16px 48px rgba(0,0,0,0.12);
-            --shadow-glow: 0 4px 24px rgba(108,92,231,0.25);
-            --radius-sm: 10px; --radius-md: 16px; --radius-lg: 24px; --radius-xl: 32px;
-            --transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+            --bg-primary: #f0f4f8;
+            --bg-card: #ffffff;
+            --bg-input: #f0f4f8;
+            --bg-nav: #ffffff;
+            --text-primary: #1a1a2e;
+            --text-secondary: #4a4a6a;
+            --text-muted: #8a8aaa;
+            --text-white: #ffffff;
+            --accent: #6c5ce7;
+            --accent-light: #a29bfe;
+            --accent-glow: rgba(108, 92, 231, 0.15);
+            --accent-gradient: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            --success: #00b894;
+            --success-light: rgba(0, 184, 148, 0.12);
+            --warning: #fdcb6e;
+            --warning-light: rgba(253, 203, 110, 0.12);
+            --danger: #e17055;
+            --danger-light: rgba(225, 112, 85, 0.12);
+            --info: #0984e3;
+            --info-light: rgba(9, 132, 227, 0.12);
+            --purple: #8e44ad;
+            --purple-light: rgba(142, 68, 173, 0.12);
+            --orange: #e67e22;
+            --orange-light: rgba(230, 126, 34, 0.12);
+            --border: #e2e8f0;
+            --border-light: #f0f4f8;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.12);
+            --shadow-glow: 0 4px 24px rgba(108, 92, 231, 0.25);
+            --radius-sm: 10px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             --bottom-nav-height: 70px;
         }
-        html { scroll-behavior: smooth; }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
             font-family: 'Cairo', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg-primary); color: var(--text-primary);
-            min-height: 100vh; padding-bottom: calc(var(--bottom-nav-height) + 20px);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding-bottom: calc(var(--bottom-nav-height) + 20px);
             overflow-x: hidden;
-            -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg-primary); }
-        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent-light); }
 
-        .app-container { max-width: 480px; margin: 0 auto; padding: 16px 16px 24px; }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-light);
+        }
 
+        /* ===== UTILITY ===== */
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 16px 16px 24px;
+        }
+
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .text-muted {
+            color: var(--text-secondary);
+        }
+        .mt-16 {
+            margin-top: 16px;
+        }
+        .mb-8 {
+            margin-bottom: 8px;
+        }
+        .hidden {
+            display: none !important;
+        }
+
+        /* ===== HEADER ===== */
         .app-header {
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             padding: 12px 0 20px;
         }
         .app-header .logo {
-            font-size: 20px; font-weight: 900;
-            background: var(--accent-gradient); -webkit-background-clip: text;
+            font-size: 20px;
+            font-weight: 900;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            display: flex; align-items: center; gap: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        .app-header .logo i { -webkit-text-fill-color: var(--accent); font-size: 24px; }
-        .app-header .header-actions { display: flex; gap: 8px; align-items: center; }
+        .app-header .logo i {
+            -webkit-text-fill-color: var(--accent);
+            font-size: 24px;
+        }
+        .app-header .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
         .app-header .header-actions button {
-            width: 40px; height: 40px; border: none; border-radius: 50%;
-            background: var(--bg-card); color: var(--text-secondary); font-size: 18px;
-            cursor: pointer; transition: var(--transition);
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            font-size: 18px;
+            cursor: pointer;
+            transition: var(--transition);
             box-shadow: var(--shadow-sm);
-            display: flex; align-items: center; justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .app-header .header-actions button:hover { transform: scale(1.05); box-shadow: var(--shadow-md); }
+        .app-header .header-actions button:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-md);
+        }
 
+        /* ===== STATS BAR ===== */
         .stats-bar {
             background: var(--bg-card);
             border-radius: var(--radius-md);
@@ -109,11 +200,12 @@
             align-items: center;
             gap: 4px;
         }
-        .stats-bar .stat-item .stat-label i { font-size: 12px; }
+        .stats-bar .stat-item .stat-label i {
+            font-size: 12px;
+        }
         .stats-bar .stat-item .stat-value {
             font-size: 18px;
             font-weight: 900;
-            color: var(--text-primary);
             background: var(--accent-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -124,45 +216,126 @@
             background: var(--border);
         }
 
+        /* ===== CARDS ===== */
         .card {
-            background: var(--bg-card); border-radius: var(--radius-md);
-            padding: 20px; margin-bottom: 16px;
-            border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
             transition: var(--transition);
         }
-        .card:hover { box-shadow: var(--shadow-md); border-color: var(--accent-light); }
+        .card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: var(--accent-light);
+        }
         .card-header {
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 14px;
         }
-        .card-title { font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
-        .card-title i { color: var(--accent); font-size: 18px; }
-
-        .btn {
-            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-            padding: 14px 24px; border: none; border-radius: var(--radius-sm);
-            font-size: 16px; font-weight: 700; cursor: pointer;
-            transition: var(--transition); text-decoration: none; width: 100%;
-            font-family: inherit; position: relative; overflow: hidden;
+        .card-title {
+            font-size: 17px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        .btn:active { transform: scale(0.96); }
-        .btn-primary { background: var(--accent-gradient); color: white; box-shadow: var(--shadow-glow); }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(108,92,231,0.35); }
-        .btn-success { background: var(--success); color: white; }
-        .btn-success:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,184,148,0.35); }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(225,112,85,0.35); }
-        .btn-info { background: var(--info); color: white; }
-        .btn-info:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(9,132,227,0.35); }
-        .btn-warning { background: var(--warning); color: #7d6608; }
-        .btn-warning:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(253,203,110,0.35); }
-        .btn-purple { background: var(--purple); color: white; }
-        .btn-purple:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(142,68,173,0.35); }
-        .btn-orange { background: var(--orange); color: white; }
-        .btn-orange:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(230,126,34,0.35); }
-        .btn-sm { padding: 10px 16px; font-size: 14px; }
-        .btn-xs { padding: 4px 10px; font-size: 11px; border-radius: 6px; }
+        .card-title i {
+            color: var(--accent);
+            font-size: 18px;
+        }
 
+        /* ===== BUTTONS ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 24px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            width: 100%;
+            font-family: inherit;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn:active {
+            transform: scale(0.96);
+        }
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: white;
+            box-shadow: var(--shadow-glow);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(108, 92, 231, 0.35);
+        }
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 184, 148, 0.35);
+        }
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(225, 112, 85, 0.35);
+        }
+        .btn-info {
+            background: var(--info);
+            color: white;
+        }
+        .btn-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(9, 132, 227, 0.35);
+        }
+        .btn-warning {
+            background: var(--warning);
+            color: #7d6608;
+        }
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(253, 203, 110, 0.35);
+        }
+        .btn-purple {
+            background: var(--purple);
+            color: white;
+        }
+        .btn-purple:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(142, 68, 173, 0.35);
+        }
+        .btn-orange {
+            background: var(--orange);
+            color: white;
+        }
+        .btn-orange:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(230, 126, 34, 0.35);
+        }
+        .btn-sm {
+            padding: 10px 16px;
+            font-size: 14px;
+        }
+        .btn-xs {
+            padding: 4px 10px;
+            font-size: 11px;
+            border-radius: 6px;
+        }
         .btn-secondary {
             background: var(--bg-input);
             color: var(--text-secondary);
@@ -172,6 +345,7 @@
             background: var(--border);
         }
 
+        /* ===== COPY BUTTON ===== */
         .copy-btn {
             background: var(--bg-input);
             color: var(--text-secondary);
@@ -196,67 +370,288 @@
             border-color: var(--accent);
             transform: scale(1.05);
         }
-        .copy-btn:active { transform: scale(0.92); }
+        .copy-btn:active {
+            transform: scale(0.92);
+        }
         .copy-btn.copied {
             background: var(--success) !important;
             color: white !important;
             border-color: var(--success) !important;
             transform: scale(0.95);
         }
-        .copy-btn .icon-text { transition: all 0.2s ease; }
-
-        .input-group { margin-bottom: 16px; }
-        .input-group label { display: block; color: var(--text-secondary); font-size: 14px; margin-bottom: 6px; font-weight: 600; }
-        .input-group label .required { color: var(--danger); margin-right: 2px; }
-        .input-group input, .input-group select {
-            width: 100%; padding: 14px 16px; background: var(--bg-input);
-            border: 2px solid var(--border); border-radius: var(--radius-sm);
-            color: var(--text-primary); font-size: 16px;
-            transition: var(--transition); font-family: inherit; font-weight: 500;
+        .copy-btn .icon-text {
+            transition: all 0.2s ease;
         }
-        .input-group input:focus, .input-group select:focus {
-            outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-glow);
+
+        /* ===== FORM ===== */
+        .input-group {
+            margin-bottom: 16px;
+        }
+        .input-group label {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+        .input-group label .required {
+            color: var(--danger);
+            margin-right: 2px;
+        }
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--bg-input);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 16px;
+            transition: var(--transition);
+            font-family: inherit;
+            font-weight: 500;
+        }
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--accent-glow);
             background: var(--bg-card);
         }
 
+        /* ===== STATUS BADGES ===== */
         .status {
-            display: inline-block; padding: 4px 14px; border-radius: 20px;
-            font-size: 12px; font-weight: 700; letter-spacing: 0.3px;
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
         }
-        .status-success { background: var(--success-light); color: var(--success); }
-        .status-pending { background: var(--warning-light); color: #b7950b; }
-        .status-danger { background: var(--danger-light); color: var(--danger); }
-        .status-info { background: var(--info-light); color: var(--info); }
-        .status-banned { background: var(--danger-light); color: var(--danger); }
-        .status-active { background: var(--success-light); color: var(--success); }
-        .status-restricted { background: var(--orange-light); color: var(--orange); }
-        .status-frozen { background: var(--purple-light); color: var(--purple); }
-        .status-match { background: var(--orange-light); color: var(--orange); }
-
-        .admin-request-card {
-            background: var(--bg-card); border-radius: var(--radius-sm);
-            padding: 14px; margin-bottom: 12px;
-            border: 1px solid var(--border); transition: var(--transition);
+        .status-success {
+            background: var(--success-light);
+            color: var(--success);
         }
-        .admin-request-card:hover { border-color: var(--accent-light); }
-        .admin-request-card .user-info { font-weight: 700; color: var(--accent); }
-        .admin-request-card .details { font-size: 14px; color: var(--text-secondary); margin: 6px 0; }
-        .admin-request-card .details .copy-btn { margin-right: 4px; }
-        .admin-request-card .actions { display: flex; gap: 8px; margin-top: 10px; }
-        .admin-request-card .actions .btn { padding: 8px 16px; font-size: 13px; width: auto; flex: 1; }
-        .admin-empty { text-align: center; padding: 30px 0; color: var(--text-muted); }
-        .admin-empty i { font-size: 48px; display: block; margin-bottom: 10px; }
+        .status-pending {
+            background: var(--warning-light);
+            color: #b7950b;
+        }
+        .status-danger {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+        .status-info {
+            background: var(--info-light);
+            color: var(--info);
+        }
+        .status-banned {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+        .status-active {
+            background: var(--success-light);
+            color: var(--success);
+        }
+        .status-restricted {
+            background: var(--orange-light);
+            color: var(--orange);
+        }
+        .status-frozen {
+            background: var(--purple-light);
+            color: var(--purple);
+        }
+        .status-match {
+            background: var(--orange-light);
+            color: var(--orange);
+        }
 
+        /* ===== CARDS (admin-request, invest, user-protect, match) ===== */
+        .admin-request-card,
+        .invest-card,
+        .user-protect-card,
+        .match-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-sm);
+            padding: 14px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+        .admin-request-card:hover,
+        .invest-card:hover,
+        .user-protect-card:hover,
+        .match-card:hover {
+            border-color: var(--accent-light);
+        }
+        .match-card:hover {
+            border-color: var(--orange);
+        }
+
+        .admin-request-card .user-info,
+        .invest-card .invest-user,
+        .user-protect-card .user-name {
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .admin-request-card .details,
+        .invest-card .invest-details,
+        .user-protect-card .user-details,
+        .match-card .match-details {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin: 6px 0;
+        }
+        .admin-request-card .actions,
+        .invest-card .invest-actions,
+        .user-protect-card .user-actions,
+        .match-card .match-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .admin-request-card .actions .btn,
+        .invest-card .invest-actions .btn,
+        .user-protect-card .user-actions .btn,
+        .match-card .match-actions .btn {
+            padding: 8px 16px;
+            font-size: 13px;
+            width: auto;
+            flex: 1;
+        }
+        .invest-card .invest-details .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 0;
+            border-bottom: 1px dashed var(--border-light);
+        }
+        .invest-card .invest-details .detail-row:last-child {
+            border-bottom: none;
+        }
+        .invest-card .invest-details .label {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .invest-card .invest-details .value {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .invest-card .invest-details .value.highlight {
+            color: var(--accent);
+        }
+        .invest-card .invest-details .value.profit {
+            color: var(--success);
+        }
+        .invest-badge {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            background: var(--info-light);
+            color: var(--info);
+        }
+
+        .user-protect-card .user-details .id-wrapper {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--bg-input);
+            padding: 2px 8px 2px 4px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            direction: ltr;
+        }
+        .user-protect-card .user-details .id-wrapper .id-text {
+            font-family: monospace;
+            letter-spacing: 0.5px;
+        }
+
+        .admin-empty {
+            text-align: center;
+            padding: 30px 0;
+            color: var(--text-muted);
+        }
+        .admin-empty i {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* ===== SEARCH BAR ===== */
+        .search-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .search-bar input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 14px;
+            background: var(--bg-input);
+            color: var(--text-primary);
+            transition: var(--transition);
+        }
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+            background: var(--bg-card);
+        }
+        .search-bar .btn {
+            width: auto;
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+        .search-bar .btn-clear {
+            background: var(--bg-input);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+        .search-bar .btn-clear:hover {
+            background: var(--border);
+        }
+
+        /* ===== TABS ===== */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== BOTTOM NAV ===== */
         .bottom-nav {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            max-width: 480px; margin: 0 auto;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 480px;
+            margin: 0 auto;
             height: var(--bottom-nav-height);
             background: var(--bg-card);
             border-top: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: space-around;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
             z-index: 1000;
             padding: 0 2px;
         }
@@ -305,33 +700,34 @@
             text-align: center;
             line-height: 12px;
         }
-        .bottom-nav .nav-item .badge.hidden { display: none; }
-
-        .tab-content {
+        .bottom-nav .nav-item .badge.hidden {
             display: none;
-            animation: fadeIn 0.3s ease;
-        }
-        .tab-content.active { display: block; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
-        .flex-between { display: flex; justify-content: space-between; align-items: center; }
-        .text-muted { color: var(--text-secondary); }
-        .mt-16 { margin-top: 16px; }
-        .mb-8 { margin-bottom: 8px; }
-        .hidden { display: none !important; }
+        /* ===== UNAUTHORIZED ===== */
+        #unauthorizedMessage {
+            padding: 40px 20px;
+            text-align: center;
+        }
+        #unauthorizedMessage i {
+            font-size: 64px;
+            color: var(--danger);
+        }
+        #unauthorizedMessage h2 {
+            margin-top: 16px;
+        }
+        #unauthorizedMessage p {
+            color: var(--text-secondary);
+        }
 
-        #unauthorizedMessage { padding: 40px 20px; text-align: center; }
-        #unauthorizedMessage i { font-size: 64px; color: var(--danger); }
-        #unauthorizedMessage h2 { margin-top: 16px; }
-        #unauthorizedMessage p { color: var(--text-secondary); }
-
+        /* ===== MODAL ===== */
         .modal-overlay {
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.6);
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(8px);
             display: none;
             align-items: center;
@@ -339,7 +735,9 @@
             z-index: 9999;
             padding: 20px;
         }
-        .modal-overlay.active { display: flex; }
+        .modal-overlay.active {
+            display: flex;
+        }
         .modal-box {
             background: var(--bg-card);
             border-radius: var(--radius-lg);
@@ -350,8 +748,14 @@
             animation: slideUp 0.3s ease;
         }
         @keyframes slideUp {
-            from { transform: translateY(30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
         .modal-header {
             padding: 20px 24px 12px;
@@ -370,11 +774,26 @@
             font-size: 22px;
             flex-shrink: 0;
         }
-        .modal-header .icon.success { background: var(--success-light); color: var(--success); }
-        .modal-header .icon.danger { background: var(--danger-light); color: var(--danger); }
-        .modal-header .icon.warning { background: var(--warning-light); color: #b7950b; }
-        .modal-header .icon.purple { background: var(--purple-light); color: var(--purple); }
-        .modal-header .icon.orange { background: var(--orange-light); color: var(--orange); }
+        .modal-header .icon.success {
+            background: var(--success-light);
+            color: var(--success);
+        }
+        .modal-header .icon.danger {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+        .modal-header .icon.warning {
+            background: var(--warning-light);
+            color: #b7950b;
+        }
+        .modal-header .icon.purple {
+            background: var(--purple-light);
+            color: var(--purple);
+        }
+        .modal-header .icon.orange {
+            background: var(--orange-light);
+            color: var(--orange);
+        }
         .modal-header .title {
             font-size: 18px;
             font-weight: 800;
@@ -390,7 +809,9 @@
             border-bottom: 1px solid var(--border-light);
             font-size: 15px;
         }
-        .modal-body .detail-row:last-child { border-bottom: none; }
+        .modal-body .detail-row:last-child {
+            border-bottom: none;
+        }
         .modal-body .detail-row .label {
             color: var(--text-secondary);
             font-weight: 500;
@@ -399,8 +820,12 @@
             color: var(--text-primary);
             font-weight: 700;
         }
-        .modal-body .detail-row .value.highlight { color: var(--accent); }
-        .modal-body .detail-row .value.danger { color: var(--danger); }
+        .modal-body .detail-row .value.highlight {
+            color: var(--accent);
+        }
+        .modal-body .detail-row .value.danger {
+            color: var(--danger);
+        }
         .modal-footer {
             padding: 12px 24px 20px;
             display: flex;
@@ -416,101 +841,39 @@
             background: var(--bg-input);
             color: var(--text-primary);
         }
-        .modal-footer .btn-cancel:hover { background: var(--border); }
+        .modal-footer .btn-cancel:hover {
+            background: var(--border);
+        }
         .modal-footer .btn-confirm-success {
             background: var(--success);
             color: white;
         }
-        .modal-footer .btn-confirm-success:hover { background: #00a381; }
+        .modal-footer .btn-confirm-success:hover {
+            background: #00a381;
+        }
         .modal-footer .btn-confirm-danger {
             background: var(--danger);
             color: white;
         }
-        .modal-footer .btn-confirm-danger:hover { background: #c0392b; }
+        .modal-footer .btn-confirm-danger:hover {
+            background: #c0392b;
+        }
         .modal-footer .btn-confirm-purple {
             background: var(--purple);
             color: white;
         }
-        .modal-footer .btn-confirm-purple:hover { background: #7d3c98; }
+        .modal-footer .btn-confirm-purple:hover {
+            background: #7d3c98;
+        }
         .modal-footer .btn-confirm-orange {
             background: var(--orange);
             color: white;
         }
-        .modal-footer .btn-confirm-orange:hover { background: #d35400; }
-
-        .invest-card {
-            background: var(--bg-card);
-            border-radius: var(--radius-sm);
-            padding: 14px;
-            margin-bottom: 12px;
-            border: 1px solid var(--border);
-            transition: var(--transition);
-        }
-        .invest-card:hover { border-color: var(--accent-light); }
-        .invest-card .invest-user { font-weight: 700; color: var(--accent); }
-        .invest-card .invest-details { font-size: 14px; color: var(--text-secondary); margin: 6px 0; }
-        .invest-card .invest-details .detail-row { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px dashed var(--border-light); }
-        .invest-card .invest-details .detail-row:last-child { border-bottom: none; }
-        .invest-card .invest-details .label { color: var(--text-muted); font-weight: 500; }
-        .invest-card .invest-details .value { font-weight: 700; color: var(--text-primary); }
-        .invest-card .invest-details .value.highlight { color: var(--accent); }
-        .invest-card .invest-details .value.profit { color: var(--success); }
-        .invest-card .invest-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-        .invest-card .invest-actions .btn { padding: 6px 14px; font-size: 12px; width: auto; }
-        .invest-badge {
-            display: inline-block;
-            padding: 2px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            background: var(--info-light);
-            color: var(--info);
+        .modal-footer .btn-confirm-orange:hover {
+            background: #d35400;
         }
 
-        .user-protect-card {
-            background: var(--bg-card);
-            border-radius: var(--radius-sm);
-            padding: 14px;
-            margin-bottom: 12px;
-            border: 1px solid var(--border);
-            transition: var(--transition);
-        }
-        .user-protect-card:hover { border-color: var(--accent-light); }
-        .user-protect-card .user-name { font-weight: 700; color: var(--accent); }
-        .user-protect-card .user-details { font-size: 14px; color: var(--text-secondary); margin: 4px 0; }
-        .user-protect-card .user-details .id-wrapper {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            background: var(--bg-input);
-            padding: 2px 8px 2px 4px;
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--border);
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-primary);
-            direction: ltr;
-        }
-        .user-protect-card .user-details .id-wrapper .id-text {
-            font-family: monospace;
-            letter-spacing: 0.5px;
-        }
-        .user-protect-card .user-actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
-        .user-protect-card .user-actions .btn { padding: 5px 12px; font-size: 11px; width: auto; }
-
-        .match-card {
-            background: var(--bg-card);
-            border-radius: var(--radius-sm);
-            padding: 14px;
-            margin-bottom: 12px;
-            border: 1px solid var(--border);
-            transition: var(--transition);
-        }
-        .match-card:hover { border-color: var(--orange); }
-        .match-card .match-details { font-size: 14px; color: var(--text-secondary); margin: 4px 0; }
-        .match-card .match-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
-        .match-card .match-actions .btn { padding: 6px 14px; font-size: 12px; width: auto; }
-
+        /* ===== ERROR BOX ===== */
         .error-box {
             background: var(--danger-light);
             border: 2px solid var(--danger);
@@ -542,60 +905,24 @@
             text-decoration: underline;
             cursor: pointer;
         }
-
-        /* ===== إضافة تنسيق شريط البحث ===== */
-        .search-bar {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-        .search-bar input {
-            flex: 1;
-            padding: 10px 14px;
-            border: 2px solid var(--border);
-            border-radius: var(--radius-sm);
-            font-family: inherit;
-            font-size: 14px;
-            background: var(--bg-input);
-            color: var(--text-primary);
-            transition: var(--transition);
-        }
-        .search-bar input:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-glow);
-            background: var(--bg-card);
-        }
-        .search-bar .btn {
-            width: auto;
-            padding: 10px 20px;
-            font-size: 14px;
-        }
-        .search-bar .btn-clear {
-            background: var(--bg-input);
-            color: var(--text-secondary);
-            border: 1px solid var(--border);
-        }
-        .search-bar .btn-clear:hover {
-            background: var(--border);
-        }
     </style>
 </head>
+
 <body>
 
     <div class="app-container">
-        <!-- HEADER -->
+
+        <!-- ===== HEADER ===== -->
         <header class="app-header">
             <div class="logo"><i class="fas fa-shield-alt"></i> لوحة الإدارة</div>
             <div class="header-actions">
-                <button onclick="toggleTheme()" class="theme-toggle" id="themeToggle">
-                    <i class="fas fa-moon"></i>
-                </button>
+                <button onclick="toggleTheme()" id="themeToggle"><i class="fas fa-moon"></i></button>
             </div>
         </header>
 
-        <!-- ===== المحتوى الرئيسي ===== -->
+        <!-- ===== ADMIN PANEL ===== -->
         <div id="adminPanel">
+
             <!-- تبويب الرئيسية -->
             <div id="tab-home" class="tab-content active">
                 <div class="stats-bar">
@@ -609,21 +936,23 @@
                         <span class="stat-value" id="totalPlatformBalance">0</span>
                     </div>
                 </div>
+
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
-                    <i class="fas fa-home text-accent"></i> الرئيسية
+                    <i class="fas fa-home" style="color:var(--accent);"></i> الرئيسية
                 </h2>
+
                 <div class="card" style="border:2px solid var(--info);">
                     <div class="card-header">
-                        <div class="card-title"><i class="fas fa-bolt text-info"></i> تأكيد إيداع تلقائي (DZD)</div>
+                        <div class="card-title"><i class="fas fa-bolt" style="color:var(--info);"></i> تأكيد إيداع تلقائي (DZD)</div>
                         <span class="status status-info">أتمتة</span>
                     </div>
                     <div class="input-group">
                         <label>رقم العملية <span class="required">*</span></label>
-                        <input type="text" id="autoTxId" placeholder="أدخل رقم العملية كما في الطلب">
+                        <input type="text" id="autoTxId" placeholder="أدخل رقم العملية كما في الطلب" />
                     </div>
                     <div class="input-group">
                         <label>المبلغ (DZD) <span class="required">*</span></label>
-                        <input type="number" id="autoAmount" placeholder="أدخل المبلغ المستلم" step="0.01" min="0.01">
+                        <input type="number" id="autoAmount" placeholder="أدخل المبلغ المستلم" step="0.01" min="0.01" />
                     </div>
                     <button class="btn btn-info" onclick="autoConfirmDeposit()" style="color:white;">
                         <i class="fas fa-check-circle"></i> تأكيد تلقائي
@@ -634,21 +963,16 @@
                 </div>
             </div>
 
-            <!-- تبويب الحماية (مع شريط بحث) -->
+            <!-- تبويب الحماية -->
             <div id="tab-protect" class="tab-content">
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
-                    <i class="fas fa-shield-alt text-danger"></i> الحماية وإدارة المستخدمين
+                    <i class="fas fa-shield-alt" style="color:var(--danger);"></i> الحماية وإدارة المستخدمين
                 </h2>
 
-                <!-- ===== شريط البحث ===== -->
                 <div class="search-bar">
-                    <input type="text" id="protectSearchInput" placeholder="بحث بواسطة UID..." aria-label="بحث عن مستخدمين">
-                    <button class="btn btn-primary btn-sm" onclick="searchProtectUsers()">
-                        <i class="fas fa-search"></i> بحث
-                    </button>
-                    <button class="btn btn-sm btn-clear" onclick="clearProtectSearch()">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <input type="text" id="protectSearchInput" placeholder="بحث بواسطة UID..." />
+                    <button class="btn btn-primary btn-sm" onclick="searchProtectUsers()"><i class="fas fa-search"></i> بحث</button>
+                    <button class="btn btn-sm btn-clear" onclick="clearProtectSearch()"><i class="fas fa-times"></i></button>
                 </div>
 
                 <div id="usersProtectList">
@@ -659,11 +983,12 @@
                 </div>
             </div>
 
-            <!-- تبويب الاستثمارات (مع شريط البحث) -->
+            <!-- تبويب الاستثمارات -->
             <div id="tab-investments" class="tab-content">
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
-                    <i class="fas fa-chart-line text-accent"></i> الاستثمارات
+                    <i class="fas fa-chart-line" style="color:var(--accent);"></i> الاستثمارات
                 </h2>
+
                 <div class="stats-bar" style="margin-bottom:16px;">
                     <div class="stat-item">
                         <span class="stat-label"><i class="fas fa-user-check"></i> عدد المستثمرين</span>
@@ -676,15 +1001,10 @@
                     </div>
                 </div>
 
-                <!-- ===== شريط البحث ===== -->
                 <div class="search-bar">
-                    <input type="text" id="investorSearchInput" placeholder="بحث بواسطة UID..." aria-label="بحث عن مستثمر">
-                    <button class="btn btn-primary btn-sm" onclick="searchInvestors()">
-                        <i class="fas fa-search"></i> بحث
-                    </button>
-                    <button class="btn btn-sm btn-clear" onclick="clearInvestorSearch()">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <input type="text" id="investorSearchInput" placeholder="بحث بواسطة UID..." />
+                    <button class="btn btn-primary btn-sm" onclick="searchInvestors()"><i class="fas fa-search"></i> بحث</button>
+                    <button class="btn btn-sm btn-clear" onclick="clearInvestorSearch()"><i class="fas fa-times"></i></button>
                 </div>
 
                 <div id="investorsList">
@@ -695,22 +1015,17 @@
                 </div>
             </div>
 
-            <!-- تبويب طلبات السحب (مع شريط بحث) -->
+            <!-- تبويب طلبات السحب -->
             <div id="tab-withdrawals" class="tab-content">
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
-                    <i class="fas fa-arrow-up text-danger"></i> طلبات السحب المعلقة
+                    <i class="fas fa-arrow-up" style="color:var(--danger);"></i> طلبات السحب المعلقة
                     <span id="withdrawalsBadgeCount" class="status status-pending" style="margin-right:8px;">0</span>
                 </h2>
 
-                <!-- ===== شريط البحث ===== -->
                 <div class="search-bar">
-                    <input type="text" id="withdrawalSearchInput" placeholder="بحث بواسطة UID..." aria-label="بحث عن طلبات سحب">
-                    <button class="btn btn-primary btn-sm" onclick="searchWithdrawals()">
-                        <i class="fas fa-search"></i> بحث
-                    </button>
-                    <button class="btn btn-sm btn-clear" onclick="clearWithdrawalsSearch()">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <input type="text" id="withdrawalSearchInput" placeholder="بحث بواسطة UID..." />
+                    <button class="btn btn-primary btn-sm" onclick="searchWithdrawals()"><i class="fas fa-search"></i> بحث</button>
+                    <button class="btn btn-sm btn-clear" onclick="clearWithdrawalsSearch()"><i class="fas fa-times"></i></button>
                 </div>
 
                 <div id="adminWithdrawalsList">
@@ -721,22 +1036,17 @@
                 </div>
             </div>
 
-            <!-- تبويب طلبات الإيداع (مع شريط بحث) -->
+            <!-- تبويب طلبات الإيداع -->
             <div id="tab-deposits" class="tab-content">
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
-                    <i class="fas fa-arrow-down text-success"></i> طلبات الإيداع المعلقة
+                    <i class="fas fa-arrow-down" style="color:var(--success);"></i> طلبات الإيداع المعلقة
                     <span id="depositsBadgeCount" class="status status-pending" style="margin-right:8px;">0</span>
                 </h2>
 
-                <!-- ===== شريط البحث ===== -->
                 <div class="search-bar">
-                    <input type="text" id="depositSearchInput" placeholder="بحث بواسطة UID..." aria-label="بحث عن طلبات إيداع">
-                    <button class="btn btn-primary btn-sm" onclick="searchDeposits()">
-                        <i class="fas fa-search"></i> بحث
-                    </button>
-                    <button class="btn btn-sm btn-clear" onclick="clearDepositsSearch()">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <input type="text" id="depositSearchInput" placeholder="بحث بواسطة UID..." />
+                    <button class="btn btn-primary btn-sm" onclick="searchDeposits()"><i class="fas fa-search"></i> بحث</button>
+                    <button class="btn btn-sm btn-clear" onclick="clearDepositsSearch()"><i class="fas fa-times"></i></button>
                 </div>
 
                 <div id="adminDepositsList">
@@ -747,22 +1057,17 @@
                 </div>
             </div>
 
-            <!-- تبويب المطابقات (مع شريط بحث) -->
+            <!-- تبويب المطابقات -->
             <div id="tab-matches" class="tab-content">
                 <h2 style="font-size:22px;font-weight:900;margin-bottom:16px;">
-                    <i class="fas fa-link text-orange"></i> طلبات المطابقة المحفوظة
+                    <i class="fas fa-link" style="color:var(--orange);"></i> طلبات المطابقة المحفوظة
                     <span id="pendingMatchesCount" class="status status-match">0</span>
                 </h2>
 
-                <!-- ===== شريط البحث ===== -->
                 <div class="search-bar">
-                    <input type="text" id="matchesSearchInput" placeholder="بحث برقم العملية..." aria-label="بحث عن طلبات مطابقة">
-                    <button class="btn btn-primary btn-sm" onclick="searchMatches()">
-                        <i class="fas fa-search"></i> بحث
-                    </button>
-                    <button class="btn btn-sm btn-clear" onclick="clearMatchesSearch()">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <input type="text" id="matchesSearchInput" placeholder="بحث برقم العملية..." />
+                    <button class="btn btn-primary btn-sm" onclick="searchMatches()"><i class="fas fa-search"></i> بحث</button>
+                    <button class="btn btn-sm btn-clear" onclick="clearMatchesSearch()"><i class="fas fa-times"></i></button>
                 </div>
 
                 <div id="pendingMatchesList">
@@ -772,9 +1077,10 @@
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- رسالة عدم صلاحية -->
+        </div><!-- /adminPanel -->
+
+        <!-- ===== UNAUTHORIZED ===== -->
         <div id="unauthorizedMessage" style="display:none;">
             <i class="fas fa-lock"></i>
             <h2>غير مصرح</h2>
@@ -783,40 +1089,35 @@
                 <i class="fas fa-arrow-right"></i> العودة إلى التطبيق
             </button>
         </div>
-    </div>
 
-    <!-- ===== شريط التنقل السفلي (6 أزرار) ===== -->
+    </div><!-- /app-container -->
+
+    <!-- ===== BOTTOM NAV ===== -->
     <nav class="bottom-nav" id="bottomNav">
         <button class="nav-item active" data-tab="tab-home" onclick="switchTab('tab-home')">
-            <i class="fas fa-home"></i>
-            <span>الرئيسية</span>
+            <i class="fas fa-home"></i><span>الرئيسية</span>
         </button>
         <button class="nav-item" data-tab="tab-protect" onclick="switchTab('tab-protect')">
-            <i class="fas fa-shield-alt"></i>
-            <span>الحماية</span>
+            <i class="fas fa-shield-alt"></i><span>الحماية</span>
         </button>
         <button class="nav-item" data-tab="tab-investments" onclick="switchTab('tab-investments')">
-            <i class="fas fa-chart-line"></i>
-            <span>الاستثمارات</span>
+            <i class="fas fa-chart-line"></i><span>الاستثمارات</span>
         </button>
         <button class="nav-item" data-tab="tab-withdrawals" onclick="switchTab('tab-withdrawals')">
-            <i class="fas fa-arrow-up"></i>
-            <span>السحب</span>
+            <i class="fas fa-arrow-up"></i><span>السحب</span>
             <span class="badge" id="withdrawalsBadge">0</span>
         </button>
         <button class="nav-item" data-tab="tab-deposits" onclick="switchTab('tab-deposits')">
-            <i class="fas fa-arrow-down"></i>
-            <span>الإيداع</span>
+            <i class="fas fa-arrow-down"></i><span>الإيداع</span>
             <span class="badge" id="depositsBadge">0</span>
         </button>
         <button class="nav-item" data-tab="tab-matches" onclick="switchTab('tab-matches')">
-            <i class="fas fa-link"></i>
-            <span>المطابقات</span>
+            <i class="fas fa-link"></i><span>المطابقات</span>
             <span class="badge" id="matchesBadge">0</span>
         </button>
     </nav>
 
-    <!-- ===== نافذة التأكيد المتطورة ===== -->
+    <!-- ===== MODAL ===== -->
     <div class="modal-overlay" id="confirmModal">
         <div class="modal-box">
             <div class="modal-header">
@@ -831,10 +1132,13 @@
         </div>
     </div>
 
+    <!-- ============================================================= -->
+    <!-- ===== JAVASCRIPT ===== -->
+    <!-- ============================================================= -->
     <script>
-        // ============================================================
+        // ================================================================
         // 1. FIREBASE CONFIG
-        // ============================================================
+        // ================================================================
         const firebaseConfig = {
             apiKey: "AIzaSyDCF0h_UPivX8oGoQL8Dn1s0lr79VAXpMY",
             authDomain: "crynova-4d6b3.firebaseapp.com",
@@ -843,43 +1147,37 @@
             messagingSenderId: "858898515024",
             appId: "1:858898515024:web:03827d57c2737bbc27bd55"
         };
-
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // ============================================================
+        // ================================================================
         // 2. STATE
-        // ============================================================
-        let userData = null;
+        // ================================================================
         let isAdmin = false;
-        let unsubscribeUsers = null;
-        let unsubscribeMatches = null;
         let modalCallback = null;
         let lastError = null;
 
-        // متغيرات خاصة بالبحث في الاستثمارات
         let allInvestors = [];
-        let currentFilter = '';
+        let investorFilter = '';
 
-        // متغيرات خاصة بالبحث في طلبات السحب
         let allPendingWithdrawals = [];
         let withdrawalsFilter = '';
 
-        // متغيرات خاصة بالبحث في طلبات الإيداع
         let allPendingDeposits = [];
         let depositsFilter = '';
 
-        // متغيرات خاصة بالبحث في صفحة الحماية
         let allProtectUsers = [];
         let protectFilter = '';
 
-        // متغيرات خاصة بالبحث في المطابقات
         let allMatches = [];
         let matchesFilter = '';
 
-        // ============================================================
-        // 3. دوال مساعدة
-        // ============================================================
+        let unsubscribeUsers = null;
+        let unsubscribeMatches = null;
+
+        // ================================================================
+        // 3. HELPERS
+        // ================================================================
         function formatDateTime(timestamp) {
             if (!timestamp) return '--';
             const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -888,13 +1186,12 @@
 
         function copyText(text, buttonElement) {
             if (!text) { showToast('لا يوجد نص للنسخ'); return; }
+            const doCopy = () => {
+                showToast('تم النسخ');
+                animateCopyButton(buttonElement);
+            };
             if (navigator.clipboard) {
-                navigator.clipboard.writeText(text).then(() => {
-                    showToast('تم النسخ');
-                    animateCopyButton(buttonElement);
-                }).catch(() => {
-                    fallbackCopy(text, buttonElement);
-                });
+                navigator.clipboard.writeText(text).then(doCopy).catch(() => fallbackCopy(text, buttonElement));
             } else {
                 fallbackCopy(text, buttonElement);
             }
@@ -909,61 +1206,61 @@
                 document.execCommand('copy');
                 showToast('تم النسخ');
                 animateCopyButton(buttonElement);
-            } catch (e) {
+            } catch (_) {
                 showToast('فشل النسخ');
             }
             ta.remove();
         }
 
-        function animateCopyButton(button) {
-            if (!button) return;
-            button.classList.add('copied');
-            const icon = button.querySelector('i');
+        function animateCopyButton(btn) {
+            if (!btn) return;
+            btn.classList.add('copied');
+            const icon = btn.querySelector('i');
             if (icon) icon.className = 'fas fa-check';
-            const textSpan = button.querySelector('.icon-text');
+            const textSpan = btn.querySelector('.icon-text');
             if (textSpan) textSpan.textContent = 'تم';
             setTimeout(() => {
-                button.classList.remove('copied');
+                btn.classList.remove('copied');
                 if (icon) icon.className = 'fas fa-copy';
                 if (textSpan) textSpan.textContent = 'نسخ';
             }, 1500);
         }
 
         function showToast(msg, isError = false) {
-            const t = document.createElement('div');
-            const bgColor = isError ? 'var(--danger)' : 'var(--accent)';
-            t.style.cssText = `
+            const el = document.createElement('div');
+            el.style.cssText = `
                 position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
-                background: ${bgColor}; color: #fff; padding: 12px 24px;
-                border-radius: 30px; font-weight: 700; z-index: 9999;
+                background: ${isError ? 'var(--danger)' : 'var(--accent)'}; color: #fff;
+                padding: 12px 24px; border-radius: 30px; font-weight: 700; z-index: 9999;
                 box-shadow: var(--shadow-lg); font-family: 'Cairo', sans-serif;
                 max-width: 90%; text-align: center;
             `;
-            t.textContent = msg;
-            document.body.appendChild(t);
+            el.textContent = msg;
+            document.body.appendChild(el);
             setTimeout(() => {
-                t.style.opacity = '0';
-                t.style.transition = 'opacity 0.3s';
-                setTimeout(() => t.remove(), 300);
+                el.style.opacity = '0';
+                el.style.transition = 'opacity 0.3s';
+                setTimeout(() => el.remove(), 300);
             }, 5000);
         }
 
         function showMatchError(error) {
             const container = document.getElementById('pendingMatchesList');
-            const errorMsg = error?.message || 'خطأ غير معروف';
-            const errorCode = error?.code || '';
-            let linkHtml = '';
-            if (errorCode === 'failed-precondition' && errorMsg.includes('index')) {
+            const msg = error?.message || 'خطأ غير معروف';
+            const code = error?.code || '';
+            let link = '';
+            if (code === 'failed-precondition' && msg.includes('index')) {
                 const projectId = firebaseConfig.projectId;
-                const indexUrl = `https://console.firebase.google.com/project/${projectId}/firestore/indexes?create_composite=ClJwcm9qZWN0cy9jcnlub3ZhLTRkNmIzL2RhdGFiYXNlcy8oZGVmYXVsdCkvY29sbGVjdGlvbkdyb3Vwcy9wZW5kaW5nX2RlcG9zaXRfbWF0Y2hlcy9pbmRleGVzL18QARoLCgZzdGF0dXMSAQESDAoIY3JlYXRlZEF0EAEaDAoIX19uYW1lX18QAQ`;
-                linkHtml = `<a href="${indexUrl}" target="_blank" class="error-link">🔗 اضغط هنا لإنشاء الفهرس المطلوب</a>`;
+                const idxUrl =
+                    `https://console.firebase.google.com/project/${projectId}/firestore/indexes?create_composite=ClJwcm9qZWN0cy9jcnlub3ZhLTRkNmIzL2RhdGFiYXNlcy8oZGVmYXVsdCkvY29sbGVjdGlvbkdyb3Vwcy9wZW5kaW5nX2RlcG9zaXRfbWF0Y2hlcy9pbmRleGVzL18QARoLCgZzdGF0dXMSAQESDAoIY3JlYXRlZEF0EAEaDAoIX19uYW1lX18QAQ`;
+                link = `<a href="${idxUrl}" target="_blank" class="error-link">🔗 اضغط هنا لإنشاء الفهرس المطلوب</a>`;
             }
             container.innerHTML = `
                 <div class="error-box">
                     <i class="fas fa-exclamation-triangle"></i>
                     <div style="font-weight:700;color:var(--danger);">خطأ في تحميل طلبات المطابقة</div>
-                    <div class="error-detail">${errorMsg}</div>
-                    ${linkHtml}
+                    <div class="error-detail">${msg}</div>
+                    ${link}
                     <div style="margin-top:12px;font-size:13px;color:var(--text-muted);">
                         <i class="fas fa-info-circle"></i> سيتم تحديث القائمة تلقائياً عند إضافة طلب جديد.
                     </div>
@@ -971,11 +1268,11 @@
             `;
         }
 
-        // ============================================================
-        // 4. نافذة التأكيد
-        // ============================================================
-        function showConfirmDialog(options) {
-            const defaultOptions = {
+        // ================================================================
+        // 4. MODAL
+        // ================================================================
+        function showConfirmDialog(opts = {}) {
+            const defaults = {
                 title: 'تأكيد العملية',
                 icon: 'question-circle',
                 type: 'success',
@@ -985,46 +1282,44 @@
                 onConfirm: null,
                 onCancel: null
             };
-            const opts = { ...defaultOptions, ...options };
+            const options = { ...defaults, ...opts };
 
             const iconMap = {
-                'success': { class: 'success', icon: 'fa-check-circle' },
-                'danger': { class: 'danger', icon: 'fa-times-circle' },
-                'warning': { class: 'warning', icon: 'fa-exclamation-triangle' },
-                'purple': { class: 'purple', icon: 'fa-snowflake' },
-                'orange': { class: 'orange', icon: 'fa-lock' }
+                success: { class: 'success', icon: 'fa-check-circle' },
+                danger: { class: 'danger', icon: 'fa-times-circle' },
+                warning: { class: 'warning', icon: 'fa-exclamation-triangle' },
+                purple: { class: 'purple', icon: 'fa-snowflake' },
+                orange: { class: 'orange', icon: 'fa-lock' }
             };
-            const iconData = iconMap[opts.type] || iconMap['warning'];
+            const iconData = iconMap[options.type] || iconMap.warning;
             document.getElementById('modalIcon').className = `icon ${iconData.class}`;
             document.getElementById('modalIcon').innerHTML = `<i class="fas ${iconData.icon}"></i>`;
-
-            document.getElementById('modalTitle').textContent = opts.title;
+            document.getElementById('modalTitle').textContent = options.title;
 
             const body = document.getElementById('modalBody');
             body.innerHTML = '';
-            opts.details.forEach(detail => {
+            options.details.forEach(d => {
                 const row = document.createElement('div');
                 row.className = 'detail-row';
                 const label = document.createElement('span');
                 label.className = 'label';
-                label.textContent = detail.label;
+                label.textContent = d.label;
                 const value = document.createElement('span');
-                value.className = `value ${detail.highlight ? 'highlight' : ''} ${detail.danger ? 'danger' : ''}`;
-                value.textContent = detail.value;
+                value.className = `value ${d.highlight ? 'highlight' : ''} ${d.danger ? 'danger' : ''}`;
+                value.textContent = d.value;
                 row.appendChild(label);
                 row.appendChild(value);
                 body.appendChild(row);
             });
 
             const confirmBtn = document.getElementById('confirmBtn');
-            confirmBtn.textContent = opts.confirmText;
-            confirmBtn.className = `btn btn-confirm-${opts.type}`;
+            confirmBtn.textContent = options.confirmText;
+            confirmBtn.className = `btn btn-confirm-${options.type}`;
 
             modalCallback = {
-                onConfirm: opts.onConfirm || null,
-                onCancel: opts.onCancel || null
+                onConfirm: options.onConfirm || null,
+                onCancel: options.onCancel || null
             };
-
             document.getElementById('confirmModal').classList.add('active');
         }
 
@@ -1034,24 +1329,20 @@
         }
 
         function confirmAction() {
-            if (modalCallback && modalCallback.onConfirm) {
-                modalCallback.onConfirm();
-            }
+            if (modalCallback?.onConfirm) modalCallback.onConfirm();
             closeModal();
         }
 
         function cancelAction() {
-            if (modalCallback && modalCallback.onCancel) {
-                modalCallback.onCancel();
-            }
+            if (modalCallback?.onCancel) modalCallback.onCancel();
             closeModal();
         }
 
-        // ============================================================
-        // 5. التحقق من صلاحية الأدمن
-        // ============================================================
+        // ================================================================
+        // 5. AUTH & ADMIN CHECK
+        // ================================================================
         function getTelegramUser() {
-            if (window.Telegram && window.Telegram.WebApp) {
+            if (window.Telegram?.WebApp) {
                 const tg = window.Telegram.WebApp;
                 tg.expand();
                 return tg.initDataUnsafe?.user || null;
@@ -1077,16 +1368,8 @@
                         displayName: displayName || 'مستخدم',
                         joinDate: firebase.firestore.FieldValue.serverTimestamp(),
                         status: 'active',
-                        wallets: {
-                            dzd: 0,
-                            dzdLocked: 0,
-                            dzdReferral: 0,
-                            dzdReward: 0,
-                            locked: 0,
-                            main: 0,
-                            referral: 0,
-                            reward: 0
-                        },
+                        wallets: { dzd: 0, dzdLocked: 0, dzdReferral: 0, dzdReward: 0, locked: 0, main: 0, referral: 0,
+                            reward: 0 },
                         miningData: {
                             currentPackage: null,
                             totalMined: 0,
@@ -1095,11 +1378,8 @@
                             totalInvested: 0,
                             totalInvestmentReturns: 0,
                             level: 0,
-                            miningHistory: {
-                                today: 0, todayDZD: 0,
-                                thisWeek: 0, thisWeekDZD: 0,
-                                thisMonth: 0, thisMonthDZD: 0
-                            }
+                            miningHistory: { today: 0, todayDZD: 0, thisWeek: 0, thisWeekDZD: 0, thisMonth: 0,
+                                thisMonthDZD: 0 }
                         },
                         transactions: [],
                         referrals: [],
@@ -1112,14 +1392,11 @@
                 const adminDoc = await db.collection('admins').doc(uid).get();
                 if (adminDoc.exists) {
                     isAdmin = true;
-                    userData = (await db.collection('users').doc(uid).get()).data();
-                    userData.telegramId = uid;
-
-                    listenToUsers();
-                    listenToMatches();
                     document.getElementById('unauthorizedMessage').style.display = 'none';
                     document.getElementById('adminPanel').style.display = 'block';
                     document.getElementById('bottomNav').style.display = 'flex';
+                    listenToUsers();
+                    listenToMatches();
                 } else {
                     document.getElementById('unauthorizedMessage').style.display = 'block';
                     document.getElementById('adminPanel').style.display = 'none';
@@ -1133,108 +1410,305 @@
             }
         }
 
-        // ============================================================
-        // 6. الاستماع لطلبات المطابقة (بدون orderBy)
-        // ============================================================
+        // ================================================================
+        // 6. LISTENERS
+        // ================================================================
         function listenToMatches() {
             if (unsubscribeMatches) unsubscribeMatches();
-
-            console.log('🔄 بدء الاستماع لطلبات المطابقة...');
             try {
                 unsubscribeMatches = db.collection('pending_deposit_matches')
                     .where('status', '==', 'pending')
                     .onSnapshot((snapshot) => {
-                        console.log(`📦 تم استلام ${snapshot.size} طلب مطابقة`);
                         const matches = [];
                         snapshot.forEach(doc => {
-                            const data = doc.data();
-                            console.log('📄 المستند:', doc.id, data);
-                            matches.push({ id: doc.id, ...data });
+                            matches.push({ id: doc.id, ...doc.data() });
                         });
                         matches.sort((a, b) => {
                             const da = a.createdAt?.toDate?.() || new Date(0);
                             const db2 = b.createdAt?.toDate?.() || new Date(0);
                             return db2 - da;
                         });
-                        // تخزين القائمة الكاملة للبحث
                         allMatches = matches;
-                        // عرض مع تطبيق الفلتر الحالي
                         renderMatchesWithFilter();
-                        document.getElementById('matchesBadge').textContent = matches.length;
-                        document.getElementById('pendingMatchesCount').textContent = matches.length;
-                        if (matches.length === 0) {
-                            document.getElementById('matchesBadge').classList.add('hidden');
-                        } else {
-                            document.getElementById('matchesBadge').classList.remove('hidden');
-                        }
+                        const count = matches.length;
+                        document.getElementById('matchesBadge').textContent = count;
+                        document.getElementById('pendingMatchesCount').textContent = count;
+                        document.getElementById('matchesBadge').classList.toggle('hidden', count === 0);
                         lastError = null;
                     }, (error) => {
-                        console.error('❌ خطأ في الاستماع لطلبات المطابقة:', error);
+                        console.error('Match listener error:', error);
                         lastError = error;
                         allMatches = [];
                         renderMatchesWithFilter();
                         showMatchError(error);
                         showToast('❌ خطأ في تحميل طلبات المطابقة: ' + error.message, true);
                     });
-            } catch (error) {
-                console.error('❌ خطأ غير متوقع:', error);
-                lastError = error;
+            } catch (e) {
+                console.error(e);
+                lastError = e;
                 allMatches = [];
                 renderMatchesWithFilter();
-                showMatchError(error);
-                showToast('❌ خطأ غير متوقع: ' + error.message, true);
+                showMatchError(e);
+                showToast('❌ خطأ غير متوقع: ' + e.message, true);
             }
         }
 
-        // دالة التحديث (تُستدعى بعد حفظ أو حذف طلب)
         function refreshMatches() {
-            // إعادة تشغيل المستمع لتحديث البيانات
             if (unsubscribeMatches) unsubscribeMatches();
             listenToMatches();
         }
 
-        // ============================================================
-        // 7. عرض طلبات المطابقة مع فلتر
-        // ============================================================
+        function listenToUsers() {
+            if (unsubscribeUsers) unsubscribeUsers();
+            unsubscribeUsers = db.collection('users').onSnapshot(async (snapshot) => {
+                let totalUsers = 0,
+                    totalBalance = 0,
+                    totalMinedSum = 0;
+                const investors = [];
+                const allUsers = [];
+                const pendingWithdrawals = [];
+                const pendingDeposits = [];
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const uid = doc.id;
+                    const displayName = data.displayName || uid;
+                    totalUsers++;
+                    const dzd = data.wallets?.dzd || 0;
+                    totalBalance += dzd;
+                    allUsers.push({ uid, displayName, status: data.status || 'active', dzd, docId: doc.id });
+
+                    const investments = data.investments || [];
+                    if (investments.length > 0) {
+                        let totalInvested = 0,
+                            totalReturns = 0,
+                            planName = '';
+                        investments.forEach(inv => {
+                            totalInvested += inv.amount || inv.amountInDZD || 0;
+                            totalReturns += inv.totalReturn || 0;
+                            if (inv.status === 'active' && inv.planName) planName = inv.planName;
+                        });
+                        if (!planName) {
+                            const planMap = {
+                                plan_basic: 'الباقة الأساسية',
+                                plan_advanced: 'الباقة المتقدمة',
+                                plan_premium: 'الباقة المميزة',
+                                plan_pro: 'الباقة الاحترافية',
+                                plan_pro_plus: 'الباقة الاحترافية بلس'
+                            };
+                            const first = investments[0];
+                            planName = planMap[first.planId] || (first.planId ? `الخطة: ${first.planId}` : 'مستثمر');
+                        }
+                        const profitRatio = totalInvested > 0 ? (totalReturns / totalInvested) * 100 : 0;
+                        investors.push({
+                            uid,
+                            displayName,
+                            package: planName,
+                            totalInvested,
+                            totalReturns,
+                            profitRatio,
+                            currentBalance: dzd,
+                            docId: doc.id,
+                            investments,
+                            miningData: data.miningData || {}
+                        });
+                        totalMinedSum += totalReturns;
+                    }
+
+                    if (data.withdrawals) {
+                        data.withdrawals.forEach(w => {
+                            if (w.status === 'pending') {
+                                pendingWithdrawals.push({ ...w, uid, userDisplayName: displayName, docId: doc
+                                        .id });
+                            }
+                        });
+                    }
+                    if (data.deposits) {
+                        data.deposits.forEach(d => {
+                            if (d.status === 'pending') {
+                                pendingDeposits.push({ ...d, uid, userDisplayName: displayName, docId: doc
+                                        .id });
+                            }
+                        });
+                    }
+                });
+
+                allInvestors = investors;
+                allProtectUsers = allUsers;
+
+                document.getElementById('totalUsers').textContent = totalUsers;
+                document.getElementById('totalPlatformBalance').textContent = totalBalance.toFixed(2);
+                document.getElementById('totalInvestors').textContent = investors.length;
+                document.getElementById('totalMinedInvest').textContent = totalMinedSum.toFixed(2);
+
+                renderInvestorsWithFilter();
+                renderProtectUsersWithFilter();
+
+                pendingWithdrawals.sort((a, b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0));
+                allPendingWithdrawals = pendingWithdrawals;
+                renderWithdrawalsWithFilter();
+
+                pendingDeposits.sort((a, b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0));
+                allPendingDeposits = pendingDeposits;
+                renderDepositsWithFilter();
+
+                updateBadges(pendingWithdrawals.length, pendingDeposits.length);
+
+                // Automatic matching
+                try {
+                    const matchesSnap = await db.collection('pending_deposit_matches')
+                        .where('status', '==', 'pending')
+                        .get();
+                    const matches = [];
+                    matchesSnap.forEach(doc => matches.push({ id: doc.id, ...doc.data() }));
+
+                    pendingDeposits.forEach(d => {
+                        const match = matches.find(m =>
+                            m.transactionId === d.transactionId &&
+                            m.amount === d.amount &&
+                            m.currency === d.currency &&
+                            m.status === 'pending'
+                        );
+                        if (match) {
+                            confirmDepositDirect(d.docId, d.depositId, d.uid, d.userDisplayName, d.amount);
+                            db.collection('pending_deposit_matches').doc(match.id).delete();
+                            refreshMatches();
+                        }
+                    });
+                } catch (e) {
+                    console.warn('Match check error:', e);
+                }
+            }, (error) => {
+                console.error('User listener error:', error);
+                loadFallback();
+            });
+        }
+
+        async function loadFallback() {
+            try {
+                const snap = await db.collection('users').get();
+                let totalUsers = 0,
+                    totalBalance = 0,
+                    totalMinedSum = 0;
+                const investors = [],
+                    allUsers = [],
+                    pendingWithdrawals = [],
+                    pendingDeposits = [];
+
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const uid = doc.id;
+                    const displayName = data.displayName || uid;
+                    totalUsers++;
+                    const dzd = data.wallets?.dzd || 0;
+                    totalBalance += dzd;
+                    allUsers.push({ uid, displayName, status: data.status || 'active', dzd, docId: doc.id });
+
+                    const investments = data.investments || [];
+                    if (investments.length > 0) {
+                        let totalInvested = 0,
+                            totalReturns = 0,
+                            planName = '';
+                        investments.forEach(inv => {
+                            totalInvested += inv.amount || inv.amountInDZD || 0;
+                            totalReturns += inv.totalReturn || 0;
+                            if (inv.status === 'active' && inv.planName) planName = inv.planName;
+                        });
+                        if (!planName) {
+                            const planMap = {
+                                plan_basic: 'الباقة الأساسية',
+                                plan_advanced: 'الباقة المتقدمة',
+                                plan_premium: 'الباقة المميزة',
+                                plan_pro: 'الباقة الاحترافية',
+                                plan_pro_plus: 'الباقة الاحترافية بلس'
+                            };
+                            const first = investments[0];
+                            planName = planMap[first.planId] || (first.planId ? `الخطة: ${first.planId}` : 'مستثمر');
+                        }
+                        const profitRatio = totalInvested > 0 ? (totalReturns / totalInvested) * 100 : 0;
+                        investors.push({
+                            uid,
+                            displayName,
+                            package: planName,
+                            totalInvested,
+                            totalReturns,
+                            profitRatio,
+                            currentBalance: dzd,
+                            docId: doc.id,
+                            investments,
+                            miningData: data.miningData || {}
+                        });
+                        totalMinedSum += totalReturns;
+                    }
+
+                    if (data.withdrawals) {
+                        data.withdrawals.forEach(w => {
+                            if (w.status === 'pending') {
+                                pendingWithdrawals.push({ ...w, uid, userDisplayName: displayName, docId: doc
+                                        .id });
+                            }
+                        });
+                    }
+                    if (data.deposits) {
+                        data.deposits.forEach(d => {
+                            if (d.status === 'pending') {
+                                pendingDeposits.push({ ...d, uid, userDisplayName: displayName, docId: doc
+                                        .id });
+                            }
+                        });
+                    }
+                });
+
+                allInvestors = investors;
+                allProtectUsers = allUsers;
+
+                document.getElementById('totalUsers').textContent = totalUsers;
+                document.getElementById('totalPlatformBalance').textContent = totalBalance.toFixed(2);
+                document.getElementById('totalInvestors').textContent = investors.length;
+                document.getElementById('totalMinedInvest').textContent = totalMinedSum.toFixed(2);
+
+                renderInvestorsWithFilter();
+                renderProtectUsersWithFilter();
+
+                pendingWithdrawals.sort((a, b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0));
+                allPendingWithdrawals = pendingWithdrawals;
+                renderWithdrawalsWithFilter();
+
+                pendingDeposits.sort((a, b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0));
+                allPendingDeposits = pendingDeposits;
+                renderDepositsWithFilter();
+
+                updateBadges(pendingWithdrawals.length, pendingDeposits.length);
+            } catch (e) { console.error(e); }
+        }
+
+        // ================================================================
+        // 7. RENDER FUNCTIONS
+        // ================================================================
         function renderMatchesWithFilter() {
             let filtered = allMatches;
-            if (matchesFilter.trim() !== '') {
-                const filterLower = matchesFilter.trim().toLowerCase();
+            const q = matchesFilter.trim();
+            if (q) {
+                const lower = q.toLowerCase();
                 filtered = allMatches.filter(m =>
-                    m.transactionId.toLowerCase().includes(filterLower) ||
-                    m.amount.toString().includes(filterLower)
+                    m.transactionId?.toLowerCase().includes(lower) ||
+                    m.amount?.toString().includes(lower)
                 );
             }
             renderPendingMatches(filtered);
         }
 
-        // دوال البحث في المطابقات
-        function searchMatches() {
-            const input = document.getElementById('matchesSearchInput');
-            matchesFilter = input.value;
-            renderMatchesWithFilter();
-        }
-
-        function clearMatchesSearch() {
-            document.getElementById('matchesSearchInput').value = '';
-            matchesFilter = '';
-            renderMatchesWithFilter();
-        }
-
-        // ============================================================
-        // 8. عرض طلبات المطابقة (الدالة الأساسية)
-        // ============================================================
-        function renderPendingMatches(matches) {
+        function renderPendingMatches(list) {
             const container = document.getElementById('pendingMatchesList');
             const count = document.getElementById('pendingMatchesCount');
-            count.textContent = matches.length;
+            count.textContent = list.length;
 
-            if (lastError && matches.length === 0 && allMatches.length === 0) {
+            if (lastError && list.length === 0 && allMatches.length === 0) {
                 showMatchError(lastError);
                 return;
             }
 
-            if (!matches.length) {
+            if (!list.length) {
                 container.innerHTML = `
                     <div class="admin-empty">
                         <i class="fas fa-inbox text-muted"></i>
@@ -1244,7 +1718,7 @@
                 return;
             }
 
-            container.innerHTML = matches.map(m => `
+            container.innerHTML = list.map(m => `
                 <div class="match-card">
                     <div class="flex-between">
                         <span style="font-weight:700;color:var(--orange);">
@@ -1269,498 +1743,139 @@
             `).join('');
         }
 
-        // ============================================================
-        // 9. تعديل طلب المطابقة
-        // ============================================================
-        function editMatch(matchId, currentTxId, currentAmount) {
-            const modal = document.getElementById('confirmModal');
-            const body = document.getElementById('modalBody');
-            const header = document.querySelector('.modal-header .title');
-            const icon = document.getElementById('modalIcon');
-            const confirmBtn = document.getElementById('confirmBtn');
-            const cancelBtn = document.querySelector('.modal-footer .btn-cancel');
-
-            icon.className = 'icon warning';
-            icon.innerHTML = '<i class="fas fa-edit"></i>';
-            header.textContent = 'تعديل طلب المطابقة';
-
-            body.innerHTML = `
-                <div style="text-align:center;margin-bottom:12px;">
-                    <p style="color:var(--text-secondary);font-size:14px;margin-bottom:16px;">
-                        قم بتعديل بيانات طلب المطابقة
-                    </p>
-                    <div class="input-group">
-                        <label>رقم العملية <span class="required">*</span></label>
-                        <input type="text" id="editTxId" value="${currentTxId}" placeholder="رقم العملية">
-                    </div>
-                    <div class="input-group">
-                        <label>المبلغ (DZD) <span class="required">*</span></label>
-                        <input type="number" id="editAmount" value="${currentAmount}" placeholder="المبلغ" step="0.01" min="0.01">
-                    </div>
-                </div>
-            `;
-
-            cancelBtn.textContent = 'إلغاء';
-            confirmBtn.textContent = 'حفظ التعديلات';
-            confirmBtn.className = 'btn btn-confirm-success';
-
-            modal.classList.add('active');
-
-            const handleConfirm = () => {
-                const newTxId = document.getElementById('editTxId').value.trim();
-                const newAmount = parseFloat(document.getElementById('editAmount').value);
-                if (!newTxId) { showToast('⚠️ رقم العملية مطلوب'); return; }
-                if (!newAmount || newAmount <= 0) { showToast('⚠️ أدخل مبلغاً صحيحاً'); return; }
-                modal.classList.remove('active');
-                db.collection('pending_deposit_matches').doc(matchId).update({
-                    transactionId: newTxId,
-                    amount: newAmount
-                }).then(() => {
-                    showToast('✅ تم تحديث طلب المطابقة بنجاح');
-                    refreshMatches();
-                }).catch(err => {
-                    showToast('❌ خطأ: '+err.message, true);
-                });
-            };
-
-            const handleCancel = () => {
-                modal.classList.remove('active');
-            };
-
-            confirmBtn.onclick = handleConfirm;
-            cancelBtn.onclick = handleCancel;
-        }
-
-        // ============================================================
-        // 10. حذف طلب المطابقة
-        // ============================================================
-        function deleteMatch(matchId) {
-            showConfirmDialog({
-                title: 'إلغاء طلب المطابقة',
-                icon: 'fa-trash',
-                type: 'danger',
-                details: [
-                    { label: 'الإجراء', value: 'سيتم حذف طلب المطابقة نهائياً' }
-                ],
-                confirmText: 'حذف',
-                onConfirm: async () => {
-                    try {
-                        await db.collection('pending_deposit_matches').doc(matchId).delete();
-                        showToast('✅ تم حذف طلب المطابقة');
-                        refreshMatches();
-                    } catch(e) {
-                        console.error(e);
-                        showToast('❌ خطأ: '+e.message, true);
-                    }
-                }
-            });
-        }
-
-        // ============================================================
-        // 11. الاستماع للمستخدمين
-        // ============================================================
-        function listenToUsers() {
-            if (unsubscribeUsers) unsubscribeUsers();
-
-            unsubscribeUsers = db.collection('users')
-                .onSnapshot(async (snapshot) => {
-                    let totalUsers = 0;
-                    let totalBalance = 0;
-                    let investors = [];
-                    let totalMinedSum = 0;
-                    const allUsers = [];
-
-                    // تجميع قوائم مؤقتة للسحب والإيداع
-                    const pendingWithdrawals = [];
-                    const pendingDeposits = [];
-
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        const uid = doc.id;
-                        const displayName = data.displayName || uid;
-                        totalUsers++;
-                        const dzd = data.wallets?.dzd || 0;
-                        totalBalance += dzd;
-                        allUsers.push({
-                            uid: uid,
-                            displayName: displayName,
-                            status: data.status || 'active',
-                            dzd: dzd,
-                            docId: doc.id
-                        });
-
-                        const investments = data.investments || [];
-                        if (investments.length > 0) {
-                            let totalInvested = 0;
-                            let totalReturns = 0;
-                            let planName = '';
-                            investments.forEach(inv => {
-                                totalInvested += inv.amount || inv.amountInDZD || 0;
-                                totalReturns += inv.totalReturn || 0;
-                                if (inv.status === 'active' && inv.planName) {
-                                    planName = inv.planName;
-                                }
-                            });
-                            if (!planName) {
-                                const planMap = {
-                                    'plan_basic': 'الباقة الأساسية',
-                                    'plan_advanced': 'الباقة المتقدمة',
-                                    'plan_premium': 'الباقة المميزة',
-                                    'plan_pro': 'الباقة الاحترافية',
-                                    'plan_pro_plus': 'الباقة الاحترافية بلس'
-                                };
-                                const first = investments[0];
-                                planName = planMap[first.planId] || (first.planId ? `الخطة: ${first.planId}` : 'مستثمر');
-                            }
-                            let profitRatio = totalInvested > 0 ? (totalReturns / totalInvested) * 100 : 0;
-                            investors.push({
-                                uid: uid,
-                                displayName: displayName,
-                                package: planName,
-                                totalInvested: totalInvested,
-                                totalReturns: totalReturns,
-                                profitRatio: profitRatio,
-                                currentBalance: dzd,
-                                docId: doc.id,
-                                investments: investments,
-                                miningData: data.miningData || {}
-                            });
-                            totalMinedSum += totalReturns;
-                        }
-
-                        // جمع طلبات السحب والإيداع المعلقة
-                        if (data.withdrawals && Array.isArray(data.withdrawals)) {
-                            data.withdrawals.forEach(w => {
-                                if (w.status === 'pending') {
-                                    pendingWithdrawals.push({
-                                        ...w,
-                                        uid: uid,
-                                        userDisplayName: displayName,
-                                        docId: doc.id
-                                    });
-                                }
-                            });
-                        }
-
-                        if (data.deposits && Array.isArray(data.deposits)) {
-                            data.deposits.forEach(d => {
-                                if (d.status === 'pending') {
-                                    pendingDeposits.push({
-                                        ...d,
-                                        uid: uid,
-                                        userDisplayName: displayName,
-                                        docId: doc.id
-                                    });
-                                }
-                            });
-                        }
-                    });
-
-                    // تخزين القائمة الكاملة للمستثمرين
-                    allInvestors = investors;
-
-                    // تخزين قائمة المستخدمين الكاملة للبحث في الحماية
-                    allProtectUsers = allUsers;
-
-                    // تحديث الإحصائيات
-                    document.getElementById('totalUsers').textContent = totalUsers;
-                    document.getElementById('totalPlatformBalance').textContent = totalBalance.toFixed(2);
-                    document.getElementById('totalInvestors').textContent = investors.length;
-                    document.getElementById('totalMinedInvest').textContent = totalMinedSum.toFixed(2);
-
-                    // عرض المستثمرين مع تطبيق الفلتر الحالي
-                    renderInvestorsWithFilter();
-
-                    // عرض المستخدمين في صفحة الحماية مع تطبيق الفلتر الحالي
-                    renderProtectUsersWithFilter();
-
-                    // تخزين طلبات السحب والإيداع للبحث
-                    pendingWithdrawals.sort((a, b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0));
-                    allPendingWithdrawals = pendingWithdrawals;
-                    renderWithdrawalsWithFilter();
-
-                    pendingDeposits.sort((a, b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0));
-                    allPendingDeposits = pendingDeposits;
-                    renderDepositsWithFilter();
-
-                    updateBadges(pendingWithdrawals.length, pendingDeposits.length);
-
-                    // معالجة المطابقات التلقائية (نفس الكود السابق)
-                    try {
-                        const pendingMatchesSnap = await db.collection('pending_deposit_matches')
-                            .where('status', '==', 'pending')
-                            .get();
-                        const pendingMatches = [];
-                        pendingMatchesSnap.forEach(doc => {
-                            pendingMatches.push({ id: doc.id, ...doc.data() });
-                        });
-
-                        // البحث عن مطابقات مع طلبات الإيداع المعلقة
-                        pendingDeposits.forEach(d => {
-                            const match = pendingMatches.find(m =>
-                                m.transactionId === d.transactionId &&
-                                m.amount === d.amount &&
-                                m.currency === d.currency &&
-                                m.status === 'pending'
-                            );
-                            if (match) {
-                                confirmDepositDirect(d.docId, d.depositId, d.uid, d.userDisplayName, d.amount);
-                                db.collection('pending_deposit_matches').doc(match.id).delete();
-                                refreshMatches();
-                            }
-                        });
-                    } catch (e) {
-                        console.warn('⚠️ خطأ في جلب طلبات المطابقة:', e);
-                    }
-
-                }, (error) => {
-                    console.error('❌ خطأ في الاستماع للمستخدمين:', error);
-                    loadFallback();
-                });
-        }
-
-        // دوال البحث في صفحة الحماية
-        function renderProtectUsersWithFilter() {
-            let filtered = allProtectUsers;
-            if (protectFilter.trim() !== '') {
-                const filterLower = protectFilter.trim().toLowerCase();
-                filtered = allProtectUsers.filter(u => u.uid.toLowerCase().includes(filterLower));
-            }
-            renderProtectUsers(filtered);
-        }
-
-        function searchProtectUsers() {
-            const input = document.getElementById('protectSearchInput');
-            protectFilter = input.value;
-            renderProtectUsersWithFilter();
-        }
-
-        function clearProtectSearch() {
-            document.getElementById('protectSearchInput').value = '';
-            protectFilter = '';
-            renderProtectUsersWithFilter();
-        }
-
-        // دوال البحث في الاستثمارات
         function renderInvestorsWithFilter() {
             let filtered = allInvestors;
-            if (currentFilter.trim() !== '') {
-                const filterLower = currentFilter.trim().toLowerCase();
-                filtered = allInvestors.filter(inv => inv.uid.toLowerCase().includes(filterLower));
+            const q = investorFilter.trim();
+            if (q) {
+                const lower = q.toLowerCase();
+                filtered = allInvestors.filter(inv => inv.uid.toLowerCase().includes(lower));
             }
             renderInvestors(filtered);
         }
 
-        function searchInvestors() {
-            const input = document.getElementById('investorSearchInput');
-            currentFilter = input.value;
-            renderInvestorsWithFilter();
+        function renderInvestors(list) {
+            const container = document.getElementById('investorsList');
+            if (!list.length) {
+                container.innerHTML =
+                    `<div class="admin-empty"><i class="fas fa-chart-pie text-muted"></i><div>لا يوجد مستثمرون ${investorFilter ? 'مطابقون للبحث' : ''}</div></div>`;
+                return;
+            }
+            container.innerHTML = list.map(inv => `
+                <div class="invest-card">
+                    <div class="flex-between">
+                        <span class="invest-user">
+                            👤 <strong>${inv.displayName}</strong>
+                            <button class="copy-btn" onclick="copyText('${inv.uid}', this)"><i class="fas fa-copy"></i> <span class="icon-text">نسخ</span></button>
+                        </span>
+                        <span class="invest-badge">${inv.package}</span>
+                    </div>
+                    <div class="invest-details">
+                        <div class="detail-row"><span class="label">المبلغ المستثمر</span><span class="value highlight">${inv.totalInvested.toFixed(2)} DZD</span></div>
+                        <div class="detail-row"><span class="label">إجمالي الأرباح</span><span class="value profit">${inv.totalReturns.toFixed(2)} DZD</span></div>
+                        <div class="detail-row"><span class="label">نسبة الأرباح</span><span class="value profit">${inv.profitRatio.toFixed(2)}%</span></div>
+                        <div class="detail-row"><span class="label">الرصيد الحالي</span><span class="value">${inv.currentBalance.toFixed(2)} DZD</span></div>
+                        ${inv.investments?.length ? `<div class="detail-row"><span class="label">عدد الاستثمارات</span><span class="value">${inv.investments.length}</span></div>` : ''}
+                    </div>
+                    <div class="invest-actions">
+                        <button class="btn btn-danger btn-xs" onclick="cancelInvestment('${inv.docId}','${inv.uid}','${inv.displayName}')">
+                            <i class="fas fa-times-circle"></i> إلغاء الباقة
+                        </button>
+                        <button class="btn btn-success btn-xs" onclick="adjustMining('${inv.docId}','${inv.uid}','${inv.displayName}',${inv.totalReturns})">
+                            <i class="fas fa-edit"></i> تعديل الأرباح
+                        </button>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        function clearInvestorSearch() {
-            document.getElementById('investorSearchInput').value = '';
-            currentFilter = '';
-            renderInvestorsWithFilter();
+        function renderProtectUsersWithFilter() {
+            let filtered = allProtectUsers;
+            const q = protectFilter.trim();
+            if (q) {
+                const lower = q.toLowerCase();
+                filtered = allProtectUsers.filter(u => u.uid.toLowerCase().includes(lower));
+            }
+            renderProtectUsers(filtered);
         }
 
-        // دوال البحث في طلبات السحب
+        function renderProtectUsers(users) {
+            const container = document.getElementById('usersProtectList');
+            if (!users.length) {
+                container.innerHTML =
+                    `<div class="admin-empty"><i class="fas fa-users-slash text-muted"></i><div>لا يوجد مستخدمون ${protectFilter ? 'مطابقون للبحث' : ''}</div></div>`;
+                return;
+            }
+            const statusOrder = { active: 0, restricted: 1, frozen: 2, banned: 3 };
+            users.sort((a, b) => (statusOrder[a.status] || 0) - (statusOrder[b.status] || 0));
+
+            container.innerHTML = users.map(u => {
+                const statusMap = {
+                    active: { label: '✅ نشط', class: 'status-active' },
+                    banned: { label: '⛔ محظور', class: 'status-banned' },
+                    restricted: { label: '🔒 مقيد', class: 'status-restricted' },
+                    frozen: { label: '❄️ مجمد', class: 'status-frozen' }
+                };
+                const st = statusMap[u.status] || statusMap.active;
+
+                let buttons = '';
+                if (u.status === 'active') {
+                    buttons = `
+                        <button class="btn btn-danger btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','banned','حظر')"><i class="fas fa-ban"></i> تعطيل</button>
+                        <button class="btn btn-orange btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','restricted','تقييد')"><i class="fas fa-lock"></i> تقيد</button>
+                        <button class="btn btn-purple btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','frozen','تجميد')"><i class="fas fa-snowflake"></i> تجميد</button>
+                    `;
+                } else if (u.status === 'banned') {
+                    buttons =
+                        `<button class="btn btn-success btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','active','تفعيل')"><i class="fas fa-check-circle"></i> تفعيل</button>`;
+                } else if (u.status === 'restricted') {
+                    buttons = `
+                        <button class="btn btn-success btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','active','تفعيل')"><i class="fas fa-check-circle"></i> تفعيل</button>
+                        <button class="btn btn-danger btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','banned','حظر')"><i class="fas fa-ban"></i> تعطيل</button>
+                        <button class="btn btn-purple btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','frozen','تجميد')"><i class="fas fa-snowflake"></i> تجميد</button>
+                    `;
+                } else if (u.status === 'frozen') {
+                    buttons = `
+                        <button class="btn btn-success btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','active','تفعيل')"><i class="fas fa-check-circle"></i> تفعيل</button>
+                        <button class="btn btn-danger btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','banned','حظر')"><i class="fas fa-ban"></i> تعطيل</button>
+                        <button class="btn btn-orange btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','restricted','تقييد')"><i class="fas fa-lock"></i> تقيد</button>
+                    `;
+                }
+
+                return `
+                    <div class="user-protect-card">
+                        <div class="flex-between">
+                            <span class="user-name">👤 <strong>${u.displayName}</strong></span>
+                            <span class="status ${st.class}">${st.label}</span>
+                        </div>
+                        <div class="user-details">
+                            الرصيد: <strong>${u.dzd.toFixed(2)} DZD</strong>
+                            <br>
+                            <span class="id-wrapper">
+                                <span class="id-text">${u.uid}</span>
+                                <button class="copy-btn" onclick="copyText('${u.uid}', this)"><i class="fas fa-copy"></i> <span class="icon-text">نسخ</span></button>
+                            </span>
+                        </div>
+                        <div class="user-actions">${buttons}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
         function renderWithdrawalsWithFilter() {
             let filtered = allPendingWithdrawals;
-            if (withdrawalsFilter.trim() !== '') {
-                const filterLower = withdrawalsFilter.trim().toLowerCase();
-                filtered = allPendingWithdrawals.filter(w => w.uid.toLowerCase().includes(filterLower));
+            const q = withdrawalsFilter.trim();
+            if (q) {
+                const lower = q.toLowerCase();
+                filtered = allPendingWithdrawals.filter(w => w.uid.toLowerCase().includes(lower));
             }
             renderPendingWithdrawals(filtered);
         }
 
-        function searchWithdrawals() {
-            const input = document.getElementById('withdrawalSearchInput');
-            withdrawalsFilter = input.value;
-            renderWithdrawalsWithFilter();
-        }
-
-        function clearWithdrawalsSearch() {
-            document.getElementById('withdrawalSearchInput').value = '';
-            withdrawalsFilter = '';
-            renderWithdrawalsWithFilter();
-        }
-
-        // دوال البحث في طلبات الإيداع
-        function renderDepositsWithFilter() {
-            let filtered = allPendingDeposits;
-            if (depositsFilter.trim() !== '') {
-                const filterLower = depositsFilter.trim().toLowerCase();
-                filtered = allPendingDeposits.filter(d => d.uid.toLowerCase().includes(filterLower));
-            }
-            renderPendingDeposits(filtered);
-        }
-
-        function searchDeposits() {
-            const input = document.getElementById('depositSearchInput');
-            depositsFilter = input.value;
-            renderDepositsWithFilter();
-        }
-
-        function clearDepositsSearch() {
-            document.getElementById('depositSearchInput').value = '';
-            depositsFilter = '';
-            renderDepositsWithFilter();
-        }
-
-        // الاستماع للضغط على Enter في حقول البحث
-        document.addEventListener('DOMContentLoaded', function() {
-            const searchProtectInput = document.getElementById('protectSearchInput');
-            if (searchProtectInput) {
-                searchProtectInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        searchProtectUsers();
-                    }
-                });
-            }
-            const searchInvestorInput = document.getElementById('investorSearchInput');
-            if (searchInvestorInput) {
-                searchInvestorInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        searchInvestors();
-                    }
-                });
-            }
-            const searchWithdrawalInput = document.getElementById('withdrawalSearchInput');
-            if (searchWithdrawalInput) {
-                searchWithdrawalInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        searchWithdrawals();
-                    }
-                });
-            }
-            const searchDepositInput = document.getElementById('depositSearchInput');
-            if (searchDepositInput) {
-                searchDepositInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        searchDeposits();
-                    }
-                });
-            }
-            const searchMatchesInput = document.getElementById('matchesSearchInput');
-            if (searchMatchesInput) {
-                searchMatchesInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        searchMatches();
-                    }
-                });
-            }
-        });
-
-        async function loadFallback() {
-            try {
-                const snap = await db.collection('users').get();
-                let totalUsers = 0;
-                let totalBalance = 0;
-                let investors = [];
-                let totalMinedSum = 0;
-                const allUsers = [];
-                const pendingWithdrawals = [];
-                const pendingDeposits = [];
-
-                snap.forEach(doc => {
-                    const data = doc.data();
-                    const uid = doc.id;
-                    const displayName = data.displayName || uid;
-                    totalUsers++;
-                    const dzd = data.wallets?.dzd || 0;
-                    totalBalance += dzd;
-                    allUsers.push({
-                        uid: uid,
-                        displayName: displayName,
-                        status: data.status || 'active',
-                        dzd: dzd,
-                        docId: doc.id
-                    });
-
-                    const investments = data.investments || [];
-                    if (investments.length > 0) {
-                        let totalInvested = 0;
-                        let totalReturns = 0;
-                        let planName = '';
-                        investments.forEach(inv => {
-                            totalInvested += inv.amount || inv.amountInDZD || 0;
-                            totalReturns += inv.totalReturn || 0;
-                            if (inv.status === 'active' && inv.planName) {
-                                planName = inv.planName;
-                            }
-                        });
-                        if (!planName) {
-                            const planMap = {
-                                'plan_basic': 'الباقة الأساسية',
-                                'plan_advanced': 'الباقة المتقدمة',
-                                'plan_premium': 'الباقة المميزة',
-                                'plan_pro': 'الباقة الاحترافية',
-                                'plan_pro_plus': 'الباقة الاحترافية بلس'
-                            };
-                            const first = investments[0];
-                            planName = planMap[first.planId] || (first.planId ? `الخطة: ${first.planId}` : 'مستثمر');
-                        }
-                        let profitRatio = totalInvested > 0 ? (totalReturns / totalInvested) * 100 : 0;
-                        investors.push({
-                            uid: uid,
-                            displayName: displayName,
-                            package: planName,
-                            totalInvested: totalInvested,
-                            totalReturns: totalReturns,
-                            profitRatio: profitRatio,
-                            currentBalance: dzd,
-                            docId: doc.id,
-                            investments: investments,
-                            miningData: data.miningData || {}
-                        });
-                        totalMinedSum += totalReturns;
-                    }
-
-                    if (data.withdrawals) {
-                        data.withdrawals.forEach(w => {
-                            if (w.status === 'pending') {
-                                pendingWithdrawals.push({ ...w, uid, userDisplayName: displayName, docId: doc.id });
-                            }
-                        });
-                    }
-                    if (data.deposits) {
-                        data.deposits.forEach(d => {
-                            if (d.status === 'pending') {
-                                pendingDeposits.push({ ...d, uid, userDisplayName: displayName, docId: doc.id });
-                            }
-                        });
-                    }
-                });
-
-                allInvestors = investors;
-                allProtectUsers = allUsers;
-
-                document.getElementById('totalUsers').textContent = totalUsers;
-                document.getElementById('totalPlatformBalance').textContent = totalBalance.toFixed(2);
-                document.getElementById('totalInvestors').textContent = investors.length;
-                document.getElementById('totalMinedInvest').textContent = totalMinedSum.toFixed(2);
-                renderInvestorsWithFilter();
-                renderProtectUsersWithFilter();
-
-                pendingWithdrawals.sort((a,b) => (b.createdAt?.toDate?.()||0) - (a.createdAt?.toDate?.()||0));
-                allPendingWithdrawals = pendingWithdrawals;
-                renderWithdrawalsWithFilter();
-
-                pendingDeposits.sort((a,b) => (b.createdAt?.toDate?.()||0) - (a.createdAt?.toDate?.()||0));
-                allPendingDeposits = pendingDeposits;
-                renderDepositsWithFilter();
-
-                updateBadges(pendingWithdrawals.length, pendingDeposits.length);
-            } catch(e) { console.error(e); }
-        }
-
-        // ============================================================
-        // 12. عرض قوائم الإيداع والسحب
-        // ============================================================
         function renderPendingWithdrawals(list) {
             const container = document.getElementById('adminWithdrawalsList');
             if (!list.length) {
-                container.innerHTML = `<div class="admin-empty"><i class="fas fa-check-circle text-success"></i><div>لا توجد طلبات سحب معلقة${withdrawalsFilter ? ' مطابقة للبحث' : ''}</div></div>`;
+                container.innerHTML =
+                    `<div class="admin-empty"><i class="fas fa-check-circle text-success"></i><div>لا توجد طلبات سحب معلقة${withdrawalsFilter ? ' مطابقة للبحث' : ''}</div></div>`;
                 return;
             }
             container.innerHTML = list.map(w => `
@@ -1768,27 +1883,21 @@
                     <div class="flex-between">
                         <span class="user-info">
                             👤 <strong>${w.userDisplayName}</strong>
-                            <button class="copy-btn" onclick="copyText('${w.uid}', this)" title="نسخ المعرف">
-                                <i class="fas fa-copy"></i> <span class="icon-text">نسخ</span>
-                            </button>
+                            <button class="copy-btn" onclick="copyText('${w.uid}', this)"><i class="fas fa-copy"></i> <span class="icon-text">نسخ</span></button>
                         </span>
                         <span class="status status-pending">قيد الانتظار</span>
                     </div>
                     <div class="details">
                         <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-bottom:4px;">
                             <strong>${w.amount} ${w.currency || 'DZD'}</strong>
-                            <button class="copy-btn" onclick="copyText('${w.amount}', this)" title="نسخ المبلغ">
-                                <i class="fas fa-copy"></i> <span class="icon-text">نسخ</span>
-                            </button>
+                            <button class="copy-btn" onclick="copyText('${w.amount}', this)"><i class="fas fa-copy"></i> <span class="icon-text">نسخ</span></button>
                             <span style="margin-left:8px;">| رسوم: ${w.fee || 0}</span>
                         </div>
                         <small>التاريخ: ${formatDateTime(w.createdAt)}</small>
                         ${w.recipientAddress ? `
                             <br><small style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:4px;">
                                 <span>رقم الحساب البريدي: ${w.recipientAddress}</span>
-                                <button class="copy-btn" onclick="copyText('${w.recipientAddress}', this)" title="نسخ رقم الحساب البريدي">
-                                    <i class="fas fa-copy"></i> <span class="icon-text">نسخ</span>
-                                </button>
+                                <button class="copy-btn" onclick="copyText('${w.recipientAddress}', this)"><i class="fas fa-copy"></i> <span class="icon-text">نسخ</span></button>
                             </small>
                         ` : ''}
                     </div>
@@ -1804,10 +1913,21 @@
             `).join('');
         }
 
+        function renderDepositsWithFilter() {
+            let filtered = allPendingDeposits;
+            const q = depositsFilter.trim();
+            if (q) {
+                const lower = q.toLowerCase();
+                filtered = allPendingDeposits.filter(d => d.uid.toLowerCase().includes(lower));
+            }
+            renderPendingDeposits(filtered);
+        }
+
         function renderPendingDeposits(list) {
             const container = document.getElementById('adminDepositsList');
             if (!list.length) {
-                container.innerHTML = `<div class="admin-empty"><i class="fas fa-check-circle text-success"></i><div>لا توجد طلبات إيداع معلقة${depositsFilter ? ' مطابقة للبحث' : ''}</div></div>`;
+                container.innerHTML =
+                    `<div class="admin-empty"><i class="fas fa-check-circle text-success"></i><div>لا توجد طلبات إيداع معلقة${depositsFilter ? ' مطابقة للبحث' : ''}</div></div>`;
                 return;
             }
             container.innerHTML = list.map(d => `
@@ -1815,9 +1935,7 @@
                     <div class="flex-between">
                         <span class="user-info">
                             👤 <strong>${d.userDisplayName}</strong>
-                            <button class="copy-btn" onclick="copyText('${d.uid}', this)" title="نسخ المعرف">
-                                <i class="fas fa-copy"></i> <span class="icon-text">نسخ</span>
-                            </button>
+                            <button class="copy-btn" onclick="copyText('${d.uid}', this)"><i class="fas fa-copy"></i> <span class="icon-text">نسخ</span></button>
                         </span>
                         <span class="status status-pending">قيد الانتظار</span>
                     </div>
@@ -1827,9 +1945,7 @@
                         ${d.transactionId ? `
                             <br><small style="display:inline-flex;align-items:center;gap:4px;margin-top:4px;">
                                 <span>رقم العملية: <strong>${d.transactionId}</strong></span>
-                                <button class="copy-btn" onclick="copyText('${d.transactionId}', this)" title="نسخ رقم العملية">
-                                    <i class="fas fa-copy"></i> <span class="icon-text">نسخ</span>
-                                </button>
+                                <button class="copy-btn" onclick="copyText('${d.transactionId}', this)"><i class="fas fa-copy"></i> <span class="icon-text">نسخ</span></button>
                             </small>
                         ` : ''}
                     </div>
@@ -1856,60 +1972,137 @@
             });
         }
 
-        // ============================================================
-        // 13. باقي الدوال
-        // ============================================================
-        function renderInvestors(list) {
-            const container = document.getElementById('investorsList');
-            if (!list.length) {
-                container.innerHTML = `<div class="admin-empty"><i class="fas fa-chart-pie text-muted"></i><div>لا يوجد مستثمرون ${currentFilter ? 'مطابقون للبحث' : ''}</div></div>`;
-                return;
-            }
-            container.innerHTML = list.map(inv => `
-                <div class="invest-card">
-                    <div class="flex-between">
-                        <span class="invest-user">
-                            👤 <strong>${inv.displayName}</strong>
-                            <button class="copy-btn" onclick="copyText('${inv.uid}', this)" title="نسخ المعرف">
-                                <i class="fas fa-copy"></i> <span class="icon-text">نسخ</span>
-                            </button>
-                        </span>
-                        <span class="invest-badge">${inv.package}</span>
+        // ================================================================
+        // 8. SEARCH FUNCTIONS
+        // ================================================================
+        function searchProtectUsers() {
+            protectFilter = document.getElementById('protectSearchInput').value;
+            renderProtectUsersWithFilter();
+        }
+
+        function clearProtectSearch() {
+            document.getElementById('protectSearchInput').value = '';
+            protectFilter = '';
+            renderProtectUsersWithFilter();
+        }
+
+        function searchInvestors() {
+            investorFilter = document.getElementById('investorSearchInput').value;
+            renderInvestorsWithFilter();
+        }
+
+        function clearInvestorSearch() {
+            document.getElementById('investorSearchInput').value = '';
+            investorFilter = '';
+            renderInvestorsWithFilter();
+        }
+
+        function searchWithdrawals() {
+            withdrawalsFilter = document.getElementById('withdrawalSearchInput').value;
+            renderWithdrawalsWithFilter();
+        }
+
+        function clearWithdrawalsSearch() {
+            document.getElementById('withdrawalSearchInput').value = '';
+            withdrawalsFilter = '';
+            renderWithdrawalsWithFilter();
+        }
+
+        function searchDeposits() {
+            depositsFilter = document.getElementById('depositSearchInput').value;
+            renderDepositsWithFilter();
+        }
+
+        function clearDepositsSearch() {
+            document.getElementById('depositSearchInput').value = '';
+            depositsFilter = '';
+            renderDepositsWithFilter();
+        }
+
+        function searchMatches() {
+            matchesFilter = document.getElementById('matchesSearchInput').value;
+            renderMatchesWithFilter();
+        }
+
+        function clearMatchesSearch() {
+            document.getElementById('matchesSearchInput').value = '';
+            matchesFilter = '';
+            renderMatchesWithFilter();
+        }
+
+        // ================================================================
+        // 9. ACTIONS
+        // ================================================================
+        function editMatch(matchId, currentTxId, currentAmount) {
+            const modal = document.getElementById('confirmModal');
+            const body = document.getElementById('modalBody');
+            const header = document.querySelector('.modal-header .title');
+            const icon = document.getElementById('modalIcon');
+            const confirmBtn = document.getElementById('confirmBtn');
+            const cancelBtn = document.querySelector('.modal-footer .btn-cancel');
+
+            icon.className = 'icon warning';
+            icon.innerHTML = '<i class="fas fa-edit"></i>';
+            header.textContent = 'تعديل طلب المطابقة';
+
+            body.innerHTML = `
+                <div style="text-align:center;margin-bottom:12px;">
+                    <p style="color:var(--text-secondary);font-size:14px;margin-bottom:16px;">قم بتعديل بيانات طلب المطابقة</p>
+                    <div class="input-group">
+                        <label>رقم العملية <span class="required">*</span></label>
+                        <input type="text" id="editTxId" value="${currentTxId}" placeholder="رقم العملية">
                     </div>
-                    <div class="invest-details">
-                        <div class="detail-row">
-                            <span class="label">المبلغ المستثمر</span>
-                            <span class="value highlight">${inv.totalInvested.toFixed(2)} DZD</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">إجمالي الأرباح</span>
-                            <span class="value profit">${inv.totalReturns.toFixed(2)} DZD</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">نسبة الأرباح</span>
-                            <span class="value profit">${inv.profitRatio.toFixed(2)}%</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">الرصيد الحالي</span>
-                            <span class="value">${inv.currentBalance.toFixed(2)} DZD</span>
-                        </div>
-                        ${inv.investments && inv.investments.length > 0 ? `
-                        <div class="detail-row">
-                            <span class="label">عدد الاستثمارات</span>
-                            <span class="value">${inv.investments.length}</span>
-                        </div>
-                        ` : ''}
-                    </div>
-                    <div class="invest-actions">
-                        <button class="btn btn-danger btn-xs" onclick="cancelInvestment('${inv.docId}','${inv.uid}','${inv.displayName}')">
-                            <i class="fas fa-times-circle"></i> إلغاء الباقة
-                        </button>
-                        <button class="btn btn-success btn-xs" onclick="adjustMining('${inv.docId}','${inv.uid}','${inv.displayName}',${inv.totalReturns})">
-                            <i class="fas fa-edit"></i> تعديل الأرباح
-                        </button>
+                    <div class="input-group">
+                        <label>المبلغ (DZD) <span class="required">*</span></label>
+                        <input type="number" id="editAmount" value="${currentAmount}" placeholder="المبلغ" step="0.01" min="0.01">
                     </div>
                 </div>
-            `).join('');
+            `;
+
+            cancelBtn.textContent = 'إلغاء';
+            confirmBtn.textContent = 'حفظ التعديلات';
+            confirmBtn.className = 'btn btn-confirm-success';
+            modal.classList.add('active');
+
+            const handleConfirm = () => {
+                const newTxId = document.getElementById('editTxId').value.trim();
+                const newAmount = parseFloat(document.getElementById('editAmount').value);
+                if (!newTxId) { showToast('⚠️ رقم العملية مطلوب'); return; }
+                if (!newAmount || newAmount <= 0) { showToast('⚠️ أدخل مبلغاً صحيحاً'); return; }
+                modal.classList.remove('active');
+                db.collection('pending_deposit_matches').doc(matchId).update({
+                    transactionId: newTxId,
+                    amount: newAmount
+                }).then(() => {
+                    showToast('✅ تم تحديث طلب المطابقة بنجاح');
+                    refreshMatches();
+                }).catch(err => {
+                    showToast('❌ خطأ: ' + err.message, true);
+                });
+            };
+            const handleCancel = () => modal.classList.remove('active');
+            confirmBtn.onclick = handleConfirm;
+            cancelBtn.onclick = handleCancel;
+        }
+
+        function deleteMatch(matchId) {
+            showConfirmDialog({
+                title: 'إلغاء طلب المطابقة',
+                icon: 'fa-trash',
+                type: 'danger',
+                details: [{ label: 'الإجراء', value: 'سيتم حذف طلب المطابقة نهائياً' }],
+                confirmText: 'حذف',
+                onConfirm: async () => {
+                    try {
+                        await db.collection('pending_deposit_matches').doc(matchId).delete();
+                        showToast('✅ تم حذف طلب المطابقة');
+                        refreshMatches();
+                    } catch (e) {
+                        console.error(e);
+                        showToast('❌ خطأ: ' + e.message, true);
+                    }
+                }
+            });
         }
 
         function cancelInvestment(docId, uid, displayName) {
@@ -1928,19 +2121,18 @@
                         const userRef = db.collection('users').doc(docId);
                         const userDoc = await userRef.get();
                         const data = userDoc.data();
-                        const investments = data.investments || [];
-                        const updatedInvestments = investments.map(inv => ({ ...inv, status: 'cancelled' }));
+                        const investments = (data.investments || []).map(inv => ({ ...inv, status: 'cancelled' }));
                         await userRef.update({
-                            investments: updatedInvestments,
+                            investments,
                             'miningData.totalInvested': 0,
                             'miningData.totalInvestmentReturns': 0,
                             'miningData.totalMinedDZD': 0,
                             'miningData.level': 0
                         });
                         showToast(`✅ تم إلغاء باقة التعدين للمستخدم ${displayName}`);
-                    } catch(e) {
+                    } catch (e) {
                         console.error(e);
-                        showToast('❌ خطأ: '+e.message, true);
+                        showToast('❌ خطأ: ' + e.message, true);
                     }
                 }
             });
@@ -1960,26 +2152,19 @@
 
             body.innerHTML = `
                 <div style="text-align:center;margin-bottom:12px;">
-                    <p style="color:var(--text-secondary);font-size:14px;margin-bottom:8px;">
-                        المستخدم: <strong>${displayName}</strong>
-                    </p>
-                    <p style="color:var(--text-secondary);font-size:14px;margin-bottom:16px;">
-                        إجمالي الأرباح الحالي: <strong>${currentReturns.toFixed(2)} DZD</strong>
-                    </p>
+                    <p style="color:var(--text-secondary);font-size:14px;margin-bottom:8px;">المستخدم: <strong>${displayName}</strong></p>
+                    <p style="color:var(--text-secondary);font-size:14px;margin-bottom:16px;">إجمالي الأرباح الحالي: <strong>${currentReturns.toFixed(2)} DZD</strong></p>
                     <div class="input-group">
                         <label>المبلغ (DZD) <span class="required">*</span></label>
-                        <input type="number" id="adjustAmount" placeholder="أدخل المبلغ (موجب للإضافة، سالب للخصم)" step="0.01">
+                        <input type="number" id="adjustAmount" placeholder="موجب للإضافة، سالب للخصم" step="0.01">
                     </div>
-                    <div style="font-size:12px;color:var(--text-muted);">
-                        <i class="fas fa-info-circle"></i> استخدم قيمة موجبة للإضافة، قيمة سالبة للخصم
-                    </div>
+                    <div style="font-size:12px;color:var(--text-muted);"><i class="fas fa-info-circle"></i> استخدم قيمة موجبة للإضافة، قيمة سالبة للخصم</div>
                 </div>
             `;
 
             cancelBtn.textContent = 'إلغاء';
             confirmBtn.textContent = 'تعديل';
             confirmBtn.className = 'btn btn-confirm-success';
-
             modal.classList.add('active');
 
             const handleConfirm = () => {
@@ -1992,11 +2177,7 @@
                 modal.classList.remove('active');
                 performAdjustMining(docId, uid, displayName, currentReturns, amount);
             };
-
-            const handleCancel = () => {
-                modal.classList.remove('active');
-            };
-
+            const handleCancel = () => modal.classList.remove('active');
             confirmBtn.onclick = handleConfirm;
             cancelBtn.onclick = handleCancel;
         }
@@ -2004,10 +2185,7 @@
         async function performAdjustMining(docId, uid, displayName, currentReturns, amount) {
             try {
                 const newTotal = currentReturns + amount;
-                if (newTotal < 0) {
-                    showToast('⚠️ لا يمكن أن تكون الأرباح أقل من صفر');
-                    return;
-                }
+                if (newTotal < 0) { showToast('⚠️ لا يمكن أن تكون الأرباح أقل من صفر'); return; }
                 const userRef = db.collection('users').doc(docId);
                 const userDoc = await userRef.get();
                 const data = userDoc.data();
@@ -2026,101 +2204,21 @@
                     'miningData.totalMinedDZD': newTotal
                 });
                 showToast(`✅ تم تعديل الأرباح للمستخدم ${displayName} إلى ${newTotal.toFixed(2)} DZD`);
-            } catch(e) {
+            } catch (e) {
                 console.error(e);
-                showToast('❌ خطأ: '+e.message, true);
+                showToast('❌ خطأ: ' + e.message, true);
             }
-        }
-
-        function renderProtectUsers(users) {
-            const container = document.getElementById('usersProtectList');
-            if (!users.length) {
-                container.innerHTML = `<div class="admin-empty"><i class="fas fa-users-slash text-muted"></i><div>لا يوجد مستخدمون ${protectFilter ? 'مطابقون للبحث' : ''}</div></div>`;
-                return;
-            }
-            const statusOrder = { 'active': 0, 'restricted': 1, 'frozen': 2, 'banned': 3 };
-            users.sort((a, b) => (statusOrder[a.status] || 0) - (statusOrder[b.status] || 0));
-            container.innerHTML = users.map(u => {
-                const statusMap = {
-                    'active': { label: '✅ نشط', class: 'status-active' },
-                    'banned': { label: '⛔ محظور', class: 'status-banned' },
-                    'restricted': { label: '🔒 مقيد', class: 'status-restricted' },
-                    'frozen': { label: '❄️ مجمد', class: 'status-frozen' }
-                };
-                const statusInfo = statusMap[u.status] || statusMap['active'];
-                let buttons = '';
-                if (u.status === 'active') {
-                    buttons = `
-                        <button class="btn btn-danger btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','banned','حظر')">
-                            <i class="fas fa-ban"></i> تعطيل
-                        </button>
-                        <button class="btn btn-orange btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','restricted','تقييد')">
-                            <i class="fas fa-lock"></i> تقيد
-                        </button>
-                        <button class="btn btn-purple btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','frozen','تجميد')">
-                            <i class="fas fa-snowflake"></i> تجميد
-                        </button>
-                    `;
-                } else if (u.status === 'banned') {
-                    buttons = `<button class="btn btn-success btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','active','تفعيل')">
-                            <i class="fas fa-check-circle"></i> تفعيل
-                        </button>`;
-                } else if (u.status === 'restricted') {
-                    buttons = `
-                        <button class="btn btn-success btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','active','تفعيل')">
-                            <i class="fas fa-check-circle"></i> تفعيل
-                        </button>
-                        <button class="btn btn-danger btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','banned','حظر')">
-                            <i class="fas fa-ban"></i> تعطيل
-                        </button>
-                        <button class="btn btn-purple btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','frozen','تجميد')">
-                            <i class="fas fa-snowflake"></i> تجميد
-                        </button>
-                    `;
-                } else if (u.status === 'frozen') {
-                    buttons = `
-                        <button class="btn btn-success btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','active','تفعيل')">
-                            <i class="fas fa-check-circle"></i> تفعيل
-                        </button>
-                        <button class="btn btn-danger btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','banned','حظر')">
-                            <i class="fas fa-ban"></i> تعطيل
-                        </button>
-                        <button class="btn btn-orange btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','restricted','تقييد')">
-                            <i class="fas fa-lock"></i> تقيد
-                        </button>
-                    `;
-                }
-                return `
-                    <div class="user-protect-card">
-                        <div class="flex-between">
-                            <span class="user-name">👤 <strong>${u.displayName}</strong></span>
-                            <span class="status ${statusInfo.class}">${statusInfo.label}</span>
-                        </div>
-                        <div class="user-details">
-                            الرصيد: <strong>${u.dzd.toFixed(2)} DZD</strong>
-                            <br>
-                            <span class="id-wrapper">
-                                <span class="id-text">${u.uid}</span>
-                                <button class="copy-btn" onclick="copyText('${u.uid}', this)" title="نسخ المعرف">
-                                    <i class="fas fa-copy"></i> <span class="icon-text">نسخ</span>
-                                </button>
-                            </span>
-                        </div>
-                        <div class="user-actions">${buttons}</div>
-                    </div>
-                `;
-            }).join('');
         }
 
         function changeUserStatus(docId, uid, displayName, newStatus, actionName) {
-            const statusLabels = { 'active': 'نشط', 'banned': 'محظور', 'restricted': 'مقيد', 'frozen': 'مجمد' };
+            const statusLabels = { active: 'نشط', banned: 'محظور', restricted: 'مقيد', frozen: 'مجمد' };
             const iconMap = {
-                'active': { icon: 'fa-check-circle', type: 'success' },
-                'banned': { icon: 'fa-ban', type: 'danger' },
-                'restricted': { icon: 'fa-lock', type: 'orange' },
-                'frozen': { icon: 'fa-snowflake', type: 'purple' }
+                active: { icon: 'fa-check-circle', type: 'success' },
+                banned: { icon: 'fa-ban', type: 'danger' },
+                restricted: { icon: 'fa-lock', type: 'orange' },
+                frozen: { icon: 'fa-snowflake', type: 'purple' }
             };
-            const iconData = iconMap[newStatus] || iconMap['active'];
+            const iconData = iconMap[newStatus] || iconMap.active;
             showConfirmDialog({
                 title: `${actionName} المستخدم`,
                 icon: iconData.icon,
@@ -2135,9 +2233,9 @@
                     try {
                         await db.collection('users').doc(docId).update({ status: newStatus });
                         showToast(`✅ تم ${actionName} المستخدم ${displayName} (${statusLabels[newStatus]})`);
-                    } catch(e) {
+                    } catch (e) {
                         console.error(e);
-                        showToast('❌ خطأ: '+e.message, true);
+                        showToast('❌ خطأ: ' + e.message, true);
                     }
                 }
             });
@@ -2166,7 +2264,10 @@
                         );
                         await userRef.update({ withdrawals: updated });
                         showToast('✅ تم تأكيد السحب');
-                    } catch(e) { console.error(e); showToast('❌ خطأ: '+e.message, true); }
+                    } catch (e) {
+                        console.error(e);
+                        showToast('❌ خطأ: ' + e.message, true);
+                    }
                 }
             });
         }
@@ -2196,7 +2297,10 @@
                         );
                         await userRef.update({ withdrawals: updated });
                         showToast(`❌ تم رفض السحب وإعادة ${amount} DZD`);
-                    } catch(e) { console.error(e); showToast('❌ خطأ: '+e.message, true); }
+                    } catch (e) {
+                        console.error(e);
+                        showToast('❌ خطأ: ' + e.message, true);
+                    }
                 }
             });
         }
@@ -2225,7 +2329,10 @@
                     })
                 });
                 showToast(`✅ تم تأكيد إيداع ${amount} DZD للمستخدم ${displayName}`);
-            } catch(e) { console.error(e); showToast('❌ خطأ: '+e.message, true); }
+            } catch (e) {
+                console.error(e);
+                showToast('❌ خطأ: ' + e.message, true);
+            }
         }
 
         function confirmDeposit(userDocId, depositId, uid, displayName, amount) {
@@ -2266,14 +2373,17 @@
                         );
                         await userRef.update({ deposits: updated });
                         showToast('❌ تم رفض الإيداع');
-                    } catch(e) { console.error(e); showToast('❌ خطأ: '+e.message, true); }
+                    } catch (e) {
+                        console.error(e);
+                        showToast('❌ خطأ: ' + e.message, true);
+                    }
                 }
             });
         }
 
-        // ============================================================
-        // 14. تأكيد إيداع تلقائي
-        // ============================================================
+        // ================================================================
+        // 10. AUTO CONFIRM DEPOSIT
+        // ================================================================
         async function autoConfirmDeposit() {
             const txId = document.getElementById('autoTxId').value.trim();
             const amount = parseFloat(document.getElementById('autoAmount').value);
@@ -2283,8 +2393,8 @@
 
             try {
                 const usersSnap = await db.collection('users').get();
-                let targetData = null;
-                let targetDocId = null;
+                let targetData = null,
+                    targetDocId = null;
 
                 for (const doc of usersSnap.docs) {
                     const data = doc.data();
@@ -2319,7 +2429,8 @@
                         ],
                         confirmText: 'تأكيد تلقائي',
                         onConfirm: async () => {
-                            await confirmDepositDirect(targetDocId, targetData.depositId, targetData.uid, targetData.displayName, targetData.amount);
+                            await confirmDepositDirect(targetDocId, targetData.depositId, targetData.uid, targetData
+                                .displayName, targetData.amount);
                             document.getElementById('autoTxId').value = '';
                             document.getElementById('autoAmount').value = '';
                             refreshMatches();
@@ -2328,18 +2439,15 @@
                     return;
                 }
 
-                const matchData = {
+                await db.collection('pending_deposit_matches').add({
                     transactionId: txId,
                     amount: amount,
                     currency: 'DZD',
                     status: 'pending',
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                };
-
-                await db.collection('pending_deposit_matches').add(matchData);
+                });
                 showToast(`✅ تم حفظ طلب المطابقة (رقم: ${txId})`);
                 refreshMatches();
-
                 document.getElementById('autoTxId').value = '';
                 document.getElementById('autoAmount').value = '';
 
@@ -2355,16 +2463,15 @@
                     confirmText: 'حسناً',
                     onConfirm: () => {}
                 });
-
-            } catch(e) {
+            } catch (e) {
                 console.error(e);
-                showToast('❌ خطأ: '+e.message, true);
+                showToast('❌ خطأ: ' + e.message, true);
             }
         }
 
-        // ============================================================
-        // 15. التبديل بين التبويبات
-        // ============================================================
+        // ================================================================
+        // 11. TAB SWITCHING
+        // ================================================================
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             const target = document.getElementById(tabId);
@@ -2374,22 +2481,20 @@
                 item.classList.toggle('active', item.dataset.tab === tabId);
             });
 
-            if (tabId === 'tab-matches') {
-                refreshMatches();
-            }
+            if (tabId === 'tab-matches') refreshMatches();
         }
 
-        // ============================================================
-        // 16. الوضع المظلم
-        // ============================================================
-        let isDarkTheme = false;
+        // ================================================================
+        // 12. DARK THEME
+        // ================================================================
+        let isDark = false;
+
         function toggleTheme() {
-            isDarkTheme = !isDarkTheme;
+            isDark = !isDark;
             const root = document.documentElement;
             const btn = document.getElementById('themeToggle');
-            if (isDarkTheme) {
+            if (isDark) {
                 root.style.setProperty('--bg-primary', '#0a0a1a');
-                root.style.setProperty('--bg-secondary', '#12122a');
                 root.style.setProperty('--bg-card', '#1a1a3e');
                 root.style.setProperty('--bg-input', '#1a1a3e');
                 root.style.setProperty('--bg-nav', '#1a1a3e');
@@ -2403,7 +2508,6 @@
                 btn.innerHTML = '<i class="fas fa-sun"></i>';
             } else {
                 root.style.setProperty('--bg-primary', '#f0f4f8');
-                root.style.setProperty('--bg-secondary', '#ffffff');
                 root.style.setProperty('--bg-card', '#ffffff');
                 root.style.setProperty('--bg-input', '#f0f4f8');
                 root.style.setProperty('--bg-nav', '#ffffff');
@@ -2418,19 +2522,29 @@
             }
         }
 
-        // ============================================================
-        // 17. INIT
-        // ============================================================
+        // ================================================================
+        // 13. KEYBOARD SHORTCUTS (Enter on search fields)
+        // ================================================================
         document.addEventListener('DOMContentLoaded', function() {
+            const map = [
+                ['protectSearchInput', searchProtectUsers],
+                ['investorSearchInput', searchInvestors],
+                ['withdrawalSearchInput', searchWithdrawals],
+                ['depositSearchInput', searchDeposits],
+                ['matchesSearchInput', searchMatches]
+            ];
+            map.forEach(([id, fn]) => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('keypress', e => { if (e.key === 'Enter') fn(); });
+            });
+
             authAdmin();
-            if (window.Telegram?.WebApp) {
-                window.Telegram.WebApp.BackButton.hide();
-            }
+            if (window.Telegram?.WebApp) window.Telegram.WebApp.BackButton.hide();
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة - تم إضافة محرك البحث في صفحة المطابقات');
-        console.log('✅ يمكن البحث في طلبات المطابقة برقم العملية أو المبلغ.');
+        console.log('🚀 لوحة الإدارة - تم تحسين الكود وإضافة محرك البحث.');
+        console.log('✅ جميع الوظائف محفوظة.');
     </script>
 </body>
 </html>
