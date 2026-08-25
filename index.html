@@ -161,6 +161,7 @@
         .btn-orange { background: var(--orange); color: white; }
         .btn-orange:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(230,126,34,0.35); }
         .btn-sm { padding: 10px 16px; font-size: 14px; }
+        /* تم الاحتفاظ بـ btn-xs للأزرار الصغيرة جداً إن لزم، لكننا سنستخدم btn-sm في كل مكان */
         .btn-xs { padding: 4px 10px; font-size: 11px; border-radius: 6px; }
 
         .btn-secondary {
@@ -456,7 +457,8 @@
         .invest-card .invest-details .value.highlight { color: var(--accent); }
         .invest-card .invest-details .value.profit { color: var(--success); }
         .invest-card .invest-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-        .invest-card .invest-actions .btn { padding: 6px 14px; font-size: 12px; width: auto; }
+        /* جعل أزرار الاستثمارات بنفس حجم أزرار الإجراءات الأخرى */
+        .invest-card .invest-actions .btn { padding: 8px 16px; font-size: 13px; width: auto; flex: 1; }
         .invest-badge {
             display: inline-block;
             padding: 2px 12px;
@@ -496,7 +498,8 @@
             letter-spacing: 0.5px;
         }
         .user-protect-card .user-actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
-        .user-protect-card .user-actions .btn { padding: 5px 12px; font-size: 11px; width: auto; }
+        /* جعل أزرار الحماية بنفس حجم أزرار الإجراءات الأخرى */
+        .user-protect-card .user-actions .btn { padding: 8px 16px; font-size: 13px; width: auto; flex: 1; }
 
         /* ===== تم تعديل class من match-actions إلى actions لتوحيد التنسيق ===== */
         .match-card {
@@ -509,7 +512,6 @@
         }
         .match-card:hover { border-color: var(--orange); }
         .match-card .match-details { font-size: 14px; color: var(--text-secondary); margin: 4px 0; }
-        /* استخدمنا نفس class .actions الموجود في admin-request-card */
         .match-card .actions { display: flex; gap: 8px; margin-top: 10px; }
         .match-card .actions .btn { padding: 8px 16px; font-size: 13px; width: auto; flex: 1; }
 
@@ -1862,6 +1864,7 @@
         // ============================================================
         // 13. باقي الدوال
         // ============================================================
+        // ===== تم تعديل أزرار الاستثمارات والحماية لاستخدام btn-sm مع تنسيق موحد =====
         function renderInvestors(list) {
             const container = document.getElementById('investorsList');
             if (!list.length) {
@@ -1904,15 +1907,126 @@
                         ` : ''}
                     </div>
                     <div class="invest-actions">
-                        <button class="btn btn-danger btn-xs" onclick="cancelInvestment('${inv.docId}','${inv.uid}','${inv.displayName}')">
+                        <button class="btn btn-danger btn-sm" onclick="cancelInvestment('${inv.docId}','${inv.uid}','${inv.displayName}')">
                             <i class="fas fa-times-circle"></i> إلغاء الباقة
                         </button>
-                        <button class="btn btn-success btn-xs" onclick="adjustMining('${inv.docId}','${inv.uid}','${inv.displayName}',${inv.totalReturns})">
+                        <button class="btn btn-success btn-sm" onclick="adjustMining('${inv.docId}','${inv.uid}','${inv.displayName}',${inv.totalReturns})">
                             <i class="fas fa-edit"></i> تعديل الأرباح
                         </button>
                     </div>
                 </div>
             `).join('');
+        }
+
+        function renderProtectUsers(users) {
+            const container = document.getElementById('usersProtectList');
+            if (!users.length) {
+                container.innerHTML = `<div class="admin-empty"><i class="fas fa-users-slash text-muted"></i><div>لا يوجد مستخدمون ${protectFilter ? 'مطابقون للبحث' : ''}</div></div>`;
+                return;
+            }
+            const statusOrder = { 'active': 0, 'restricted': 1, 'frozen': 2, 'banned': 3 };
+            users.sort((a, b) => (statusOrder[a.status] || 0) - (statusOrder[b.status] || 0));
+            container.innerHTML = users.map(u => {
+                const statusMap = {
+                    'active': { label: '✅ نشط', class: 'status-active' },
+                    'banned': { label: '⛔ محظور', class: 'status-banned' },
+                    'restricted': { label: '🔒 مقيد', class: 'status-restricted' },
+                    'frozen': { label: '❄️ مجمد', class: 'status-frozen' }
+                };
+                const statusInfo = statusMap[u.status] || statusMap['active'];
+                let buttons = '';
+                if (u.status === 'active') {
+                    buttons = `
+                        <button class="btn btn-danger btn-sm" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','banned','حظر')">
+                            <i class="fas fa-ban"></i> تعطيل
+                        </button>
+                        <button class="btn btn-orange btn-sm" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','restricted','تقييد')">
+                            <i class="fas fa-lock"></i> تقيد
+                        </button>
+                        <button class="btn btn-purple btn-sm" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','frozen','تجميد')">
+                            <i class="fas fa-snowflake"></i> تجميد
+                        </button>
+                    `;
+                } else if (u.status === 'banned') {
+                    buttons = `<button class="btn btn-success btn-sm" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','active','تفعيل')">
+                            <i class="fas fa-check-circle"></i> تفعيل
+                        </button>`;
+                } else if (u.status === 'restricted') {
+                    buttons = `
+                        <button class="btn btn-success btn-sm" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','active','تفعيل')">
+                            <i class="fas fa-check-circle"></i> تفعيل
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','banned','حظر')">
+                            <i class="fas fa-ban"></i> تعطيل
+                        </button>
+                        <button class="btn btn-purple btn-sm" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','frozen','تجميد')">
+                            <i class="fas fa-snowflake"></i> تجميد
+                        </button>
+                    `;
+                } else if (u.status === 'frozen') {
+                    buttons = `
+                        <button class="btn btn-success btn-sm" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','active','تفعيل')">
+                            <i class="fas fa-check-circle"></i> تفعيل
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','banned','حظر')">
+                            <i class="fas fa-ban"></i> تعطيل
+                        </button>
+                        <button class="btn btn-orange btn-sm" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','restricted','تقييد')">
+                            <i class="fas fa-lock"></i> تقيد
+                        </button>
+                    `;
+                }
+                return `
+                    <div class="user-protect-card">
+                        <div class="flex-between">
+                            <span class="user-name">👤 <strong>${u.displayName}</strong></span>
+                            <span class="status ${statusInfo.class}">${statusInfo.label}</span>
+                        </div>
+                        <div class="user-details">
+                            الرصيد: <strong>${u.dzd.toFixed(2)} DZD</strong>
+                            <br>
+                            <span class="id-wrapper">
+                                <span class="id-text">${u.uid}</span>
+                                <button class="copy-btn" onclick="copyText('${u.uid}', this)" title="نسخ المعرف">
+                                    <i class="fas fa-copy"></i> <span class="icon-text">نسخ</span>
+                                </button>
+                            </span>
+                        </div>
+                        <div class="user-actions">${buttons}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function changeUserStatus(docId, uid, displayName, newStatus, actionName) {
+            const statusLabels = { 'active': 'نشط', 'banned': 'محظور', 'restricted': 'مقيد', 'frozen': 'مجمد' };
+            const iconMap = {
+                'active': { icon: 'fa-check-circle', type: 'success' },
+                'banned': { icon: 'fa-ban', type: 'danger' },
+                'restricted': { icon: 'fa-lock', type: 'orange' },
+                'frozen': { icon: 'fa-snowflake', type: 'purple' }
+            };
+            const iconData = iconMap[newStatus] || iconMap['active'];
+            showConfirmDialog({
+                title: `${actionName} المستخدم`,
+                icon: iconData.icon,
+                type: iconData.type,
+                details: [
+                    { label: 'المستخدم', value: displayName, highlight: true },
+                    { label: 'المعرف', value: uid },
+                    { label: 'الحالة الجديدة', value: statusLabels[newStatus] || newStatus }
+                ],
+                confirmText: actionName,
+                onConfirm: async () => {
+                    try {
+                        await db.collection('users').doc(docId).update({ status: newStatus });
+                        showToast(`✅ تم ${actionName} المستخدم ${displayName} (${statusLabels[newStatus]})`);
+                    } catch(e) {
+                        console.error(e);
+                        showToast('❌ خطأ: '+e.message, true);
+                    }
+                }
+            });
         }
 
         function cancelInvestment(docId, uid, displayName) {
@@ -2033,117 +2147,6 @@
                 console.error(e);
                 showToast('❌ خطأ: '+e.message, true);
             }
-        }
-
-        function renderProtectUsers(users) {
-            const container = document.getElementById('usersProtectList');
-            if (!users.length) {
-                container.innerHTML = `<div class="admin-empty"><i class="fas fa-users-slash text-muted"></i><div>لا يوجد مستخدمون ${protectFilter ? 'مطابقون للبحث' : ''}</div></div>`;
-                return;
-            }
-            const statusOrder = { 'active': 0, 'restricted': 1, 'frozen': 2, 'banned': 3 };
-            users.sort((a, b) => (statusOrder[a.status] || 0) - (statusOrder[b.status] || 0));
-            container.innerHTML = users.map(u => {
-                const statusMap = {
-                    'active': { label: '✅ نشط', class: 'status-active' },
-                    'banned': { label: '⛔ محظور', class: 'status-banned' },
-                    'restricted': { label: '🔒 مقيد', class: 'status-restricted' },
-                    'frozen': { label: '❄️ مجمد', class: 'status-frozen' }
-                };
-                const statusInfo = statusMap[u.status] || statusMap['active'];
-                let buttons = '';
-                if (u.status === 'active') {
-                    buttons = `
-                        <button class="btn btn-danger btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','banned','حظر')">
-                            <i class="fas fa-ban"></i> تعطيل
-                        </button>
-                        <button class="btn btn-orange btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','restricted','تقييد')">
-                            <i class="fas fa-lock"></i> تقيد
-                        </button>
-                        <button class="btn btn-purple btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','frozen','تجميد')">
-                            <i class="fas fa-snowflake"></i> تجميد
-                        </button>
-                    `;
-                } else if (u.status === 'banned') {
-                    buttons = `<button class="btn btn-success btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','active','تفعيل')">
-                            <i class="fas fa-check-circle"></i> تفعيل
-                        </button>`;
-                } else if (u.status === 'restricted') {
-                    buttons = `
-                        <button class="btn btn-success btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','active','تفعيل')">
-                            <i class="fas fa-check-circle"></i> تفعيل
-                        </button>
-                        <button class="btn btn-danger btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','banned','حظر')">
-                            <i class="fas fa-ban"></i> تعطيل
-                        </button>
-                        <button class="btn btn-purple btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','frozen','تجميد')">
-                            <i class="fas fa-snowflake"></i> تجميد
-                        </button>
-                    `;
-                } else if (u.status === 'frozen') {
-                    buttons = `
-                        <button class="btn btn-success btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','active','تفعيل')">
-                            <i class="fas fa-check-circle"></i> تفعيل
-                        </button>
-                        <button class="btn btn-danger btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','banned','حظر')">
-                            <i class="fas fa-ban"></i> تعطيل
-                        </button>
-                        <button class="btn btn-orange btn-xs" onclick="changeUserStatus('${u.docId}','${u.uid}','${u.displayName}','restricted','تقييد')">
-                            <i class="fas fa-lock"></i> تقيد
-                        </button>
-                    `;
-                }
-                return `
-                    <div class="user-protect-card">
-                        <div class="flex-between">
-                            <span class="user-name">👤 <strong>${u.displayName}</strong></span>
-                            <span class="status ${statusInfo.class}">${statusInfo.label}</span>
-                        </div>
-                        <div class="user-details">
-                            الرصيد: <strong>${u.dzd.toFixed(2)} DZD</strong>
-                            <br>
-                            <span class="id-wrapper">
-                                <span class="id-text">${u.uid}</span>
-                                <button class="copy-btn" onclick="copyText('${u.uid}', this)" title="نسخ المعرف">
-                                    <i class="fas fa-copy"></i> <span class="icon-text">نسخ</span>
-                                </button>
-                            </span>
-                        </div>
-                        <div class="user-actions">${buttons}</div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function changeUserStatus(docId, uid, displayName, newStatus, actionName) {
-            const statusLabels = { 'active': 'نشط', 'banned': 'محظور', 'restricted': 'مقيد', 'frozen': 'مجمد' };
-            const iconMap = {
-                'active': { icon: 'fa-check-circle', type: 'success' },
-                'banned': { icon: 'fa-ban', type: 'danger' },
-                'restricted': { icon: 'fa-lock', type: 'orange' },
-                'frozen': { icon: 'fa-snowflake', type: 'purple' }
-            };
-            const iconData = iconMap[newStatus] || iconMap['active'];
-            showConfirmDialog({
-                title: `${actionName} المستخدم`,
-                icon: iconData.icon,
-                type: iconData.type,
-                details: [
-                    { label: 'المستخدم', value: displayName, highlight: true },
-                    { label: 'المعرف', value: uid },
-                    { label: 'الحالة الجديدة', value: statusLabels[newStatus] || newStatus }
-                ],
-                confirmText: actionName,
-                onConfirm: async () => {
-                    try {
-                        await db.collection('users').doc(docId).update({ status: newStatus });
-                        showToast(`✅ تم ${actionName} المستخدم ${displayName} (${statusLabels[newStatus]})`);
-                    } catch(e) {
-                        console.error(e);
-                        showToast('❌ خطأ: '+e.message, true);
-                    }
-                }
-            });
         }
 
         function approveWithdrawal(userDocId, withdrawalId, uid, displayName, amount, fee) {
@@ -2432,7 +2435,7 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة - تم تعديل أزرار المطابقات لتكون بحجم أزرار الإيداع');
+        console.log('🚀 لوحة الإدارة - تم تعديل أزرار الاستثمارات والحماية لتكون بنفس حجم الأزرار الأخرى');
     </script>
 </body>
 </html>
