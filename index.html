@@ -20,6 +20,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
+        /* جميع الأنماط كما هي سابقة، لم تتغير */
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --bg-primary: #f0f4f8; --bg-secondary: #ffffff; --bg-card: #ffffff;
@@ -33,7 +34,6 @@
             --info: #0984e3; --info-light: rgba(9,132,227,0.12);
             --purple: #8e44ad; --purple-light: rgba(142,68,173,0.12);
             --orange: #e67e22; --orange-light: rgba(230,126,34,0.12);
-            --dzd-color: #e17055; --dzd-light: rgba(225,112,85,0.12);
             --border: #e2e8f0; --border-light: #f0f4f8;
             --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
             --shadow-md: 0 8px 32px rgba(0,0,0,0.08);
@@ -1311,7 +1311,7 @@
         }
 
         // ============================================================
-        // 7. الاستماع للمستخدمين
+        // 7. الاستماع للمستخدمين - مع تصفية الاستثمارات الملغاة
         // ============================================================
         function listenToUsers() {
             if (unsubscribeUsers) unsubscribeUsers();
@@ -1342,12 +1342,15 @@
                             docId: doc.id
                         });
 
+                        // ===== تصفية الاستثمارات: استبعاد الملغاة =====
                         const investments = data.investments || [];
-                        if (investments.length > 0) {
+                        const activeInvestments = investments.filter(inv => inv.status !== 'cancelled');
+
+                        if (activeInvestments.length > 0) {
                             let totalInvested = 0;
                             let totalReturns = 0;
                             let planName = '';
-                            investments.forEach(inv => {
+                            activeInvestments.forEach(inv => {
                                 totalInvested += inv.amount || inv.amountInDZD || 0;
                                 totalReturns += inv.totalReturn || 0;
                                 if (inv.status === 'active' && inv.planName) {
@@ -1362,7 +1365,7 @@
                                     'plan_pro': 'الباقة الاحترافية',
                                     'plan_pro_plus': 'الباقة الاحترافية بلس'
                                 };
-                                const first = investments[0];
+                                const first = activeInvestments[0];
                                 planName = planMap[first.planId] || (first.planId ? `الخطة: ${first.planId}` : 'مستثمر');
                             }
                             let profitRatio = totalInvested > 0 ? (totalReturns / totalInvested) * 100 : 0;
@@ -1375,12 +1378,13 @@
                                 profitRatio: profitRatio,
                                 currentBalance: dzd,
                                 docId: doc.id,
-                                investments: investments,
+                                investments: activeInvestments, // نخزن الاستثمارات النشطة فقط
                                 miningData: data.miningData || {}
                             });
                             totalMinedSum += totalReturns;
                         }
 
+                        // جمع طلبات السحب والإيداع المعلقة (بدون تغيير)
                         if (data.withdrawals && Array.isArray(data.withdrawals)) {
                             data.withdrawals.forEach(w => {
                                 if (w.status === 'pending') {
@@ -1461,7 +1465,7 @@
                 });
         }
 
-        // دوال البحث
+        // دوال البحث (بدون تغيير)
         function renderProtectUsersWithFilter() {
             let filtered = allProtectUsers;
             if (protectFilter.trim() !== '') {
@@ -1593,11 +1597,12 @@
                     });
 
                     const investments = data.investments || [];
-                    if (investments.length > 0) {
+                    const activeInvestments = investments.filter(inv => inv.status !== 'cancelled');
+                    if (activeInvestments.length > 0) {
                         let totalInvested = 0;
                         let totalReturns = 0;
                         let planName = '';
-                        investments.forEach(inv => {
+                        activeInvestments.forEach(inv => {
                             totalInvested += inv.amount || inv.amountInDZD || 0;
                             totalReturns += inv.totalReturn || 0;
                             if (inv.status === 'active' && inv.planName) {
@@ -1612,7 +1617,7 @@
                                 'plan_pro': 'الباقة الاحترافية',
                                 'plan_pro_plus': 'الباقة الاحترافية بلس'
                             };
-                            const first = investments[0];
+                            const first = activeInvestments[0];
                             planName = planMap[first.planId] || (first.planId ? `الخطة: ${first.planId}` : 'مستثمر');
                         }
                         let profitRatio = totalInvested > 0 ? (totalReturns / totalInvested) * 100 : 0;
@@ -1625,7 +1630,7 @@
                             profitRatio: profitRatio,
                             currentBalance: dzd,
                             docId: doc.id,
-                            investments: investments,
+                            investments: activeInvestments,
                             miningData: data.miningData || {}
                         });
                         totalMinedSum += totalReturns;
@@ -1670,7 +1675,7 @@
         }
 
         // ============================================================
-        // 8. عرض القوائم
+        // 8. عرض القوائم (بدون تغيير)
         // ============================================================
         function renderPendingWithdrawals(list) {
             const container = document.getElementById('adminWithdrawalsList');
@@ -1772,7 +1777,7 @@
         }
 
         // ============================================================
-        // 9. دوال إدارة الاستثمارات (تم تعديل تمرير المعاملات باستخدام encodeURIComponent)
+        // 9. دوال إدارة الاستثمارات (مع encodeURIComponent)
         // ============================================================
         function renderInvestors(list) {
             const container = document.getElementById('investorsList');
@@ -1827,7 +1832,6 @@
             `).join('');
         }
 
-        // دالة إلغاء الباقة مع فك الترميز
         function cancelInvestment(encodedDocId, encodedUid, encodedDisplayName) {
             const docId = decodeURIComponent(encodedDocId);
             const uid = decodeURIComponent(encodedUid);
@@ -1870,7 +1874,6 @@
             });
         }
 
-        // دالة تعديل الأرباح مع فك الترميز
         function adjustMining(encodedDocId, encodedUid, encodedDisplayName, currentReturns) {
             const docId = decodeURIComponent(encodedDocId);
             const uid = decodeURIComponent(encodedUid);
@@ -2368,7 +2371,7 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة - تم إصلاح أزرار إلغاء الباقة وتعديل الأرباح باستخدام encodeURIComponent');
+        console.log('🚀 لوحة الإدارة - تم تعديل عرض الاستثمارات لتصفية الباقات الملغاة');
     </script>
 </body>
 </html>
