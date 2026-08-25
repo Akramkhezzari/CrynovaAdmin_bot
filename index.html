@@ -498,6 +498,7 @@
         .user-protect-card .user-actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
         .user-protect-card .user-actions .btn { padding: 5px 12px; font-size: 11px; width: auto; }
 
+        /* ===== تم تعديل class من match-actions إلى actions لتوحيد التنسيق ===== */
         .match-card {
             background: var(--bg-card);
             border-radius: var(--radius-sm);
@@ -508,8 +509,9 @@
         }
         .match-card:hover { border-color: var(--orange); }
         .match-card .match-details { font-size: 14px; color: var(--text-secondary); margin: 4px 0; }
-        .match-card .match-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
-        .match-card .match-actions .btn { padding: 6px 14px; font-size: 12px; width: auto; }
+        /* استخدمنا نفس class .actions الموجود في admin-request-card */
+        .match-card .actions { display: flex; gap: 8px; margin-top: 10px; }
+        .match-card .actions .btn { padding: 8px 16px; font-size: 13px; width: auto; flex: 1; }
 
         .error-box {
             background: var(--danger-light);
@@ -1222,7 +1224,7 @@
         }
 
         // ============================================================
-        // 8. عرض طلبات المطابقة (الدالة الأساسية)
+        // 8. عرض طلبات المطابقة (الدالة الأساسية) - تم تعديل الأزرار
         // ============================================================
         function renderPendingMatches(matches) {
             const container = document.getElementById('pendingMatchesList');
@@ -1257,11 +1259,12 @@
                         <div><strong>المبلغ:</strong> ${m.amount} DZD</div>
                         <div><small>التاريخ: ${formatDateTime(m.createdAt)}</small></div>
                     </div>
-                    <div class="match-actions">
-                        <button class="btn btn-warning btn-xs" onclick="editMatch('${m.id}','${m.transactionId}',${m.amount})">
+                    <!-- تم تغيير class إلى actions وتغيير حجم الأزرار إلى btn-sm -->
+                    <div class="actions">
+                        <button class="btn btn-warning btn-sm" onclick="editMatch('${m.id}','${m.transactionId}',${m.amount})">
                             <i class="fas fa-edit"></i> تعديل
                         </button>
-                        <button class="btn btn-danger btn-xs" onclick="deleteMatch('${m.id}')">
+                        <button class="btn btn-danger btn-sm" onclick="deleteMatch('${m.id}')">
                             <i class="fas fa-trash"></i> إلغاء
                         </button>
                     </div>
@@ -2429,8 +2432,7 @@
             switchTab('tab-home');
         });
 
-        console.log('🚀 لوحة الإدارة - تم إضافة محرك البحث في صفحة المطابقات');
-        console.log('✅ يمكن البحث في طلبات المطابقة برقم العملية أو المبلغ.');
+        console.log('🚀 لوحة الإدارة - تم تعديل أزرار المطابقات لتكون بحجم أزرار الإيداع');
     </script>
 </body>
 </html>
